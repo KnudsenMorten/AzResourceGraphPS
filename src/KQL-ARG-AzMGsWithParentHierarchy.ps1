@@ -1,92 +1,24 @@
-Function Query-AzureResourceGraph
+Function KQL-ARG-AzMGsWithParentHierarchy
 {
-    [CmdletBinding()]
-    param(
-            [Parameter(Mandatory,ValueFromPipeline)]
-                [string]$Query,
-            [Parameter()]
-                [string]$Scope,
-            [Parameter()]
-                [string]$ScopeTarget,
-            [Parameter()]
-                [string]$First,
-            [Parameter()]
-                [string]$Skip,
-            [Parameter()]
-                [boolean]$IncludeScopeRoot = $false
-         )
+#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = `
 
-    Write-host "######################################################################"
-    Write-host "Running query against Azure Resource Graph ... Please Wait !"
-    Write-host ""
-    Write-host "$($Query)"
-    Write-host ""
-    Write-host "---------------------------------------------------------------------"
-    Write-host ""
+"resourcecontainers `
+| where type == 'microsoft.management/managementgroups' `
+| extend mgParent = properties.details.managementGroupAncestorsChain `
+| mv-expand with_itemindex=MGHierarchy mgParent `
+| project id, name, properties.displayName, mgParent, MGHierarchy, mgParent.name `
+| sort by MGHierarchy asc "
 
-    $ReturnData   = @()
-    $pageSize     = 1000
-    $iteration    = 0
+# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Return $Query
 
-    $searchParams = @{
-                        Query = $Query
-                             
-                        First = $pageSize
-                     }
-
-    If ($Scope -eq "MG") # Management group(s) to run query against
-        {
-            do
-                {
-                    $iteration         += 1
-                    $pageResults       = Search-AzGraph -ManagementGroup $ScopeTarget @searchParams
-                    $searchParams.Skip += $pageResults.Count
-                    $ReturnData        += $pageResults
-                } 
-            while ($pageResults.Count -eq $pageSize)
-        }
-    ElseIf ($Scope -eq "Sub") # Subscription(s) to run query against
-        {
-            do 
-                {
-                    $iteration         += 1
-                    $pageResults       = Search-AzGraph -Subscription $ScopeTarget @searchParams
-                    $searchParams.Skip += $pageResults.Count
-                    $ReturnData        += $pageResults
-                } 
-            while ($pageResults.Count -eq $pageSize)
-        }
-    ElseIf ( ($Scope -eq "Tenant") -or ($Scope -eq $null) )  # UseTenantScope = Run query across all available subscriptions in the current tenant
-        {
-            do 
-                {
-                    $iteration         += 1
-                    $pageResults       = Search-AzGraph -UseTenantScope @searchParams
-                    $searchParams.Skip += $pageResults.Count
-                    $ReturnData        += $pageResults
-                } 
-            while ($pageResults.Count -eq $pageSize)
-        }
-
-    If ($First)
-        {
-            $First = $First - 1 # subtract first record (0)
-            $ReturnData = $ReturnData[0..$First]
-        }
-    If ($Skip)
-        {
-            $ReturnDataCount = $ReturnData.count
-            $ReturnData = $ReturnData[$Skip..$ReturnDataCount]
-        }
-
-    Return $ReturnData
 }
-
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUIQDXdHMFq4n+mJ5uDW5nVObi
-# Rp+ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU1rwoXXnYhSesPrtpMNoQW6U+
+# Q+eggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -165,16 +97,16 @@ Function Query-AzureResourceGraph
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# irlfZeL5RkDxQlmTRyKzLjLe9acwDQYJKoZIhvcNAQEBBQAEggIAL/Z8UH9pxwTj
-# U4/2ofmTfr8qCZa2FZAzj6lHdFvyNUWtPjts7z1Zcn7isOeNhhzBVAz5FylLCM79
-# g1E86dhjZTSor2mBiwXaXZ1Fa1DcY1+rbNhIax7h4nos9E7eko+HhHgcv5Cl+GCm
-# SYxT8DbhlJs13wBRe36GSCXpNv7lV0fAVl5m1xp80CIomkRWb0DgVQ5AsVhTOdIM
-# OwcPEUl6pw8IFBnixL4W+iA3SC2S1ybywJK050WLTfirJzlhde/Sw03uyP+gyjMy
-# LqQ+V4kTVlS0Oi9q9LUDwWXPBeRycll5faT6In86XjaBYbf/TM0onqbfap11PFal
-# fYW6H+DtJx5/AYkVomr2sSUvnwLEPTvSJI+SrSMmC/T9cl8qNxAFh/Z3TvH/eRRq
-# UOvwsv5nGmOGeOPEj6UR10xw/bE5GZ0XOgjNpD4vv4jWhGAIawf2I/6It3PQQO+f
-# 3ZteN/5kYh9QwgKcEVm4Wtg/oqQyE06yo6VbloUGslJEu49OOoS0kGKrJUIK/8UB
-# Jce9RgNBTzBhlWax2hSqpB1/54d0aEP1gt3E8WUuXvEIPpPd7aFmU3Nywmkw48c3
-# N+p5Ol79z1PMAXFa7RbWW7I7Pad9/3SNU8JNKyMVuxnAFQRGHfuQ2n9MnoA1JnGR
-# ErkRjG/z8xcEO0mG1crapoFiYOiUto8=
+# 2bK+HlPnTFMAgzw81h4WLQJdwV0wDQYJKoZIhvcNAQEBBQAEggIAgEWz5azRumBw
+# Cm/fVQDlLr4orAzXA4yFnQsMFaLPtAoZcSJ4xaMcG4Lvdta2LWsmp1tBm+t90Iua
+# r8ubracIFiJwh9yzJbO8bJnnisGG49ISwiC5CiDQdvmFrtvZ68Briholc/Jnp/Z2
+# egCU7+FykVoXSmiBN78k3B4AnOIKRQBDHh60uHrF2ibHHinmnmQv3EwkohyW+qmi
+# RYBQKmKgs7LmKiNY45u/8HXr3v0WiSXDHZzJiWDKxSmF3ZARa6u6SZjNItQyh6S3
+# qKIIGUm5rhyu+/yFn0AsGvrqD928sgwjVRh4+MiwjcwOHrspnBKT5Pk3P2v3Ep90
+# 2ywR+svM4FH7jzOP6IbPae6qeFZ13p6KamcSI37lx9X6V+nNFiae+N2QhTrJXSGe
+# 3I01T5/IE56jaxDzxmPuPSXrm+xNCpkB3QIbPQvYREHkLztB2HiQHJzsZopnSkRS
+# QPDktLMC3hHuWH9Iq+DjLVRmi4nZHuywqX7HGrkun2vfIqb3sjxE50cxdqugVHck
+# 4PzJW7IVxjv0ZdsGVwfHMSfTyYeXe4hyWlSXXi1wYj6DN7BkMSjcqyVSxKz7soLt
+# MGPsthy1wKGtRw0eHL+eLtNpPRDIQE1TbNqpJR9E2yld7ku/3DwG6M3TdIbEDdqb
+# I+ioEsp7s/3JJAGJrW8jpAjlmLpjxUI=
 # SIG # End signature block
