@@ -1,3 +1,21 @@
+Function KQL-ARG-AzMGsWithParentHierarchy
+{
+#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = `
+
+"resourcecontainers `
+| where type == 'microsoft.management/managementgroups' `
+| extend mgParent = properties.details.managementGroupAncestorsChain `
+| mv-expand with_itemindex=MGHierarchy mgParent `
+| project id, name, properties.displayName, mgParent, MGHierarchy, mgParent.name `
+| sort by MGHierarchy asc "
+
+# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Return $Query
+
+}
+
+
 Function KQL-ARG-AzRoleAssignments
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -72,6 +90,8 @@ Function Query-AzureResourceGraph
     Write-host ""
     Write-host "$($Query)"
     Write-host ""
+    Write-host "---------------------------------------------------------------------"
+    Write-host ""
 
     $ReturnData   = @()
     $pageSize     = 1000
@@ -136,8 +156,8 @@ Function Query-AzureResourceGraph
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAV55/sNpGKmVBp
-# B/Mdgvy5I3rjOjspvB0Tng2cVivNIaCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAHJoVEQVrFms9B
+# JOSAS445lkkH8DroNnP3CKyAcDCSgaCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -245,17 +265,17 @@ Function Query-AzureResourceGraph
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIJNmVDpQECPHzJ1YDyVyj5qf
-# /xP0SNyjfzok28TGLjShMA0GCSqGSIb3DQEBAQUABIICAMCKnlsW6mNn6Ztf3UgV
-# JlD00lt7f8phLQy0NxSapVLNgBcZM6yXHxrSqFlGllenM1+WkXZygUP+T7RABjYM
-# 4xWpoNaRIbEid69LwP32LTdqJcu1f8/wGWsxaL8saDvYQIhMKpYULBL7+YM7+dfJ
-# DAYXweZqd/C7WwPylPoR8itwOnWDcstOI+udNlLS7qqrZfY7TmqWHw0RzPNRwXNW
-# pTVJMUjGm0FxiiPehzbbGjMPe+ZLN3gamuN9JDV3oGFnc8c9mAH35PWf4snx7RpE
-# wI+1pOi4fg1Iady5lokW+M+HomZ8afZLG0nvwb+pLD4mKtVy2EOjPlow05wTI8K+
-# whNPoA8WO1isL3gmHQu4/iPcqrVa909pbDVs/9N4Xx5tmJmX1+H0fj0HGJPQu+JP
-# mqfRUyzybweGFWUdOR+MqnITwkcuZ9FPOQgPfToyR1O5VAiIOxLsFvmCDrFsTM2D
-# NnHKBaI6hLo0cRBnUybqPWIGFXbcaUZaoqXqDRbGhIXFfVwK/oMsJtQos3JGqYnG
-# E/KcfmnIbesHvhsACzd2k4dni1utmPWThMzDmZQQHab75xoerZEUPiDPtHbf8a1V
-# b4dcCVDHh6BgSQVjMEO98MRLgsbRETrBDAGNJ6vOT+UbWdmugphDlNkhYmJ+iEy7
-# QEY0mvmLzfbYmztU/lX9YzeE
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEICqb7CRKrTRWgtEeIScz1Hs0
+# gkVzJxzTHDauf/25seYHMA0GCSqGSIb3DQEBAQUABIICAC4KLTnNgchNrE+x7/Fd
+# 3miCsAIvHTLD5jeZuo1IbjqMBGbp4jjBhMa84/0/8/B/cTq4F3Px9aRSn2mbckuk
+# L7HCoVgp+SopVSZlzyidt2aHR0eZZgD55d9xuas00zSn87Nz3wu24NZabs58xuR8
+# bTUm0c1vUubheeE98fIMUKk0mLCqaAuGWlWS5ggk+g/Pi54rYrKIWEK0o/uMqkwy
+# XsC0C8Dz58I0kN7hjuo5eByswNJ+YcvMYVrZGZn2101bxlwsoZ9IQCN02qcx2+T4
+# Gkag1jVwBCVqyxpGmR/t/n95hzYf3gCvNbktMDFtIaOKKx6eqC1GWdrSMrD56j2r
+# tEJwjT4VlBlE+7AYlXzqQg4O5CQLxJkSdIy3PvVQT60ZSkm/FyQOtk/F7vgcnsYX
+# yv0J00FU2d2mw2JLZdT9spVDrgancsljgkB+MXT2Y1CUTlxXnFFJeb3mRaGJet+C
+# fsyk4WWpVZs0B7dGA7WLQ0iD/dR6x7Lo/hHsGGZXRPRa2NVyAvb4zF5PGM/onqcf
+# MrcaQT/bBtq3f3qXYAv7SU+KLSBPsQ4rDLaoistdxiAv+nwRF3uj4miQ9OImTd+b
+# 4m4xn7WBt16tU0lnuKNThS3WxQj4wwM8oByJhOXjTgjcH9uoNoV8h81GeS0wl5Qc
+# rHmBKAq0KKZK/dnE7ToG/hhx
 # SIG # End signature block
