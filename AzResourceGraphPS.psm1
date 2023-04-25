@@ -54,13 +54,14 @@ Return $Query
 }
 
 
-Function KQL-ARG-AzDCEs
+Function KQL-ARG-AzDefenderForCloudDevicesWithoutTVM
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
 
-"Resources `
-| where type =~ 'microsoft.insights/datacollectionendpoints' "
+"securityresources `
+| where type == `"microsoft.security/assessments`" ` 
+| where name contains `"ffff0522-1e88-47fc-8382-2a80ba848f5d`" "
 
 # END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Return $Query
@@ -68,13 +69,174 @@ Return $Query
 }
 
 
-Function KQL-ARG-AzDCRs
+Function KQL-ARG-AzDefenderForCloudPlans
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
 
-"Resources `
-| where type =~ 'microsoft.insights/datacollectionrules' "
+"securityresources `
+| where type == `"microsoft.security/pricings`" ` 
+| project DefenderPlan=name `
+| distinct DefenderPlan `
+| order by DefenderPlan asc"
+
+# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Return $Query
+
+}
+
+
+Function KQL-ARG-AzDefenderForCloudPlansStatus
+{
+#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = `
+
+"securityresources `
+| where type == `"microsoft.security/pricings`" ` 
+| extend tier = properties.pricingTier `
+| project DefenderPlan=name,subscriptionId,Pricing=properties.pricingTier `
+| order by DefenderPlan asc"
+
+# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Return $Query
+
+}
+
+
+Function KQL-ARG-AzDefenderForCloudRecommendationsSubAssessmentsWithDetailedInfo
+{
+#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = `
+
+"SecurityResources `
+| where type == 'microsoft.security/assessments/subassessments'
+| extend AssessmentKey = extract('.*assessments/(.+?)/.*',1,  id)
+| project AssessmentKey, subassessmentKey=name, id, parse_json(properties), resourceGroup, subscriptionId, tenantId
+| extend SubAssessDescription = properties.description,
+        SubAssessDisplayName = properties.displayName,
+        SubAssessResourceId = properties.resourceDetails.id,
+        SubAssessResourceSource = properties.resourceDetails.source,
+        SubAssessCategory = properties.category,
+        SubAssessSeverity = properties.status.severity,
+        SubAssessCode = properties.status.code,
+        SubAssessTimeGenerated = properties.timeGenerated,
+        SubAssessRemediation = properties.remediation,
+        SubAssessImpact = properties.impact,
+        SubAssessVulnId = properties.id,
+        SubAssessMoreInfo = properties.additionalData,
+        SubAssessMoreInfoAssessedResourceType = properties.additionalData.assessedResourceType,
+        SubAssessMoreInfoData = properties.additionalData.data `
+| join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId "
+
+# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Return $Query
+
+}
+
+
+Function KQL-ARG-AzDefenderForCloudRecommendationsWithLink
+{
+#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = `
+
+"SecurityResources `
+| where type == 'microsoft.security/assessments' `
+| mvexpand Category=properties.metadata.categories `
+| extend AssessmentId=id, `
+    AssessmentKey=name, `
+    ResourceId=properties.resourceDetails.Id, `
+    ResourceIdsplit = split(properties.resourceDetails.Id,'/'), `
+	RecommendationId=name, `
+	RecommendationName=properties.displayName, `
+	Source=properties.resourceDetails.Source, `
+	RecommendationState=properties.status.code, `
+	ActionDescription=properties.metadata.description, `
+	AssessmentType=properties.metadata.assessmentType, `
+	RemediationDescription=properties.metadata.remediationDescription, `
+	PolicyDefinitionId=properties.metadata.policyDefinitionId, `
+	ImplementationEffort=properties.metadata.implementationEffort, `
+	RecommendationSeverity=properties.metadata.severity, `
+    Threats=properties.metadata.threats, `
+	UserImpact=properties.metadata.userImpact, `
+	AzPortalLink=properties.links.azurePortal, `
+	MoreInfo=properties `
+| extend ResourceSubId = tostring(ResourceIdsplit[(2)]), `
+    ResourceRgName = tostring(ResourceIdsplit[(4)]), `
+    ResourceType = tostring(ResourceIdsplit[(6)]), `
+    ResourceName = tostring(ResourceIdsplit[(8)]), `
+    FirstEvaluationDate = MoreInfo.status.firstEvaluationDate, `
+    StatusChangeDate = MoreInfo.status.statusChangeDate, `
+    Status = MoreInfo.status.code `
+| join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId `
+| where AssessmentType == 'BuiltIn' `
+| project-away kind,managedBy,sku,plan,tags,identity,zones,location,ResourceIdsplit,id,name,type,resourceGroup,subscriptionId, extendedLocation,subscriptionId1 `
+| project SubName, ResourceSubId, ResourceRgName,ResourceType,ResourceName,TenantId=tenantId, RecommendationName, RecommendationId, RecommendationState, RecommendationSeverity, AssessmentType, PolicyDefinitionId, ImplementationEffort, UserImpact, Category, Threats, Source, ActionDescription, RemediationDescription, MoreInfo, ResourceId, AzPortalLink, AssessmentKey `
+| where RecommendationState == 'Unhealthy' "
+
+# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Return $Query
+
+}
+
+
+Function KQL-ARG-AzDefenderForCloudRecommendationsWithSubAssessments
+{
+#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = `
+
+"SecurityResources `
+| where type == 'microsoft.security/assessments' `
+| mvexpand Category=properties.metadata.categories `
+| extend AssessmentId=id, `
+    AssessmentKey=name, `
+    ResourceId=properties.resourceDetails.Id, `
+    ResourceIdsplit = split(properties.resourceDetails.Id,'/'), `
+	RecommendationId=name, `
+	RecommendationName=properties.displayName, `
+	Source=properties.resourceDetails.Source, `
+	RecommendationState=properties.status.code, `
+	ActionDescription=properties.metadata.description, `
+	AssessmentType=properties.metadata.assessmentType, `
+	RemediationDescription=properties.metadata.remediationDescription, `
+	PolicyDefinitionId=properties.metadata.policyDefinitionId, `
+	ImplementationEffort=properties.metadata.implementationEffort, `
+	RecommendationSeverity=properties.metadata.severity, `
+    Threats=properties.metadata.threats, `
+	UserImpact=properties.metadata.userImpact, `
+	AzPortalLink=properties.links.azurePortal, `
+	MoreInfo=properties `
+| extend ResourceSubId = tostring(ResourceIdsplit[(2)]), `
+    ResourceRgName = tostring(ResourceIdsplit[(4)]), `
+    ResourceType = tostring(ResourceIdsplit[(6)]), `
+    ResourceName = tostring(ResourceIdsplit[(8)]), `
+    FirstEvaluationDate = MoreInfo.status.firstEvaluationDate, `
+    StatusChangeDate = MoreInfo.status.statusChangeDate, `
+    Status = MoreInfo.status.code `
+| join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId `
+| where AssessmentType == 'BuiltIn' `
+| project-away kind,managedBy,sku,plan,tags,identity,zones,location,ResourceIdsplit,id,name,type,resourceGroup,subscriptionId, extendedLocation,subscriptionId1 `
+| project SubName, ResourceSubId, ResourceRgName,ResourceType,ResourceName,TenantId=tenantId, RecommendationName, RecommendationId, RecommendationState, RecommendationSeverity, AssessmentType, PolicyDefinitionId, ImplementationEffort, UserImpact, Category, Threats, Source, ActionDescription, RemediationDescription, MoreInfo, ResourceId, AzPortalLink, AssessmentKey `
+| where RecommendationState == 'Unhealthy' `
+| join kind=leftouter (
+	securityresources
+	| where type == 'microsoft.security/assessments/subassessments'
+	| extend AssessmentKey = extract('.*assessments/(.+?)/.*',1,  id)
+        | project AssessmentKey, subassessmentKey=name, id, parse_json(properties), resourceGroup, subscriptionId, tenantId
+        | extend SubAssessmentSescription = properties.description,
+            SubAssessmentDisplayName = properties.displayName,
+            SubAssessmentResourceId = properties.resourceDetails.id,
+            SubAssessmentResourceSource = properties.resourceDetails.source,
+            SubAssessmentCategory = properties.category,
+            SubAssessmentSeverity = properties.status.severity,
+            SubAssessmentCode = properties.status.code,
+            SubAssessmentTimeGenerated = properties.timeGenerated,
+            SubAssessmentRemediation = properties.remediation,
+            SubAssessmentImpact = properties.impact,
+            SubAssessmentVulnId = properties.id,
+            SubAssessmentMoreInfo = properties.additionalData,
+            SubAssessmentMoreInfoAssessedResourceType = properties.additionalData.assessedResourceType,
+            SubAssessmentMoreInfoData = properties.additionalData.data
+) on AssessmentKey"
 
 # END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Return $Query
@@ -125,7 +287,7 @@ Return $Query
 }
 
 
-Function KQL-ARG-AzHybridMachinesWithTagInfo
+Function KQL-ARG-AzHybridMachinesWithTags
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
@@ -171,33 +333,13 @@ Return $Query
 }
 
 
-Function KQL-ARG-AzMdcPlans
+Function KQL-ARG-AzMGs
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
 
-"securityresources `
-| where type == `"microsoft.security/pricings`" ` 
-| project DefenderPlan=name `
-| distinct DefenderPlan `
-| order by DefenderPlan asc"
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function KQL-ARG-AzMdcPlansStatus
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"securityresources `
-| where type == `"microsoft.security/pricings`" ` 
-| extend tier = properties.pricingTier `
-| project DefenderPlan=name,subscriptionId,Pricing=properties.pricingTier `
-| order by DefenderPlan asc"
+"resourcecontainers `
+| where type == 'microsoft.management/managementgroups' "
 
 # END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Return $Query
@@ -216,6 +358,34 @@ $Query = `
 | mv-expand with_itemindex=MGHierarchy mgParent `
 | project id, name, properties.displayName, mgParent, MGHierarchy, mgParent.name `
 | sort by MGHierarchy asc "
+
+# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Return $Query
+
+}
+
+
+Function KQL-ARG-AzMonitorDCEs
+{
+#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = `
+
+"Resources `
+| where type =~ 'microsoft.insights/datacollectionendpoints' "
+
+# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Return $Query
+
+}
+
+
+Function KQL-ARG-AzMonitorDCRs
+{
+#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = `
+
+"Resources `
+| where type =~ 'microsoft.insights/datacollectionrules' "
 
 # END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Return $Query
@@ -275,7 +445,7 @@ Return $Query
 }
 
 
-Function KQL-ARG-AzNativeVMsMdcSrvPlanEnabled
+Function KQL-ARG-AzNativeVMsWithDefenderForCloudPlanEnabled
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
@@ -299,7 +469,7 @@ Return $Query
 }
 
 
-Function KQL-ARG-AzNativeVMsTags
+Function KQL-ARG-AzNativeVMsWithTags
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
@@ -330,7 +500,7 @@ Return $Query
 }
 
 
-Function KQL-ARG-AzResourcesTags
+Function KQL-ARG-AzResourcesWithTags
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
@@ -375,7 +545,7 @@ Return $Query
 }
 
 
-Function KQL-ARG-AzRGsTags
+Function KQL-ARG-AzRGsWithTags
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
@@ -459,7 +629,7 @@ Return $Query
 }
 
 
-Function KQL-ARG-AzSubscriptionsTags
+Function KQL-ARG-AzSubscriptionsWithTags
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
@@ -470,162 +640,6 @@ $Query = `
 | mvexpand tags `
 | extend tagKey = tostring(bag_keys(tags)[0]) `
 | extend tagValue = tostring(tags[tagKey]) "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function KQL-ARG-DevicesWithoutTVM
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"securityresources `
-| where type == `"microsoft.security/assessments`" ` 
-| where name contains `"ffff0522-1e88-47fc-8382-2a80ba848f5d`" "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function KQL-ARG-MdcRecommendationsSubAssessmentsWithDetailedInfo
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"SecurityResources `
-| where type == 'microsoft.security/assessments/subassessments'
-| extend AssessmentKey = extract('.*assessments/(.+?)/.*',1,  id)
-| project AssessmentKey, subassessmentKey=name, id, parse_json(properties), resourceGroup, subscriptionId, tenantId
-| extend SubAssessDescription = properties.description,
-        SubAssessDisplayName = properties.displayName,
-        SubAssessResourceId = properties.resourceDetails.id,
-        SubAssessResourceSource = properties.resourceDetails.source,
-        SubAssessCategory = properties.category,
-        SubAssessSeverity = properties.status.severity,
-        SubAssessCode = properties.status.code,
-        SubAssessTimeGenerated = properties.timeGenerated,
-        SubAssessRemediation = properties.remediation,
-        SubAssessImpact = properties.impact,
-        SubAssessVulnId = properties.id,
-        SubAssessMoreInfo = properties.additionalData,
-        SubAssessMoreInfoAssessedResourceType = properties.additionalData.assessedResourceType,
-        SubAssessMoreInfoData = properties.additionalData.data `
-| join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function KQL-ARG-MdcRecommendationsWithLink
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"SecurityResources `
-| where type == 'microsoft.security/assessments' `
-| mvexpand Category=properties.metadata.categories `
-| extend AssessmentId=id, `
-    AssessmentKey=name, `
-    ResourceId=properties.resourceDetails.Id, `
-    ResourceIdsplit = split(properties.resourceDetails.Id,'/'), `
-	RecommendationId=name, `
-	RecommendationName=properties.displayName, `
-	Source=properties.resourceDetails.Source, `
-	RecommendationState=properties.status.code, `
-	ActionDescription=properties.metadata.description, `
-	AssessmentType=properties.metadata.assessmentType, `
-	RemediationDescription=properties.metadata.remediationDescription, `
-	PolicyDefinitionId=properties.metadata.policyDefinitionId, `
-	ImplementationEffort=properties.metadata.implementationEffort, `
-	RecommendationSeverity=properties.metadata.severity, `
-    Threats=properties.metadata.threats, `
-	UserImpact=properties.metadata.userImpact, `
-	AzPortalLink=properties.links.azurePortal, `
-	MoreInfo=properties `
-| extend ResourceSubId = tostring(ResourceIdsplit[(2)]), `
-    ResourceRgName = tostring(ResourceIdsplit[(4)]), `
-    ResourceType = tostring(ResourceIdsplit[(6)]), `
-    ResourceName = tostring(ResourceIdsplit[(8)]), `
-    FirstEvaluationDate = MoreInfo.status.firstEvaluationDate, `
-    StatusChangeDate = MoreInfo.status.statusChangeDate, `
-    Status = MoreInfo.status.code `
-| join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId `
-| where AssessmentType == 'BuiltIn' `
-| project-away kind,managedBy,sku,plan,tags,identity,zones,location,ResourceIdsplit,id,name,type,resourceGroup,subscriptionId, extendedLocation,subscriptionId1 `
-| project SubName, ResourceSubId, ResourceRgName,ResourceType,ResourceName,TenantId=tenantId, RecommendationName, RecommendationId, RecommendationState, RecommendationSeverity, AssessmentType, PolicyDefinitionId, ImplementationEffort, UserImpact, Category, Threats, Source, ActionDescription, RemediationDescription, MoreInfo, ResourceId, AzPortalLink, AssessmentKey `
-| where RecommendationState == 'Unhealthy' "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function KQL-ARG-MdcRecommendationsWithSubAssessments
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"SecurityResources `
-| where type == 'microsoft.security/assessments' `
-| mvexpand Category=properties.metadata.categories `
-| extend AssessmentId=id, `
-    AssessmentKey=name, `
-    ResourceId=properties.resourceDetails.Id, `
-    ResourceIdsplit = split(properties.resourceDetails.Id,'/'), `
-	RecommendationId=name, `
-	RecommendationName=properties.displayName, `
-	Source=properties.resourceDetails.Source, `
-	RecommendationState=properties.status.code, `
-	ActionDescription=properties.metadata.description, `
-	AssessmentType=properties.metadata.assessmentType, `
-	RemediationDescription=properties.metadata.remediationDescription, `
-	PolicyDefinitionId=properties.metadata.policyDefinitionId, `
-	ImplementationEffort=properties.metadata.implementationEffort, `
-	RecommendationSeverity=properties.metadata.severity, `
-    Threats=properties.metadata.threats, `
-	UserImpact=properties.metadata.userImpact, `
-	AzPortalLink=properties.links.azurePortal, `
-	MoreInfo=properties `
-| extend ResourceSubId = tostring(ResourceIdsplit[(2)]), `
-    ResourceRgName = tostring(ResourceIdsplit[(4)]), `
-    ResourceType = tostring(ResourceIdsplit[(6)]), `
-    ResourceName = tostring(ResourceIdsplit[(8)]), `
-    FirstEvaluationDate = MoreInfo.status.firstEvaluationDate, `
-    StatusChangeDate = MoreInfo.status.statusChangeDate, `
-    Status = MoreInfo.status.code `
-| join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId `
-| where AssessmentType == 'BuiltIn' `
-| project-away kind,managedBy,sku,plan,tags,identity,zones,location,ResourceIdsplit,id,name,type,resourceGroup,subscriptionId, extendedLocation,subscriptionId1 `
-| project SubName, ResourceSubId, ResourceRgName,ResourceType,ResourceName,TenantId=tenantId, RecommendationName, RecommendationId, RecommendationState, RecommendationSeverity, AssessmentType, PolicyDefinitionId, ImplementationEffort, UserImpact, Category, Threats, Source, ActionDescription, RemediationDescription, MoreInfo, ResourceId, AzPortalLink, AssessmentKey `
-| where RecommendationState == 'Unhealthy' `
-| join kind=leftouter (
-	securityresources
-	| where type == 'microsoft.security/assessments/subassessments'
-	| extend AssessmentKey = extract('.*assessments/(.+?)/.*',1,  id)
-        | project AssessmentKey, subassessmentKey=name, id, parse_json(properties), resourceGroup, subscriptionId, tenantId
-        | extend SubAssessmentSescription = properties.description,
-            SubAssessmentDisplayName = properties.displayName,
-            SubAssessmentResourceId = properties.resourceDetails.id,
-            SubAssessmentResourceSource = properties.resourceDetails.source,
-            SubAssessmentCategory = properties.category,
-            SubAssessmentSeverity = properties.status.severity,
-            SubAssessmentCode = properties.status.code,
-            SubAssessmentTimeGenerated = properties.timeGenerated,
-            SubAssessmentRemediation = properties.remediation,
-            SubAssessmentImpact = properties.impact,
-            SubAssessmentVulnId = properties.id,
-            SubAssessmentMoreInfo = properties.additionalData,
-            SubAssessmentMoreInfoAssessedResourceType = properties.additionalData.assessedResourceType,
-            SubAssessmentMoreInfoData = properties.additionalData.data
-) on AssessmentKey"
 
 # END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Return $Query
@@ -805,8 +819,8 @@ Function Query-AzureResourceGraph
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBVIpqgdnIuPMDw
-# opAMJZJpMPZ7TFSQWAR3zH2a6ZT1C6CCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD1JFNZCac3hyST
+# R7G6s4TkLEyWZGrWHIymReRCHJMZcKCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -914,17 +928,17 @@ Function Query-AzureResourceGraph
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEID/i2XQ1mqUQjkvUuRRRSidk
-# NvVLZ5AqEKq5vQRfABAtMA0GCSqGSIb3DQEBAQUABIICAD3In0iVu2+rNUsf5ijo
-# Mo9QqLgPeVYZxL5NyMMyeXtP2pgA3AEjucA6u8UNamq99yAIK9uEFzklRUpiAsZk
-# cz0Nl0VzNz/KFN4L9/fOr2h7inI48sqpJsaw133ZWwLrN4+fnpd8qiDLtfmCKFYM
-# PXttI30ND3OPDXeduitwTvtjd+Lt7wR3sfcp1shEvZ/+VzbUsd0XN+oFU5VzmHeo
-# z2af1bfeYsx+Hx7hi7hgZfwFbozRPy0A7suXWT2pCKru0Wo52YaK7EGl/M9p8Ucw
-# F3fj+yv/GlqOuBsVNjWR0PtAScnBR+n3v6SKG1QrQXyzC/PNTPXoJgh2GAm82zSK
-# x0/fc1kL3alXzvWSUU2lvYyXEaAdOe3RFoojb6scm7sLyZrB7zq/8jXXiDXVoGv8
-# F+zG6GGDlA2TY4H9NQTuFNzqwHT+GZiCmT+ALBLsAZih7cbe1zpv9VBQJgvpC290
-# LoF+7vTp+w0fZlKVZXRDC5oONM6bbou6AIBqeoA/cefzUpQLQFu9fJvjYFIWWMJ7
-# 0llqeKM++YJdeF6qVfvLOnwpFT8y2dKf8ZS1/pjOo6QAtwzUOtbFKwPPD0AwgSE/
-# P4ecQwYzO9/xbX3QGdfqmqgPah5Zm46OZUjwGJny3JSxZhb7vHEkK/FMHrC+T6ZF
-# bMkqWH9+8M83Bgt67VzWS6G0
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIK5tZW7TCygR+WYEiO2lpSv2
+# Jx2nL4P9Dat5DY2/B3lHMA0GCSqGSIb3DQEBAQUABIICAFGAMjuidqecrHEdEmtL
+# icaGPMq6DUBDB8xqX4Ulo6nOhaAdl8ihTUZ2m2dbLvPALePAnZhZmjIcCW872mTE
+# +Ng3/IMH4J3FW1/upLjQbZstctGMwbfKkthTQeGuXHUp2hnN8jnvxacFli+BzqcI
+# 8P7tGp7a0JGM9XpViLRYH79jHJgP9j7+/OXNzlgvHr6kNuXX2T2NZQfU1jxSvRn5
+# pXzkRZFBnMV4pMLXu3MqOMvZC7iHDRg4t80vHesCUxzDVN+SjmtlCcpZHqlzYlRz
+# nC/+1mjqYzgpK8TI5PRbQYUF37CRyoXT1EJ1V8fSvuBgJ72sGxdUEqN4vX1/ekAO
+# nZO36Fk1FcGRRyx23bdV/IizQo66FmlZE/CSj/oXQBeN5iseNaUXUY/l++TAYSga
+# Q0dzt4yOS24vUQnezGRVEXHJhIfvhhwEzTop+uB+uMX3qebMPKvB3tBZSOP++4Mq
+# yqWDKjDNSGbXFiWBhGLdprtKch9qkFYKPHb65v3KMKoP7HZIWAczCrPB5raK7pjX
+# huBI1CCVS17yHNLbimdxppr7r+32p4gEBpUZA/XIRTtXCd1PvLA9Znyun2gUCndy
+# ahUV+GcQHkUfxHw1oUSX7wI8CnEeuxzgR/KUFlITJ2kiUjaal2ABtCitnNF0W1b0
+# J4fc2dgmfPyj9t1uoOn8jdnw
 # SIG # End signature block
