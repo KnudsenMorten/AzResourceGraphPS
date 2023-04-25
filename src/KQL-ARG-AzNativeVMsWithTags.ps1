@@ -1,9 +1,10 @@
-Function KQL-ARG-AzResourcesTags
+Function KQL-ARG-AzNativeVMsWithTags
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
 
 "resources `
+| where type == `"microsoft.compute/virtualmachines`" `
 | project id,name,type,location,resourceGroup,subscriptionId,tags `
 | mvexpand tags `
 | extend tagKey = tostring(bag_keys(tags)[0]) `
@@ -16,8 +17,8 @@ Return $Query
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/iwI5TpZH/AxmJV0Wze9AY0L
-# KsKggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUvO7W9sjmRR7h8wwBZuBMIR8l
+# ld6ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -96,16 +97,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# By24V79gK36WhGhz3x2Yg2W2RNwwDQYJKoZIhvcNAQEBBQAEggIAlfUY0A0jh0cw
-# v8cG6XIaeSZFRC/MK36Fe5c5bAZ5iS2bxq5tRgTivy9gX3D4VlNmGGf7O75P4fJn
-# bpZWfWYix8BraP3wFr+QEwmPGSkLSIZkwyH3rc7UyoOVaVrcHHBY+50+jQq2XZjD
-# JPIU4xjKxDFA8M8CcLpRIf9ZIz+yHaNQzJeQ+ljpqfOSuBedOOCyg0FsVFy87wi1
-# 2VAqSxbsWd+xA+8WNx80kjpmNEcLFGu+RXRPJVzhduK29EC43fsw/kJKMD/01mzO
-# b1HVTkFMXZTk6XmMLC4rDF8bPC1WU4ODyUkWVx6Hfu4KSMuyyN/got1UGj5WAUQ/
-# u1GBp4BOnZKK+cfQmEqoxXbl6UfzBvDMCtzcDp88tkRV0N820rjJthuQtn6lIZMP
-# GZ8AakLXbz+k/RGYCuryd5oThjsyIYGfIO772YbO0lNRypF264WdvVNYUMoIa35H
-# 4vBp8qvkAgvtFXY1PPWHuNRKlHcOAmPL0yNjeCFrXB8BkkNDQ2jD7FGhb0ovv4Wm
-# Z0XPdJiIf5mt1i7ci/nzzzMB5MoM73f67+xu0eGNZ1bpI4v56Cbrr0H29mMvjmkl
-# lqOIifhU1rkxcSZn4Lq9FGkia7Cl0kY8e33y5y/JeGRiQPIhgjW0FQnyqLqqFglM
-# O4vFzRIe8i3cIN0fPvrap2cYOWOgLaY=
+# 2QRmCYQW32fzPoC52CNM5bMm8VIwDQYJKoZIhvcNAQEBBQAEggIAYvrea3Ka579Y
+# AorbyKQlymP2xHpLn1WUDenh5rIfNNgHZhqzN+mxfZjtn9MctR0O9fiRstMWf+xg
+# yZL0dEWwMetciTXTajGRWxIvVCXPL8/CbrlMcbG78O0WRV3Yt7d/5F2CVEgPmO1L
+# X6oVVtLFVmvsdzRy/FGmBBRGsmpSID5cjq89W0BCUyNKi/c9leIoXCl0PbE4eM6Y
+# 8EY2n5AaNsjctj/SQPEXVnUXjdyJ7x0oCBFyNGtKlaqPV7l/gU3sUKoFoZivxnAE
+# 3xeSaRIr4kGi0IwFQzMqYES9qtdrwYNpuy/SxBMa6frxGL5u96goDH9L5TTFyLWE
+# 2qfJVcUb0LHJ/7ao9uLMEYZjmt1SxOuvSKfIkNjbW5eGsa6jV6xAMNJpjkFkl8el
+# gatyGYc9J0R77i7FRRSG7+p1LaApKsau6mtIC91136UCe3q6BHmi3nidD7sWmxxK
+# RSR7YjPfunjH/2F+pxWqdkUxQJQNuBA82ffDha13DVRGe23d3dGCl7lkmk2l8jdJ
+# JBQLJOOJEL6PB//3YiQChkSzhAtouU/LzW6qnvixq3xc9a0x8zo7Zx2rxvxdOQhF
+# gv6wihRvRTJHqlnCsC55+rVaXiVWCPSW+03uez1uHSQQ2CkLqNrUXlaY6T1R2PdC
+# tZOB40NHtgnr2eQ17RDTmA3Zu6iCUeY=
 # SIG # End signature block

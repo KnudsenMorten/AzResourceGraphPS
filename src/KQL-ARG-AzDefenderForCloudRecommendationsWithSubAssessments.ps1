@@ -1,4 +1,4 @@
-Function KQL-ARG-MdcRecommendationsWithLink
+Function KQL-ARG-AzDefenderForCloudRecommendationsWithSubAssessments
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
@@ -35,7 +35,27 @@ $Query = `
 | where AssessmentType == 'BuiltIn' `
 | project-away kind,managedBy,sku,plan,tags,identity,zones,location,ResourceIdsplit,id,name,type,resourceGroup,subscriptionId, extendedLocation,subscriptionId1 `
 | project SubName, ResourceSubId, ResourceRgName,ResourceType,ResourceName,TenantId=tenantId, RecommendationName, RecommendationId, RecommendationState, RecommendationSeverity, AssessmentType, PolicyDefinitionId, ImplementationEffort, UserImpact, Category, Threats, Source, ActionDescription, RemediationDescription, MoreInfo, ResourceId, AzPortalLink, AssessmentKey `
-| where RecommendationState == 'Unhealthy' "
+| where RecommendationState == 'Unhealthy' `
+| join kind=leftouter (
+	securityresources
+	| where type == 'microsoft.security/assessments/subassessments'
+	| extend AssessmentKey = extract('.*assessments/(.+?)/.*',1,  id)
+        | project AssessmentKey, subassessmentKey=name, id, parse_json(properties), resourceGroup, subscriptionId, tenantId
+        | extend SubAssessmentSescription = properties.description,
+            SubAssessmentDisplayName = properties.displayName,
+            SubAssessmentResourceId = properties.resourceDetails.id,
+            SubAssessmentResourceSource = properties.resourceDetails.source,
+            SubAssessmentCategory = properties.category,
+            SubAssessmentSeverity = properties.status.severity,
+            SubAssessmentCode = properties.status.code,
+            SubAssessmentTimeGenerated = properties.timeGenerated,
+            SubAssessmentRemediation = properties.remediation,
+            SubAssessmentImpact = properties.impact,
+            SubAssessmentVulnId = properties.id,
+            SubAssessmentMoreInfo = properties.additionalData,
+            SubAssessmentMoreInfoAssessedResourceType = properties.additionalData.assessedResourceType,
+            SubAssessmentMoreInfoData = properties.additionalData.data
+) on AssessmentKey"
 
 # END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Return $Query
@@ -44,8 +64,8 @@ Return $Query
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQULRGVKxsqQRI7lu3NQLNfAWD8
-# jcWggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUXPJNCffRsysMV4xTpaC0eY5m
+# CPyggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -124,16 +144,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# B8AcEnxNcQpvnuUC88jVvqNBD9IwDQYJKoZIhvcNAQEBBQAEggIAGfk1qZHkAVDP
-# TOYSVZBmHxaZyghBa9X8d3uFm7rfeICydOIHm3Kv/CPM6OJvnE1gD4O7/q08DebS
-# 667ShqJmtLJWzwcvHj/Vl1d3Cjk7r10avaVv6BBNMq5m5UDyA55JLlSIB0cqarb3
-# vLRjOZfWD2I9/kSGWA1c4Uspd3GoCfpkJl8riaig+My3sf2USLps4coDdceWpjDy
-# zVkSvfSL9i3WDXPqkNBalYchaNneT0Smm0GmFXU4V2piUuQKJRsPGv1MuL4/pULo
-# 3qzWQeVnB3/wlYsEvAFbDdUOmIYbXrxgp9u/o+kWBoUQEMi4iMdvzGOMVyxETkzG
-# nfrUFVokbuQtnZy4qSxQtJySdQCzkyYdZ0OglRyq3zC6LgMB5YJYhgmW3KxELaoM
-# Wid4eQju9XXaSxrspuPf3NdEKxm2ackUlfd1eny2II+Stb0WMz0PsAU4pzWudbs5
-# yD6wauzj8zNCucpahrpbn5Lid1xNAalj1GYfOb/FUeeyQdaapQxFQPhbsEAkxL0h
-# 7pEsihy1ajyrWyMckaBiNoQs2Roy6UTVnEF7H4qHXuzMd6bIID4J9J7O8UChs96N
-# eQltHMlr+RANUua/HdH/64wHp5ZfKWI4PHgWg6EFeFOy4/9t9b+lDvkXqh/rV6fo
-# 1mJBIUJOL+h1D1K+mcSmoiyKy30covA=
+# 0ifBxPGy48RvbKysc2dYflaerggwDQYJKoZIhvcNAQEBBQAEggIAM/nC6RiE5yre
+# cigoM1aDw8rHb+801UMf+4DnvdSdPT04WqLoUmZzUsj/2C54BCcKQzZLZBNis6Tp
+# TX+Tk5kDnlHAfThg/qfaelHRoyVBsihRWfHildFQl48oqkUJFKDx6zMBoqJOwzsN
+# 4Wj5oReiCfG/Dpz5GPt+m2o13Q52LbjyCVVjUCTwQsXt6Q5mMlcjHYmafSyIHQlO
+# cCN2HNANLXrvjS4HspPlNL1BkTJI8nHD7uNCgh/bzMx4UH6AD+7QevrAdMHxK8Bh
+# inzgzYVsc3bBqu5JBtl3EssY2lin3XtnYb4Rn5bmL/0aKWSWqxpYbMrtBqXE33oJ
+# 2DNNwsw+XGsP868WQkwrduXe7x4XWWzc3OAv0dk3SBRvFgrlsEOy0jBCX1R3xCNr
+# 2N2/ZBs5Cs9YiMzuuya3QZ4FeuDb/tYt7yqgDub8A8enRb85gYWnCb98tDcLxpex
+# K2uj1rAcD/ElbjTaGwwH0LxSfZI3WieHGLUbiuAKWR7uq2db7aIX+OAXAvD1VnfN
+# 8BfDxjM07Wg3zUzi/yVUM0gNtLmtFUCig40I042r9s+qCoOSrMK3sx8Hh4gVni5Z
+# /5SfrRNERf/ckZunFtZWx5A2CUb7Xo/Q2O2XusmqAzBwGSDxxonjpdYpccrKgfML
+# lhPFb8z2MoIclV8L6XK73NtYBwn+s3I=
 # SIG # End signature block

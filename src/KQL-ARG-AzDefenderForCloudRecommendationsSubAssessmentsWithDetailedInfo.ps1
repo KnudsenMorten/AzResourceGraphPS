@@ -1,13 +1,27 @@
-Function KQL-ARG-AzRGsTags
+Function KQL-ARG-AzDefenderForCloudRecommendationsSubAssessmentsWithDetailedInfo
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
 
-"resourcecontainers `
-| project id,name,type,location,resourceGroup,subscriptionId,tags `
-| mvexpand tags `
-| extend tagKey = tostring(bag_keys(tags)[0]) `
-| extend tagValue = tostring(tags[tagKey]) "
+"SecurityResources `
+| where type == 'microsoft.security/assessments/subassessments'
+| extend AssessmentKey = extract('.*assessments/(.+?)/.*',1,  id)
+| project AssessmentKey, subassessmentKey=name, id, parse_json(properties), resourceGroup, subscriptionId, tenantId
+| extend SubAssessDescription = properties.description,
+        SubAssessDisplayName = properties.displayName,
+        SubAssessResourceId = properties.resourceDetails.id,
+        SubAssessResourceSource = properties.resourceDetails.source,
+        SubAssessCategory = properties.category,
+        SubAssessSeverity = properties.status.severity,
+        SubAssessCode = properties.status.code,
+        SubAssessTimeGenerated = properties.timeGenerated,
+        SubAssessRemediation = properties.remediation,
+        SubAssessImpact = properties.impact,
+        SubAssessVulnId = properties.id,
+        SubAssessMoreInfo = properties.additionalData,
+        SubAssessMoreInfoAssessedResourceType = properties.additionalData.assessedResourceType,
+        SubAssessMoreInfoData = properties.additionalData.data `
+| join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId "
 
 # END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Return $Query
@@ -16,8 +30,8 @@ Return $Query
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUB6BKcEZzveAUCLBcs2QQ9Hqe
-# jgmggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUsP4VJqw59m1NYjTirsdaBVIB
+# qpOggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -96,16 +110,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# j7YMN+rfGxsSVrwfV65IPIb7xFAwDQYJKoZIhvcNAQEBBQAEggIAE1VyATq4Tlst
-# u7pWPTwNjiWuP/8RR+sutjQ8IzqKfbgYCmWL8PivEIsRKWm1ngArTRPXwtcAd6zW
-# VWgCwSXsI0Z+pqRWD5cop2+BR2p4uoZma9cjuYQhIsSYi5gsz2uzwSdcZDAWD1+g
-# 3456dFnm+Q3PPZ7fgeDjGlp86N8LEOYstSGnJdKJHOVgpi4hp0lBsAKyGp9hq9mp
-# nJBiepZ5Px5RoDCi5rMTDKaDKSEHsaRrsibjNnztI6g2S4aUYZ+mWGfhnVb3J1Wu
-# +MuDncABUnFEUC2p/mMgJn6Q+R/w7CLCCbAZxVy9D13lffKXjoCidFrQ5oZjySg0
-# MNX2hBOMLg/OiploPnncTMIrPMg8c+hmqA3qhSHjhrR3CUYJ7ZUDz3YFyMXuPY+z
-# kQy9Va8wagB/C9qlB6MSwnqC7/HeNfdzWELq9qpMUfzqoUmbtToJ9RXPlXPGBdzQ
-# 0RcRp5a7w6szAc/9DCOAqOL7p7KYLAidmljm39fN5T10Awdg7xO/pONxfC7Xr33k
-# +Mjh5/qcZzwUiPQiBspFweMMeanbxts7z5WBZcSHPZkxnyh3T8DJEPtMg2vzCovY
-# wRhddb+CmWz0FYbVCcwi4xIHXip4+2pl1F1FD+YcK1Qf2YcqaGwI9q16sFV3g0VB
-# HWl1v8x0KiIoAGJ0OCW9g97kLDYpBz8=
+# CRb0GgAyMykGNYMClxhoGPYz9WEwDQYJKoZIhvcNAQEBBQAEggIAO1HN25w0jCua
+# +luXiWXoPTmrXtVRlauyVUg2QQJXKzTtyFvAAY0bCjoX+jOhSsTQe4h+PtfO+qgA
+# 1iZJlU4VK3W3pNA4Js1UxmeNNIaD9EpO6tGU4weUdf/S0tYwLm81gXfo8MITbAEf
+# hEHBzRfTpgOBSIf3ojQtkRHYhWq4BQF68T78piireOYtd6gW1fxcSuBEp7aQX4bj
+# Rh9O/uMjx7GKLt/NsSrh8896f62phK1nZWneYgkbojtfRnK5ZooRJw8AxCgMDfzX
+# Sul+1Lf+xKs+jPH/fmAlroHILcuc0D4ieb6h5K/daGFs9ZWDJq39ctQWTEeKnhGx
+# U/7nmk1bOcctBpjnxEuFgVL7ru2JhL5MC97ORsXY6WRRrx2eRvE/Ggi9XFkjB+l6
+# 2ueD7pix/kO2+LsAyC8SzjDKSDc7b0OuFtXvoGQrtZQ7AQWS2d6OflCdG6B4w8iH
+# yXiu/Oki8WsWq6HPtcS8rWYph6asOGXlHv9J3QVvtWSeO36JJHA2hAM27/gMKFAW
+# tZr3z5oFUoRHko1qpRoMan0dUnIURcftLBXMwEKCtbEYKdt2Rz7Qy9y+fDNfoycO
+# aMXxb2BKgHxVbEYymGHfGo8xeIpFTtaxFX1cnU5VHy7XONcJYQaVQAQSTQ0ppI3H
+# LX0P5Ihy8ZGboSt9e1KuMP2PhkZm4Og=
 # SIG # End signature block
