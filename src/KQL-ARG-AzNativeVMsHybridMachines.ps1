@@ -1,12 +1,27 @@
-Function KQL-ARG-AzSubscriptions
+Function KQL-ARG-AzNativeVMsHybridMachines
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
 
-"ResourceContainers `
-| where type =~ 'microsoft.resources/subscriptions' `
-| extend status = properties.state `
-| project id, subscriptionId, name, status | order by id, subscriptionId desc "
+"Resources `
+| where type in (`"microsoft.compute/virtualmachines`",`"microsoft.hybridcompute/machines`") `
+| extend ostype = properties.osType `
+| extend provisioningState = properties.provisioningState `
+| extend licensetype = properties.licensetype `
+| extend displayname = properties.displayName `
+| extend status = properties.status `
+| extend computerName = properties.osprofile.computerName `
+| extend osVersion = properties.osVersion `
+| extend osName = properties.osName `
+| extend manufacturer = properties.detectedProperties.manufacturer `
+| extend model = properties.detectedProperties.model `
+| extend lastStatusChange = properties.lastStatusChange `
+| extend agentVersion = properties.agentVersion `
+| extend machineFqdn = properties.machineFqdn `
+| extend domainName = properties.domainName `
+| extend dnsFqdn = properties.dnsFqdn `
+| extend adFqdn = properties.adFqdn `
+| extend osSku = properties.osSku "
 
 # END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Return $Query
@@ -15,8 +30,8 @@ Return $Query
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUpUrDeQYI3IvWLlCTlavUKZYu
-# qPaggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUVUqvKIzKnkCbqcoOPceI0F3M
+# 6VKggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -95,16 +110,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# /SV7Vw2hYr3hekbdkHl0cIM02e0wDQYJKoZIhvcNAQEBBQAEggIAT/mChhTuul+d
-# 7DjUNIy0x8qak+vE/Sauf4dGep7WlCL738Gdc1sDmzg4vzDskCNJBHW+E+NQ8WTa
-# VuTaiIgnLptMYTIgUmgMViYBlIIJYyRsnFQyOgA2zwTjlRGNmNxZDqhIXS30xL6E
-# 1styoYCKmDXt2g1AzdEFaE2MDmOZbjTzL2Q2igw3ZzpFXU1LM+3X1q4mBnfuqVEM
-# DXQlCf3neTHHAY06aQ3+qECLvQPmfN8kwijNGSb7wGsR+ZfdXaTog3O36r1R72HD
-# N0DZ0bgn6xD+/ejkiohI1E0QPFnoyFKrUiWLbO1HywKlj2Pho0mYHcpzeDKpr+kO
-# dbluAckvBgvKvgSFlgODDtUiv1wVvorHMoupeFIIK4RvgLdQ7cyWfHCNC5DePSUv
-# TMhc/57sEbUuBQG//I/eJD2Uo8fWxIPs2gbAWJTmU0/BOZyfziYEt8GQ41H3h4MT
-# oE4614GCardHQAdc8oStgr0hIcYAgina5I5wyQJSbgaO8Sc6IpSWWurvhTyyKa+P
-# xteI/pLnGh1PL4rbgSAup0CGxNB6N5Ty7GMNGjm682w5UiJUa6cn6tlmGm+dUBsX
-# 5iZceiB00REJ0F59jHWlp9K/PXq7lFZ20ksWmcpqMYD4VpGX8zBIntuDVPqAUNrz
-# zaZAKoWN9+MmGi69wUgib1yu0Rlhue4=
+# QYNzlmVUVwAJRVVJUkPSkVE6DBYwDQYJKoZIhvcNAQEBBQAEggIAsYtePFVAsaFw
+# cuFjD8pVM9acfUTL6g4fdJjNqWeS6r+7lvX3+//TjfZUO3WXWFOJSAI/Q0KRiyYN
+# B6lEhsZI68l8hfiWtUJK4r6mDwMylXCGQUVmcuMqdFuZw+Lks90ud+xLI9CEYpuD
+# E42ohTRufOe0pS+rY+hSnZoLYlYxDiGl1z56WNh498G2za3HuF8gbjPYcV8qX622
+# 6RDcEb+lmw4FP2j/6NwJbR5e4uR4ujtai0eIS/lTxjSRsivZlD0Uje16cTYI0Hi6
+# FQSRMNHjtAGD5msJTrXBblEejaIr4s7Z4DEuaqJIfOd83MyCNm/Ee2JlePWqBIcd
+# st3IvEEXdZXwXjQOlQTvLnt3ZLgxgGMH3AAcQybPyAhc1lHGP8WLDnhIbDdxa7Xu
+# djI7m/tUVHqBMT1FOWUDXHsxQ3yyBDVtnam/UaDZYPHIEPsw7bQPPYfffrpLUple
+# UsQgLOymuDdzqEZYJ7YG+eTRBlDrblOJsCuPqPnFWnbf7Lt+U6a5yLwommOOJP7H
+# KOgzjLWNvASYF+plWrLrYCBpIPItLRxyOFtC/9mDH9w8MBOQuOB5cwMTiY1AnGZF
+# uVUQF89PvCeTQYej0QScyK5/YV0n7TwAkLgDOzkNxjVjHilhD1t0wgZY7aBpfNli
+# 2Zekyg7V1eW14A0saDCKOludp9uiW0o=
 # SIG # End signature block

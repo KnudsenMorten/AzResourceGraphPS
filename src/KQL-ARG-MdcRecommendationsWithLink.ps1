@@ -1,12 +1,41 @@
-Function KQL-ARG-AzSubscriptions
+Function KQL-ARG-MdcRecommendationsWithLink
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
 
-"ResourceContainers `
-| where type =~ 'microsoft.resources/subscriptions' `
-| extend status = properties.state `
-| project id, subscriptionId, name, status | order by id, subscriptionId desc "
+"SecurityResources `
+| where type == 'microsoft.security/assessments' `
+| mvexpand Category=properties.metadata.categories `
+| extend AssessmentId=id, `
+    AssessmentKey=name, `
+    ResourceId=properties.resourceDetails.Id, `
+    ResourceIdsplit = split(properties.resourceDetails.Id,'/'), `
+	RecommendationId=name, `
+	RecommendationName=properties.displayName, `
+	Source=properties.resourceDetails.Source, `
+	RecommendationState=properties.status.code, `
+	ActionDescription=properties.metadata.description, `
+	AssessmentType=properties.metadata.assessmentType, `
+	RemediationDescription=properties.metadata.remediationDescription, `
+	PolicyDefinitionId=properties.metadata.policyDefinitionId, `
+	ImplementationEffort=properties.metadata.implementationEffort, `
+	RecommendationSeverity=properties.metadata.severity, `
+    Threats=properties.metadata.threats, `
+	UserImpact=properties.metadata.userImpact, `
+	AzPortalLink=properties.links.azurePortal, `
+	MoreInfo=properties `
+| extend ResourceSubId = tostring(ResourceIdsplit[(2)]), `
+    ResourceRgName = tostring(ResourceIdsplit[(4)]), `
+    ResourceType = tostring(ResourceIdsplit[(6)]), `
+    ResourceName = tostring(ResourceIdsplit[(8)]), `
+    FirstEvaluationDate = MoreInfo.status.firstEvaluationDate, `
+    StatusChangeDate = MoreInfo.status.statusChangeDate, `
+    Status = MoreInfo.status.code `
+| join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId `
+| where AssessmentType == 'BuiltIn' `
+| project-away kind,managedBy,sku,plan,tags,identity,zones,location,ResourceIdsplit,id,name,type,resourceGroup,subscriptionId, extendedLocation,subscriptionId1 `
+| project SubName, ResourceSubId, ResourceRgName,ResourceType,ResourceName,TenantId=tenantId, RecommendationName, RecommendationId, RecommendationState, RecommendationSeverity, AssessmentType, PolicyDefinitionId, ImplementationEffort, UserImpact, Category, Threats, Source, ActionDescription, RemediationDescription, MoreInfo, ResourceId, AzPortalLink, AssessmentKey `
+| where RecommendationState == 'Unhealthy' "
 
 # END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Return $Query
@@ -15,8 +44,8 @@ Return $Query
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUpUrDeQYI3IvWLlCTlavUKZYu
-# qPaggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQULRGVKxsqQRI7lu3NQLNfAWD8
+# jcWggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -95,16 +124,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# /SV7Vw2hYr3hekbdkHl0cIM02e0wDQYJKoZIhvcNAQEBBQAEggIAT/mChhTuul+d
-# 7DjUNIy0x8qak+vE/Sauf4dGep7WlCL738Gdc1sDmzg4vzDskCNJBHW+E+NQ8WTa
-# VuTaiIgnLptMYTIgUmgMViYBlIIJYyRsnFQyOgA2zwTjlRGNmNxZDqhIXS30xL6E
-# 1styoYCKmDXt2g1AzdEFaE2MDmOZbjTzL2Q2igw3ZzpFXU1LM+3X1q4mBnfuqVEM
-# DXQlCf3neTHHAY06aQ3+qECLvQPmfN8kwijNGSb7wGsR+ZfdXaTog3O36r1R72HD
-# N0DZ0bgn6xD+/ejkiohI1E0QPFnoyFKrUiWLbO1HywKlj2Pho0mYHcpzeDKpr+kO
-# dbluAckvBgvKvgSFlgODDtUiv1wVvorHMoupeFIIK4RvgLdQ7cyWfHCNC5DePSUv
-# TMhc/57sEbUuBQG//I/eJD2Uo8fWxIPs2gbAWJTmU0/BOZyfziYEt8GQ41H3h4MT
-# oE4614GCardHQAdc8oStgr0hIcYAgina5I5wyQJSbgaO8Sc6IpSWWurvhTyyKa+P
-# xteI/pLnGh1PL4rbgSAup0CGxNB6N5Ty7GMNGjm682w5UiJUa6cn6tlmGm+dUBsX
-# 5iZceiB00REJ0F59jHWlp9K/PXq7lFZ20ksWmcpqMYD4VpGX8zBIntuDVPqAUNrz
-# zaZAKoWN9+MmGi69wUgib1yu0Rlhue4=
+# B8AcEnxNcQpvnuUC88jVvqNBD9IwDQYJKoZIhvcNAQEBBQAEggIAGfk1qZHkAVDP
+# TOYSVZBmHxaZyghBa9X8d3uFm7rfeICydOIHm3Kv/CPM6OJvnE1gD4O7/q08DebS
+# 667ShqJmtLJWzwcvHj/Vl1d3Cjk7r10avaVv6BBNMq5m5UDyA55JLlSIB0cqarb3
+# vLRjOZfWD2I9/kSGWA1c4Uspd3GoCfpkJl8riaig+My3sf2USLps4coDdceWpjDy
+# zVkSvfSL9i3WDXPqkNBalYchaNneT0Smm0GmFXU4V2piUuQKJRsPGv1MuL4/pULo
+# 3qzWQeVnB3/wlYsEvAFbDdUOmIYbXrxgp9u/o+kWBoUQEMi4iMdvzGOMVyxETkzG
+# nfrUFVokbuQtnZy4qSxQtJySdQCzkyYdZ0OglRyq3zC6LgMB5YJYhgmW3KxELaoM
+# Wid4eQju9XXaSxrspuPf3NdEKxm2ackUlfd1eny2II+Stb0WMz0PsAU4pzWudbs5
+# yD6wauzj8zNCucpahrpbn5Lid1xNAalj1GYfOb/FUeeyQdaapQxFQPhbsEAkxL0h
+# 7pEsihy1ajyrWyMckaBiNoQs2Roy6UTVnEF7H4qHXuzMd6bIID4J9J7O8UChs96N
+# eQltHMlr+RANUua/HdH/64wHp5ZfKWI4PHgWg6EFeFOy4/9t9b+lDvkXqh/rV6fo
+# 1mJBIUJOL+h1D1K+mcSmoiyKy30covA=
 # SIG # End signature block

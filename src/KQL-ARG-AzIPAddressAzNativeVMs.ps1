@@ -1,12 +1,24 @@
-Function KQL-ARG-AzSubscriptions
+Function KQL-ARG-AzIPAddressAzNativeVMs
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
 
-"ResourceContainers `
-| where type =~ 'microsoft.resources/subscriptions' `
-| extend status = properties.state `
-| project id, subscriptionId, name, status | order by id, subscriptionId desc "
+"Resources `
+| where type =~ 'microsoft.compute/virtualmachines' `
+| project id, vmId = tolower(tostring(id)), vmName = name `
+| join (Resources `
+    | where type =~ 'microsoft.network/networkinterfaces' `
+    | mv-expand ipconfig=properties.ipConfigurations `
+    | project vmId = tolower(tostring(properties.virtualMachine.id)), privateIp = ipconfig.properties.privateIPAddress, publicIpId = tostring(ipconfig.properties.publicIPAddress.id) `
+    | join kind=leftouter (Resources `
+        | where type =~ 'microsoft.network/publicipaddresses' `
+        | project publicIpId = id, publicIp = properties.ipAddress `
+    ) on publicIpId `
+    | project-away publicIpId, publicIpId1 `
+    | summarize privateIps = make_list(privateIp), publicIps = make_list(publicIp) by vmId `
+) on vmId `
+| project-away vmId, vmId1 `
+| sort by vmName asc "
 
 # END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Return $Query
@@ -15,8 +27,8 @@ Return $Query
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUpUrDeQYI3IvWLlCTlavUKZYu
-# qPaggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUFlr33F9iFCc83AOOUkjK+0m2
+# EY+ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -95,16 +107,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# /SV7Vw2hYr3hekbdkHl0cIM02e0wDQYJKoZIhvcNAQEBBQAEggIAT/mChhTuul+d
-# 7DjUNIy0x8qak+vE/Sauf4dGep7WlCL738Gdc1sDmzg4vzDskCNJBHW+E+NQ8WTa
-# VuTaiIgnLptMYTIgUmgMViYBlIIJYyRsnFQyOgA2zwTjlRGNmNxZDqhIXS30xL6E
-# 1styoYCKmDXt2g1AzdEFaE2MDmOZbjTzL2Q2igw3ZzpFXU1LM+3X1q4mBnfuqVEM
-# DXQlCf3neTHHAY06aQ3+qECLvQPmfN8kwijNGSb7wGsR+ZfdXaTog3O36r1R72HD
-# N0DZ0bgn6xD+/ejkiohI1E0QPFnoyFKrUiWLbO1HywKlj2Pho0mYHcpzeDKpr+kO
-# dbluAckvBgvKvgSFlgODDtUiv1wVvorHMoupeFIIK4RvgLdQ7cyWfHCNC5DePSUv
-# TMhc/57sEbUuBQG//I/eJD2Uo8fWxIPs2gbAWJTmU0/BOZyfziYEt8GQ41H3h4MT
-# oE4614GCardHQAdc8oStgr0hIcYAgina5I5wyQJSbgaO8Sc6IpSWWurvhTyyKa+P
-# xteI/pLnGh1PL4rbgSAup0CGxNB6N5Ty7GMNGjm682w5UiJUa6cn6tlmGm+dUBsX
-# 5iZceiB00REJ0F59jHWlp9K/PXq7lFZ20ksWmcpqMYD4VpGX8zBIntuDVPqAUNrz
-# zaZAKoWN9+MmGi69wUgib1yu0Rlhue4=
+# f77ZAaF5j4lJUX1UHL5j/dGimbcwDQYJKoZIhvcNAQEBBQAEggIAm/U8K5mxpbh1
+# YwMrcSSiYVE4rlhJgCGRMil43P998YKkzyV4Ss3jNS81D1U5gtH0faP1Fwyf/fbE
+# iJtKWPmRKJZAxOWqTS6cozuAOG9JB02Kik9JUbIcJ4nPPYdo97d4o28YIsEeT+oI
+# lZynN06oPp5xGQgREK8Pxt5L6BCuK49W6g0r70XAGJDD56btENnM2NfpswtAqMV1
+# KSPHm7VNt0tuN9gsXL0d4J7sLtgcEAbJH0Tz062E2SIFxOWkIaXM3cpt4lMvBXG/
+# Pv5218Ri5jNQIQ5rBCYQmfH1rRe0OwUMSzR0jqAA+ZvBhB52nP8c418kbvbW1qS7
+# mSexE8X3iepV1JN5l0kr2Py0cwUc6mpdsIDAEyRlf3pZsjo4oTkK+PyC5eG1jJBq
+# MFPkcBty7Qor7C7RIOMoZ74C1GylXtRzKn2gvOLHpnnJA+Y2t9lpLHvwLq8pC7GN
+# O6X3cHyMof/4qtULyWoOYc6nR1TVa6RNVpZA4N6oRnpmDbzSBHzCHcSSagWVeNRD
+# zY+nh8UxKmuOXMJSpmCP4b8HJW24l106osEaPig/PxgD1V+WLpNxdlfhARvmw7fU
+# SvcjOpuNhrRqpk56f6Mgwvn1Man2GXal3cXws2N4ypeiMlTb30pGdGQWI/PwwVy0
+# 0DstjbaZZMluXt3LXaoVlXbGLmEEk3A=
 # SIG # End signature block

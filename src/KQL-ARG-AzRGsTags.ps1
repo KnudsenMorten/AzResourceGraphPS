@@ -1,12 +1,13 @@
-Function KQL-ARG-AzSubscriptions
+Function KQL-ARG-AzRGsTags
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
 
-"ResourceContainers `
-| where type =~ 'microsoft.resources/subscriptions' `
-| extend status = properties.state `
-| project id, subscriptionId, name, status | order by id, subscriptionId desc "
+"resourcecontainers `
+| project id,name,type,location,resourceGroup,subscriptionId,tags `
+| mvexpand tags `
+| extend tagKey = tostring(bag_keys(tags)[0]) `
+| extend tagValue = tostring(tags[tagKey]) "
 
 # END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Return $Query
@@ -15,8 +16,8 @@ Return $Query
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUpUrDeQYI3IvWLlCTlavUKZYu
-# qPaggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUB6BKcEZzveAUCLBcs2QQ9Hqe
+# jgmggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -95,16 +96,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# /SV7Vw2hYr3hekbdkHl0cIM02e0wDQYJKoZIhvcNAQEBBQAEggIAT/mChhTuul+d
-# 7DjUNIy0x8qak+vE/Sauf4dGep7WlCL738Gdc1sDmzg4vzDskCNJBHW+E+NQ8WTa
-# VuTaiIgnLptMYTIgUmgMViYBlIIJYyRsnFQyOgA2zwTjlRGNmNxZDqhIXS30xL6E
-# 1styoYCKmDXt2g1AzdEFaE2MDmOZbjTzL2Q2igw3ZzpFXU1LM+3X1q4mBnfuqVEM
-# DXQlCf3neTHHAY06aQ3+qECLvQPmfN8kwijNGSb7wGsR+ZfdXaTog3O36r1R72HD
-# N0DZ0bgn6xD+/ejkiohI1E0QPFnoyFKrUiWLbO1HywKlj2Pho0mYHcpzeDKpr+kO
-# dbluAckvBgvKvgSFlgODDtUiv1wVvorHMoupeFIIK4RvgLdQ7cyWfHCNC5DePSUv
-# TMhc/57sEbUuBQG//I/eJD2Uo8fWxIPs2gbAWJTmU0/BOZyfziYEt8GQ41H3h4MT
-# oE4614GCardHQAdc8oStgr0hIcYAgina5I5wyQJSbgaO8Sc6IpSWWurvhTyyKa+P
-# xteI/pLnGh1PL4rbgSAup0CGxNB6N5Ty7GMNGjm682w5UiJUa6cn6tlmGm+dUBsX
-# 5iZceiB00REJ0F59jHWlp9K/PXq7lFZ20ksWmcpqMYD4VpGX8zBIntuDVPqAUNrz
-# zaZAKoWN9+MmGi69wUgib1yu0Rlhue4=
+# j7YMN+rfGxsSVrwfV65IPIb7xFAwDQYJKoZIhvcNAQEBBQAEggIAE1VyATq4Tlst
+# u7pWPTwNjiWuP/8RR+sutjQ8IzqKfbgYCmWL8PivEIsRKWm1ngArTRPXwtcAd6zW
+# VWgCwSXsI0Z+pqRWD5cop2+BR2p4uoZma9cjuYQhIsSYi5gsz2uzwSdcZDAWD1+g
+# 3456dFnm+Q3PPZ7fgeDjGlp86N8LEOYstSGnJdKJHOVgpi4hp0lBsAKyGp9hq9mp
+# nJBiepZ5Px5RoDCi5rMTDKaDKSEHsaRrsibjNnztI6g2S4aUYZ+mWGfhnVb3J1Wu
+# +MuDncABUnFEUC2p/mMgJn6Q+R/w7CLCCbAZxVy9D13lffKXjoCidFrQ5oZjySg0
+# MNX2hBOMLg/OiploPnncTMIrPMg8c+hmqA3qhSHjhrR3CUYJ7ZUDz3YFyMXuPY+z
+# kQy9Va8wagB/C9qlB6MSwnqC7/HeNfdzWELq9qpMUfzqoUmbtToJ9RXPlXPGBdzQ
+# 0RcRp5a7w6szAc/9DCOAqOL7p7KYLAidmljm39fN5T10Awdg7xO/pONxfC7Xr33k
+# +Mjh5/qcZzwUiPQiBspFweMMeanbxts7z5WBZcSHPZkxnyh3T8DJEPtMg2vzCovY
+# wRhddb+CmWz0FYbVCcwi4xIHXip4+2pl1F1FD+YcK1Qf2YcqaGwI9q16sFV3g0VB
+# HWl1v8x0KiIoAGJ0OCW9g97kLDYpBz8=
 # SIG # End signature block

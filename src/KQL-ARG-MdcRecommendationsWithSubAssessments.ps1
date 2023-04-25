@@ -1,12 +1,61 @@
-Function KQL-ARG-AzSubscriptions
+Function KQL-ARG-MdcRecommendationsWithSubAssessments
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
 
-"ResourceContainers `
-| where type =~ 'microsoft.resources/subscriptions' `
-| extend status = properties.state `
-| project id, subscriptionId, name, status | order by id, subscriptionId desc "
+"SecurityResources `
+| where type == 'microsoft.security/assessments' `
+| mvexpand Category=properties.metadata.categories `
+| extend AssessmentId=id, `
+    AssessmentKey=name, `
+    ResourceId=properties.resourceDetails.Id, `
+    ResourceIdsplit = split(properties.resourceDetails.Id,'/'), `
+	RecommendationId=name, `
+	RecommendationName=properties.displayName, `
+	Source=properties.resourceDetails.Source, `
+	RecommendationState=properties.status.code, `
+	ActionDescription=properties.metadata.description, `
+	AssessmentType=properties.metadata.assessmentType, `
+	RemediationDescription=properties.metadata.remediationDescription, `
+	PolicyDefinitionId=properties.metadata.policyDefinitionId, `
+	ImplementationEffort=properties.metadata.implementationEffort, `
+	RecommendationSeverity=properties.metadata.severity, `
+    Threats=properties.metadata.threats, `
+	UserImpact=properties.metadata.userImpact, `
+	AzPortalLink=properties.links.azurePortal, `
+	MoreInfo=properties `
+| extend ResourceSubId = tostring(ResourceIdsplit[(2)]), `
+    ResourceRgName = tostring(ResourceIdsplit[(4)]), `
+    ResourceType = tostring(ResourceIdsplit[(6)]), `
+    ResourceName = tostring(ResourceIdsplit[(8)]), `
+    FirstEvaluationDate = MoreInfo.status.firstEvaluationDate, `
+    StatusChangeDate = MoreInfo.status.statusChangeDate, `
+    Status = MoreInfo.status.code `
+| join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId `
+| where AssessmentType == 'BuiltIn' `
+| project-away kind,managedBy,sku,plan,tags,identity,zones,location,ResourceIdsplit,id,name,type,resourceGroup,subscriptionId, extendedLocation,subscriptionId1 `
+| project SubName, ResourceSubId, ResourceRgName,ResourceType,ResourceName,TenantId=tenantId, RecommendationName, RecommendationId, RecommendationState, RecommendationSeverity, AssessmentType, PolicyDefinitionId, ImplementationEffort, UserImpact, Category, Threats, Source, ActionDescription, RemediationDescription, MoreInfo, ResourceId, AzPortalLink, AssessmentKey `
+| where RecommendationState == 'Unhealthy' `
+| join kind=leftouter (
+	securityresources
+	| where type == 'microsoft.security/assessments/subassessments'
+	| extend AssessmentKey = extract('.*assessments/(.+?)/.*',1,  id)
+        | project AssessmentKey, subassessmentKey=name, id, parse_json(properties), resourceGroup, subscriptionId, tenantId
+        | extend SubAssessmentSescription = properties.description,
+            SubAssessmentDisplayName = properties.displayName,
+            SubAssessmentResourceId = properties.resourceDetails.id,
+            SubAssessmentResourceSource = properties.resourceDetails.source,
+            SubAssessmentCategory = properties.category,
+            SubAssessmentSeverity = properties.status.severity,
+            SubAssessmentCode = properties.status.code,
+            SubAssessmentTimeGenerated = properties.timeGenerated,
+            SubAssessmentRemediation = properties.remediation,
+            SubAssessmentImpact = properties.impact,
+            SubAssessmentVulnId = properties.id,
+            SubAssessmentMoreInfo = properties.additionalData,
+            SubAssessmentMoreInfoAssessedResourceType = properties.additionalData.assessedResourceType,
+            SubAssessmentMoreInfoData = properties.additionalData.data
+) on AssessmentKey"
 
 # END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Return $Query
@@ -15,8 +64,8 @@ Return $Query
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUpUrDeQYI3IvWLlCTlavUKZYu
-# qPaggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUZOM8udl2tkSvSAIvCfaNl8Ic
+# QzOggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -95,16 +144,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# /SV7Vw2hYr3hekbdkHl0cIM02e0wDQYJKoZIhvcNAQEBBQAEggIAT/mChhTuul+d
-# 7DjUNIy0x8qak+vE/Sauf4dGep7WlCL738Gdc1sDmzg4vzDskCNJBHW+E+NQ8WTa
-# VuTaiIgnLptMYTIgUmgMViYBlIIJYyRsnFQyOgA2zwTjlRGNmNxZDqhIXS30xL6E
-# 1styoYCKmDXt2g1AzdEFaE2MDmOZbjTzL2Q2igw3ZzpFXU1LM+3X1q4mBnfuqVEM
-# DXQlCf3neTHHAY06aQ3+qECLvQPmfN8kwijNGSb7wGsR+ZfdXaTog3O36r1R72HD
-# N0DZ0bgn6xD+/ejkiohI1E0QPFnoyFKrUiWLbO1HywKlj2Pho0mYHcpzeDKpr+kO
-# dbluAckvBgvKvgSFlgODDtUiv1wVvorHMoupeFIIK4RvgLdQ7cyWfHCNC5DePSUv
-# TMhc/57sEbUuBQG//I/eJD2Uo8fWxIPs2gbAWJTmU0/BOZyfziYEt8GQ41H3h4MT
-# oE4614GCardHQAdc8oStgr0hIcYAgina5I5wyQJSbgaO8Sc6IpSWWurvhTyyKa+P
-# xteI/pLnGh1PL4rbgSAup0CGxNB6N5Ty7GMNGjm682w5UiJUa6cn6tlmGm+dUBsX
-# 5iZceiB00REJ0F59jHWlp9K/PXq7lFZ20ksWmcpqMYD4VpGX8zBIntuDVPqAUNrz
-# zaZAKoWN9+MmGi69wUgib1yu0Rlhue4=
+# lV5ctszIk6YT5OlRrb6862aobLkwDQYJKoZIhvcNAQEBBQAEggIAY1U78gqB8pbK
+# r2I4Qy7z00fGvCgEJqdBKRas1sEsXX1WA2VqzvLO9SKY4j8GS7lAnyWz3DDNfyvK
+# QgHsZAtuzdBggmec88FMHD+vYHJfuXPtExo8mIq17eZAq0LPnZIUad8gUrrv96Pp
+# 01/Rk4lm3vxwvK8BnjsVLRt92u8SJe9HWU6VXZ96uLUcU8hK375z8Rz2Jp2ePsob
+# eEq1v4cmrg40HP1SWP+ZYTohY9j0s7WAdVZ7lzTjUWXYcdxojtV+H5BaK/AUMbUl
+# Il4j0gtwL3o97Twy0wJm/+/P94r7Hy1XHikbDwnCIQUbkrgm1tq0K2d+y0vyOjkw
+# tOdzo9sMNLTWJwcrAGyyP/wEh49L3c7+VhCQ1NQ5Q1D+o6IipDyp4kSblkDbmPdZ
+# XcqAm5BphtjRf2KlfmV0hPUg/LnWPZHBAC+9dUtdl9hCpNX+VWlzwViFNXdWGRx3
+# qH6W7llcIz6a8QWVKNiTNewAifps4txS6l/dG9uMp2WJmyS3/z0rp+gZjm4abqrf
+# kMka9Neh+bdJYVxGDeZ9wnYqHb29+1JsQSnU2sUdxGcSkVDFvRK+i+K8CfjJfh8W
+# Lv9lpFlh86yTDYIWHRSqILnKh6MgYNoSY0AntUDfZ35QDm++90BuinipzwkW9K7W
+# n6NZvkmXlb6eaDsjG9TiUogNIDXynXU=
 # SIG # End signature block

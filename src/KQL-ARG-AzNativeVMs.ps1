@@ -1,12 +1,17 @@
-Function KQL-ARG-AzSubscriptions
+Function KQL-ARG-AzNativeVMs
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $Query = `
 
-"ResourceContainers `
-| where type =~ 'microsoft.resources/subscriptions' `
-| extend status = properties.state `
-| project id, subscriptionId, name, status | order by id, subscriptionId desc "
+"Resources `
+| where type == `"microsoft.compute/virtualmachines`" `
+| extend osType = properties.storageProfile.osDisk.osType `
+| extend osVersion = properties.extended.instanceView.osVersion `
+| extend osName = properties.extended.instanceView.osName `
+| extend vmName = properties.osProfile.computerName `
+| extend licenseType = properties.licenseType `
+| extend PowerState = properties.extended.instanceView.powerState.displayStatus `
+| order by id, resourceGroup desc "
 
 # END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Return $Query
@@ -15,8 +20,8 @@ Return $Query
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUpUrDeQYI3IvWLlCTlavUKZYu
-# qPaggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUEsQF0OCyywGHnhmVCo+ZkxJ9
+# 9ICggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -95,16 +100,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# /SV7Vw2hYr3hekbdkHl0cIM02e0wDQYJKoZIhvcNAQEBBQAEggIAT/mChhTuul+d
-# 7DjUNIy0x8qak+vE/Sauf4dGep7WlCL738Gdc1sDmzg4vzDskCNJBHW+E+NQ8WTa
-# VuTaiIgnLptMYTIgUmgMViYBlIIJYyRsnFQyOgA2zwTjlRGNmNxZDqhIXS30xL6E
-# 1styoYCKmDXt2g1AzdEFaE2MDmOZbjTzL2Q2igw3ZzpFXU1LM+3X1q4mBnfuqVEM
-# DXQlCf3neTHHAY06aQ3+qECLvQPmfN8kwijNGSb7wGsR+ZfdXaTog3O36r1R72HD
-# N0DZ0bgn6xD+/ejkiohI1E0QPFnoyFKrUiWLbO1HywKlj2Pho0mYHcpzeDKpr+kO
-# dbluAckvBgvKvgSFlgODDtUiv1wVvorHMoupeFIIK4RvgLdQ7cyWfHCNC5DePSUv
-# TMhc/57sEbUuBQG//I/eJD2Uo8fWxIPs2gbAWJTmU0/BOZyfziYEt8GQ41H3h4MT
-# oE4614GCardHQAdc8oStgr0hIcYAgina5I5wyQJSbgaO8Sc6IpSWWurvhTyyKa+P
-# xteI/pLnGh1PL4rbgSAup0CGxNB6N5Ty7GMNGjm682w5UiJUa6cn6tlmGm+dUBsX
-# 5iZceiB00REJ0F59jHWlp9K/PXq7lFZ20ksWmcpqMYD4VpGX8zBIntuDVPqAUNrz
-# zaZAKoWN9+MmGi69wUgib1yu0Rlhue4=
+# tGDvqNn8GOLikJIX3VjsG2FMqkkwDQYJKoZIhvcNAQEBBQAEggIAj2FqhUyZi/cm
+# +XEHtnoArA6mva9uZ6Rmsin0vQGEn+9ta0cUTUlsCt53ia3aE5M6uVOhmabYjziV
+# agRCawgndOrGeLmHu5lRtK61xJI/BxwlKkI0N9brDHwHE2MlHZTTDwzNB+GFmVuP
+# sw9RNxxXAdrDGttCNp8nniexoQELqjX2F36yT+xcAIR6Izu7+LX2xOtk7TlfzfBy
+# u0RkN5JYZRrasxIlJKndQr9gbf5Cy3c7GZkNP7AL2fx8ZJ9Y2iln56G0Fr1cf6x+
+# bVqh0PTa83xOEu1ywOBuXfKrMwBC9QN4nF9L/kmsTGLbdQTcfDoHWOhx4oAYfq4N
+# coytakZ1EDKRE/SP+omD4RVzT5tuqOLDfb6d8MubTslebJS9uFKOC11B+xgrpr73
+# n8yE9eL0SePUDOm934cyqqvS4wsHnrM1XG0KqhNsSuTrNeCUm3zLuf1j73cEN/Y7
+# +m5xNLX+y9lYGLpKU1bI+EWIyr4Z1bILXPznog3FJQx+lR+MjD9eHVU5ktOw1Mr8
+# 8XBQF6qi6k/BLF2w1qKzJvHItnLGTFQxA982cY6iL/Mhr8wP2aiLoaRaw8kQklEo
+# xe+M8MN+s1597Uz7uHI0dAPOlV3oJP/1bjvRjlTj1FvLVOD2fdrvtkfC81woViJZ
+# wXUWiiA2liSjQT9jt5hhfLw7XK2Ko7Q=
 # SIG # End signature block
