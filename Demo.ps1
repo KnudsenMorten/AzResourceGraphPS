@@ -2,31 +2,10 @@
 
 <#
     .NAME
-    ClientInspector
+    AzResourceGraph-Demo
 
     .SYNOPSIS
-    This script will collect lots of information from the client - and send the data Azure LogAnalytics Custom Tables.
-    The upload happens via Log Ingestion API, Azure Data Collection Rules (DCR) and Azure Data Collection Endpoints.
-    
-    The script collects the following information (settings, information, configuration, state):
-        (1)   User Logged On to Client
-        (2)   Computer information - bios, processor, hardware info, Windows OS info, OS information, last restart
-        (3)   Installed applications, both using WMI and registry
-        (4)   Antivirus Security Center from Windows - default antivirus, state, configuration
-        (5)   Microsoft Defender Antivirus - all settings including ASR, exclusions, realtime protection, etc
-        (6)   Office - version, update channel config, SKUs
-        (7)   VPN client - version, product
-        (8)   LAPS - version
-        (9)   Admin By Request (3rd party) - version
-        (10)  Windows Update - last result (when), windows update source information (where), pending updates, last installations (what)
-        (11)  Bitlocker - configuration
-        (12)  Eventlog - look for specific events including logon events, blue screens, etc.
-        (13)  Network adapters - configuration, installed adapters
-        (14)  IP information for all adapters
-        (15)  Local administrators group membership
-        (16)  Windows firewall - settings for all 3 modes
-        (17)  Group Policy - last refresh
-        (18)  TPM information - relavant to detect machines with/without TPM
+    This script will demonstrate how you can retrieve data from Azure Resource Graph using pre-defined queries.
     
     .AUTHOR
     Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
@@ -35,19 +14,9 @@
     Licensed under the MIT license.
 
     .PROJECTURI
-    https://github.com/KnudsenMorten/ClientInspectorV2
+    https://github.com/KnudsenMorten/AzResourceGraphPS
 
     .EXAMPLE
-    .\ClientInspector.ps1 -function:localpath
-
-    .EXAMPLE
-    .\ClientInspector.ps1 -function:download
-
-    .EXAMPLE
-    .\ClientInspector.ps1 -function:localpath -verbose:$true
-
-    .EXAMPLE
-    .\ClientInspector.ps1 -verbose:$false -function:psgallery -Scope:currentuser
 
     .WARRANTY
     Use at your own risk, no warranty given!
@@ -63,7 +32,7 @@ param(
      )
 
 Write-Output ""
-Write-Output "ClientInspector | Inventory of Operational & Security-related information"
+Write-Output "AzResourceGraphPS | DEMO"
 Write-Output "Developed by Morten Knudsen, Microsoft MVP"
 Write-Output ""
   
@@ -71,19 +40,6 @@ Write-Output ""
 ############################################################################################################################################
 # FUNCTIONS
 ############################################################################################################################################
-
-    $PowershellVersion  = [version]$PSVersionTable.PSVersion
-    If ([Version]$PowershellVersion -ge "5.1")
-        {
-            $PS_WMF_Compliant  = $true
-            $EnableUploadViaLogHub  = $false
-        }
-    Else
-        {
-            $PS_WMF_Compliant  = $false
-            $EnableUploadViaLogHub  = $true
-            Import-module "$($LogHubPsModulePath)\AzResourceGraphPS.psm1" -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
-        }
 
     # directory where the script was started
     $ScriptDirectory = $PSScriptRoot
@@ -196,51 +152,58 @@ Write-Output ""
         }
 
 
-
-install-module AzResourceGraphPS
-Update-module AzResourceGraphPS
+############################################################################################################################################
+# MAIN PROGRAM
+############################################################################################################################################
 
 Connect-AzAccount
 
-# get query into variable $QueryParams
-$QueryParams = Get-ARG-AzRoleAssignments
+#---------------------------------------------------------------------------------------------                          
+# Azure Management Group - with parent/Hierarchy
+#---------------------------------------------------------------------------------------------                          
+    
+    # Get all management groups from tenant
+    KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant"
 
-# Query azure Resource Graph (ARG)
-Query-AzureResourceGraph -DataType $QueryParams[0] `
-                         -Query $QueryParams[1] `
-                         -Scope "MG" `
-                         -ScopeTarget "mg-2linkit" `
-                         -IncludeScopeRoot $IncludeScopeRoot `
-                         
-# Query azure Resource Graph (ARG) - return first 5
-Query-AzureResourceGraph -DataType $QueryParams[0] `
-                         -Query $QueryParams[1] `
-                         -Scope "MG" `
-                         -ScopeTarget "mg-2linkit" `
-                         -First 5
-                          
+    # Get all management groups from tenant - only show first 3
+    KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant" `
+                                                                -First 3
 
-# AzSubscriptions (Subscriptions)
+
+    # Get all management groups from tenant - format table
+    $Result = KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant"
+    $Result | ft
+
+
+    # Get all management groups under management group '2linkit' (including itself)
+    KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
+                                                                -ScopeTarget "2linkit"
+
+    # Get all management groups under management group '2linkit' - skip first 3
+    KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
+                                                                -ScopeTarget "2linkit" `
+                                                                -Skip 3
+
+    # Get all management groups under management group '2linkit' - only show first 3
+    KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
+                                                                -ScopeTarget "2linkit" `
+                                                                -First 3
+
+
+#---------------------------------------------------------------------------------------------                          
+# Azure Subscriptions
+#---------------------------------------------------------------------------------------------                          
     KQL-ARG-AzSubscriptions | Query-AzureResourceGraph -Scope "Tenant" `
 
     KQL-ARG-AzSubscriptions | Query-AzureResourceGraph -Scope "MG" `
                                                        -ScopeTarget "2linkit" `
 
+#---------------------------------------------------------------------------------------------                          
 # AzRoleAssignments (Role Assignments)
+#---------------------------------------------------------------------------------------------                          
     KQL-ARG-AzRoleAssignments | Query-AzureResourceGraph -Scope "MG" `
                                                          -ScopeTarget "2linkit"
 
-# AzMGsWithParentHierarchy (Management Group)
-    KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
-                                                                -ScopeTarget "2linkit" `
-                                                                -Skip 3
-
-    KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
-                                                                -ScopeTarget "2linkit" `
-                                                                -First 3
-
-    KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
-                                                                -ScopeTarget "2linkit"
-
-    KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant"
-
+    KQL-ARG-AzRoleAssignments | Query-AzureResourceGraph -Scope "MG" `
+                                                         -ScopeTarget "2linkit" `
+                                                         -First 5
