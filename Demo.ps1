@@ -199,7 +199,7 @@ Connect-AzAccount
                                                        -ScopeTarget "2linkit" `
 
 #---------------------------------------------------------------------------------------------                          
-# AzRoleAssignments (Role Assignments)
+# Azure Role Assignments
 #---------------------------------------------------------------------------------------------                          
     KQL-ARG-AzRoleAssignments | Query-AzureResourceGraph -Scope "MG" `
                                                          -ScopeTarget "2linkit"
@@ -207,3 +207,21 @@ Connect-AzAccount
     KQL-ARG-AzRoleAssignments | Query-AzureResourceGraph -Scope "MG" `
                                                          -ScopeTarget "2linkit" `
                                                          -First 5
+
+#---------------------------------------------------------------------------------------------                          
+# Azure Resource Groups
+#---------------------------------------------------------------------------------------------                          
+    KQL-ARG-AzRGs | Query-AzureResourceGraph -Scope "Sub" `
+                                             -ScopeTarget "fce4f282-fcc6-43fb-94d8-bf1701b862c3" `
+                                             -First 5
+
+
+####################
+# HELP
+####################
+
+# If you want to see which cmdlets are available by the version of the module, you can run the get-command
+get-command -module azresourcegraphps
+
+# Get help with a specific cmdlet with the command get-help Query-AzureResourceGraph -full
+get-help Query-AzureResourceGraph -full

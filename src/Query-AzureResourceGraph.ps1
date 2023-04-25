@@ -1,5 +1,88 @@
 Function Query-AzureResourceGraph
 {
+ <#
+    .SYNOPSIS
+    Runs the query against Azure Resource Graph and returns the result
+
+    .DESCRIPTION
+    You will pipe the query into function. Function will then run query against Azure Resource Graph, based on MG, Tenant or Subscription scope.
+
+    .PARAMETER Scope
+    You can choose between MG, Tenant or Subscription (or Sub as alias). If you don't choose Scope, then tenant is default.
+    If you choose MG, you will define a MG, which will be the root for query and all sub-MGs will be included
+    If you choose SUB, you will define a Subscription, which will be queried (only)
+    If you choose Tenant, you will search the entire tenant
+
+    .PARAMETER ScopeTarget
+    If you choose MG, you will put in the mg-name like mg-2linkit. This MG will be the root for query and all sub-MGs will be included
+    If you choose Subscription, you will put in the subscription-name or subscription-id
+    If you choose Tenant, you will search the entire tenant and will NOT use ScopeTarget-parameter
+
+    .INPUTS
+    Yes, yu can pipe query data into function
+
+    .OUTPUTS
+    Results from Azure Resource Graph, based on the defined parameters.
+
+    .LINK
+    https://github.com/KnudsenMorten/AzResourceGraphPS
+
+    .EXAMPLE
+    Connect-AzAccount
+
+    #---------------------------------------------------------------------------------------------                          
+    # Azure Management Group - with parent/Hierarchy
+    #---------------------------------------------------------------------------------------------                          
+    
+        # Get all management groups from tenant
+        KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant"
+
+        # Get all management groups from tenant - only show first 3
+        KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant" `
+                                                                    -First 3
+
+
+        # Get all management groups from tenant - format table
+        $Result = KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant"
+        $Result | ft
+
+
+        # Get all management groups under management group '2linkit' (including itself)
+        KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
+                                                                    -ScopeTarget "2linkit"
+
+        # Get all management groups under management group '2linkit' - skip first 3
+        KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
+                                                                    -ScopeTarget "2linkit" `
+                                                                    -Skip 3
+
+        # Get all management groups under management group '2linkit' - only show first 3
+        KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
+                                                                    -ScopeTarget "2linkit" `
+                                                                    -First 3
+
+
+    #---------------------------------------------------------------------------------------------                          
+    # Azure Subscriptions
+    #---------------------------------------------------------------------------------------------                          
+        KQL-ARG-AzSubscriptions | Query-AzureResourceGraph -Scope "Tenant" `
+
+        KQL-ARG-AzSubscriptions | Query-AzureResourceGraph -Scope "MG" `
+                                                           -ScopeTarget "2linkit" `
+
+    #---------------------------------------------------------------------------------------------                          
+    # AzRoleAssignments (Role Assignments)
+    #---------------------------------------------------------------------------------------------                          
+        KQL-ARG-AzRoleAssignments | Query-AzureResourceGraph -Scope "MG" `
+                                                             -ScopeTarget "2linkit"
+
+        KQL-ARG-AzRoleAssignments | Query-AzureResourceGraph -Scope "MG" `
+                                                             -ScopeTarget "2linkit" `
+                                                             -First 5
+
+
+ #>
+
     [CmdletBinding()]
     param(
             [Parameter(Mandatory,ValueFromPipeline)]
@@ -45,7 +128,7 @@ Function Query-AzureResourceGraph
                 } 
             while ($pageResults.Count -eq $pageSize)
         }
-    ElseIf ($Scope -eq "Sub") # Subscription(s) to run query against
+    ElseIf ( ($Scope -eq "Subscription") -or ($Scope -eq "Sub") ) # Subscription(s) to run query against
         {
             do 
                 {
@@ -85,8 +168,8 @@ Function Query-AzureResourceGraph
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUIQDXdHMFq4n+mJ5uDW5nVObi
-# Rp+ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU7wnFj2Ksr1ooifAiCOqtyXEC
+# CEuggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -165,16 +248,16 @@ Function Query-AzureResourceGraph
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# irlfZeL5RkDxQlmTRyKzLjLe9acwDQYJKoZIhvcNAQEBBQAEggIAL/Z8UH9pxwTj
-# U4/2ofmTfr8qCZa2FZAzj6lHdFvyNUWtPjts7z1Zcn7isOeNhhzBVAz5FylLCM79
-# g1E86dhjZTSor2mBiwXaXZ1Fa1DcY1+rbNhIax7h4nos9E7eko+HhHgcv5Cl+GCm
-# SYxT8DbhlJs13wBRe36GSCXpNv7lV0fAVl5m1xp80CIomkRWb0DgVQ5AsVhTOdIM
-# OwcPEUl6pw8IFBnixL4W+iA3SC2S1ybywJK050WLTfirJzlhde/Sw03uyP+gyjMy
-# LqQ+V4kTVlS0Oi9q9LUDwWXPBeRycll5faT6In86XjaBYbf/TM0onqbfap11PFal
-# fYW6H+DtJx5/AYkVomr2sSUvnwLEPTvSJI+SrSMmC/T9cl8qNxAFh/Z3TvH/eRRq
-# UOvwsv5nGmOGeOPEj6UR10xw/bE5GZ0XOgjNpD4vv4jWhGAIawf2I/6It3PQQO+f
-# 3ZteN/5kYh9QwgKcEVm4Wtg/oqQyE06yo6VbloUGslJEu49OOoS0kGKrJUIK/8UB
-# Jce9RgNBTzBhlWax2hSqpB1/54d0aEP1gt3E8WUuXvEIPpPd7aFmU3Nywmkw48c3
-# N+p5Ol79z1PMAXFa7RbWW7I7Pad9/3SNU8JNKyMVuxnAFQRGHfuQ2n9MnoA1JnGR
-# ErkRjG/z8xcEO0mG1crapoFiYOiUto8=
+# 8N5Pm46XXRX0Y6P2XKH6Ioc90a4wDQYJKoZIhvcNAQEBBQAEggIAyu4GpEjXZzmk
+# HeLLOOidAGq53YasPz6xQrDRa9WF4Y23/FMR5JyR3BR+OOHM3JzuxwIPOpRiJY7Y
+# SJ/SGRVjpEtsyz0jxO2zBFWeLXGUkp5k9CUu63/WniBQyEMLSrP0xfA9Axuaow9b
+# yBZd4iscuzsh6WTObJ/QaE1aPxsdDIVwyQ1pd6Dy6pgn5hxi8OzD0FLn9g6v4oBW
+# i/aNnK3pYXjHTM3LjxplnO7zNOb5lmOtxeuRNyKYL8iqr2y5QoWJx2eiWnDL4gOK
+# wb496qW07aG2+DSQz+XOTszFX0NavFt65r3Ogi8++NsR1vH/SLNnI0crkj6LV2b0
+# 5IR9VZWNEXVqd/DJSmLI5zlwCjwDnbmd7ip8or6sSQ5jFFP6E+QITWaYYo4foQlg
+# 1JhYgRMzF5gSAQVDhTMc1/pCCi/RatqPfiBSIN9xhDiUDgG0OBA9l7Lip5G09MAn
+# j7m6AcVtum1gOgKmHHWvHk/48LEpCYoqls7Ot6ABf3IqXtuBA8HvMHrtPz3CH/dZ
+# 7LqdIE4HB73fJKTHrim9pVkr/LQljF1XxKJfCPZ9a4JrVT+cg590iNbB39vpKMYR
+# 6ZtDIlDXghcF3Cd70uSTk80MA5tTd5BYhg3TvfjEPF6d2MuFM/BbnweEz1kVTuUa
+# owSqunOz9RwrETV/7DMGZ+62qBR4k3U=
 # SIG # End signature block
