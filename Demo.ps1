@@ -197,14 +197,13 @@ Write-Output ""
         #---------------------------------------------------------------------------------------------                          
 
             # Variables - optional, if you want unattended mode. Alternative script will prompt for login
-
-            $AzAppId     = "7602a1ec-6234-4275-ac96-ce5fa4589d1a"
-            $AzAppSecret = "oji8Q~DB76c1mA0gfUqrIM6XD7NkfQCRGL65EcFT"
-            $TenantId    = "f0fa27a0-8e7c-4f63-9a77-ec94786b7c9e"
+                $AzAppId     = "xxxx"
+                $AzAppSecret = "xxxx"
+                $TenantId    = "xxxx"
 
 
             # Disconnect existing sessions
-            Disconnect-AzAccount
+                Disconnect-AzAccount
 
             KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant" -AzAppId $AzAppId `
                                                                                         -AzAppSecret $AzAppSecret `
