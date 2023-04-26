@@ -656,6 +656,9 @@ Function Query-AzureResourceGraph
     .DESCRIPTION
     You will pipe the query into function. Function will then run query against Azure Resource Graph, based on MG, Tenant or Subscription scope.
 
+    .PARAMETER Query
+    This parameter is the entire Query, which must be run against Azure Resource Graph
+
     .PARAMETER Scope
     You can choose between MG, Tenant or Subscription (or Sub as alias). If you don't choose Scope, then tenant is default.
     If you choose MG, you will define a MG, which will be the root for query and all sub-MGs will be included
@@ -667,6 +670,24 @@ Function Query-AzureResourceGraph
     If you choose Subscription, you will put in the subscription-name or subscription-id
     If you choose Tenant, you will search the entire tenant and will NOT use ScopeTarget-parameter
 
+    .PARAMETER First
+    This parameter will take only the first x records
+
+    .PARAMETER Skip
+    This parameter will skip x records and then show the remaining
+
+    .PARAMETER ShowQueryOnly
+    This switch will only show the query - not run the query !
+
+    .PARAMETER AzAppId
+    This is the Azure app id
+        
+    .PARAMETER AzAppSecret
+    This is the secret of the Azure app
+
+    .PARAMETER TenantId
+    This is the Azure AD tenant id
+
     .INPUTS
     Yes, yu can pipe query data into function
 
@@ -677,59 +698,6 @@ Function Query-AzureResourceGraph
     https://github.com/KnudsenMorten/AzResourceGraphPS
 
     .EXAMPLE
-    Connect-AzAccount
-
-    #---------------------------------------------------------------------------------------------                          
-    # Azure Management Group - with parent/Hierarchy
-    #---------------------------------------------------------------------------------------------                          
-    
-        # Get all management groups from tenant
-        KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant"
-
-        # Get all management groups from tenant - only show first 3
-        KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant" `
-                                                                    -First 3
-
-
-        # Get all management groups from tenant - format table
-        $Result = KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant"
-        $Result | ft
-
-
-        # Get all management groups under management group '2linkit' (including itself)
-        KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
-                                                                    -ScopeTarget "2linkit"
-
-        # Get all management groups under management group '2linkit' - skip first 3
-        KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
-                                                                    -ScopeTarget "2linkit" `
-                                                                    -Skip 3
-
-        # Get all management groups under management group '2linkit' - only show first 3
-        KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
-                                                                    -ScopeTarget "2linkit" `
-                                                                    -First 3
-
-
-    #---------------------------------------------------------------------------------------------                          
-    # Azure Subscriptions
-    #---------------------------------------------------------------------------------------------                          
-        KQL-ARG-AzSubscriptions | Query-AzureResourceGraph -Scope "Tenant" `
-
-        KQL-ARG-AzSubscriptions | Query-AzureResourceGraph -Scope "MG" `
-                                                           -ScopeTarget "2linkit" `
-
-    #---------------------------------------------------------------------------------------------                          
-    # AzRoleAssignments (Role Assignments)
-    #---------------------------------------------------------------------------------------------                          
-        KQL-ARG-AzRoleAssignments | Query-AzureResourceGraph -Scope "MG" `
-                                                             -ScopeTarget "2linkit"
-
-        KQL-ARG-AzRoleAssignments | Query-AzureResourceGraph -Scope "MG" `
-                                                             -ScopeTarget "2linkit" `
-                                                             -First 5
-
-
  #>
 
     [CmdletBinding()]
@@ -745,73 +713,140 @@ Function Query-AzureResourceGraph
             [Parameter()]
                 [string]$Skip,
             [Parameter()]
-                [boolean]$IncludeScopeRoot = $false
+                [switch]$ShowQueryOnly = $false,
+            [Parameter()]
+                [string]$AzAppId,
+            [Parameter()]
+                [string]$AzAppSecret,
+            [Parameter()]
+                [string]$TenantId
          )
 
-    Write-host "######################################################################"
-    Write-host "Running query against Azure Resource Graph ... Please Wait !"
-    Write-host ""
-    Write-host "$($Query)"
-    Write-host ""
-    Write-host "---------------------------------------------------------------------"
-    Write-host ""
+    #--------------------------------------------------------------------------
+    # Connection
+    #--------------------------------------------------------------------------
 
-    $ReturnData   = @()
-    $pageSize     = 1000
-    $iteration    = 0
+        # Check current AzContext
+        $AzContext = Get-AzContext
 
-    $searchParams = @{
-                        Query = $Query
+        If ($AzContext -eq $null)  # empty
+            {
+                If ($AzAppId)
+                    {
+                        $AzAppSecretSecure = $AzAppSecret | ConvertTo-SecureString -AsPlainText -Force
+                        $SecureCreds = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $AzAppId, $AzAppSecretSecure
+                        Connect-AzAccount -ServicePrincipal -Credential $SecureCreds -Tenant $TenantId -WarningAction SilentlyContinue
+                    }
+                Else
+                    {
+                        Connect-AzAccount -WarningAction SilentlyContinue
+                    }
+            }
+
+    #--------------------------------------------------------------------------
+    # Show Query Only
+    #--------------------------------------------------------------------------
+        If ($ShowQueryOnly)
+            {
+                Write-host ""
+                Write-host "----------------------------------------------------------------------"
+                Write-Host "AzResourceGraphPS - made by Morten Knudsen, Microsoft MVP" -ForegroundColor Green
+                Write-Host ""
+                Write-Host "Feel free to send new cool queries, which should be shared with"
+                Write-Host "community. You can send to my email mok@mortenknudsen.net - or "
+                Write-Host "through Github https://github.com/KnudsenMorten/AzResourceGraphPS "
+                Write-Host ""
+                Write-Host "I will make mention you in the credit section in README :-)"
+                Write-host "----------------------------------------------------------------------"
+                Write-host "Query, which will be run against Azure Resource Graph: "
+                Write-host ""
+                Write-host "$($Query)" -ForegroundColor Yellow
+                Write-host ""
+                Write-host "---------------------------------------------------------------------"
+                Write-host ""
+                Break
+            }
+
+    #--------------------------------------------------------------------------
+    # Running Query
+    #--------------------------------------------------------------------------
+
+        Write-host ""
+        Write-host "----------------------------------------------------------------------"
+        Write-Host "AzResourceGraphPS - made by Morten Knudsen, Microsoft MVP" -ForegroundColor Green
+        Write-Host ""
+        Write-Host "Feel free to send new cool queries, which should be shared with"
+        Write-Host "community. You can send to my email mok@mortenknudsen.net - or "
+        Write-Host "through Github https://github.com/KnudsenMorten/AzResourceGraphPS "
+        Write-Host ""
+        Write-Host "I will make mention you in the credit section in README :-)"
+        Write-host "----------------------------------------------------------------------"
+        Write-host "Query, which will be run against Azure Resource Graph: "
+        Write-host ""
+        Write-host "$($Query)" -ForegroundColor Yellow
+        Write-host ""
+        Write-host "---------------------------------------------------------------------"
+        Write-host ""
+
+        $ReturnData   = @()
+        $pageSize     = 1000
+        $iteration    = 0
+
+        $searchParams = @{
+                            Query = $Query
                              
-                        First = $pageSize
-                     }
+                            First = $pageSize
+                         }
 
-    If ($Scope -eq "MG") # Management group(s) to run query against
-        {
-            do
-                {
-                    $iteration         += 1
-                    $pageResults       = Search-AzGraph -ManagementGroup $ScopeTarget @searchParams
-                    $searchParams.Skip += $pageResults.Count
-                    $ReturnData        += $pageResults
-                } 
-            while ($pageResults.Count -eq $pageSize)
-        }
-    ElseIf ( ($Scope -eq "Subscription") -or ($Scope -eq "Sub") ) # Subscription(s) to run query against
-        {
-            do 
-                {
-                    $iteration         += 1
-                    $pageResults       = Search-AzGraph -Subscription $ScopeTarget @searchParams
-                    $searchParams.Skip += $pageResults.Count
-                    $ReturnData        += $pageResults
-                } 
-            while ($pageResults.Count -eq $pageSize)
-        }
-    ElseIf ( ($Scope -eq "Tenant") -or ($Scope -eq $null) )  # UseTenantScope = Run query across all available subscriptions in the current tenant
-        {
-            do 
-                {
-                    $iteration         += 1
-                    $pageResults       = Search-AzGraph -UseTenantScope @searchParams
-                    $searchParams.Skip += $pageResults.Count
-                    $ReturnData        += $pageResults
-                } 
-            while ($pageResults.Count -eq $pageSize)
-        }
+        If ($Scope -eq "MG") # Management group(s) to run query against
+            {
+                do
+                    {
+                        $iteration         += 1
+                        $pageResults       = Search-AzGraph -ManagementGroup $ScopeTarget @searchParams
+                        $searchParams.Skip += $pageResults.Count
+                        $ReturnData        += $pageResults
+                    } 
+                while ($pageResults.Count -eq $pageSize)
+            }
+        ElseIf ( ($Scope -eq "Subscription") -or ($Scope -eq "Sub") ) # Subscription(s) to run query against
+            {
+                do 
+                    {
+                        $iteration         += 1
+                        $pageResults       = Search-AzGraph -Subscription $ScopeTarget @searchParams
+                        $searchParams.Skip += $pageResults.Count
+                        $ReturnData        += $pageResults
+                    } 
+                while ($pageResults.Count -eq $pageSize)
+            }
+        ElseIf ( ($Scope -eq "Tenant") -or ($Scope -eq $null) )  # UseTenantScope = Run query across all available subscriptions in the current tenant
+            {
+                do 
+                    {
+                        $iteration         += 1
+                        $pageResults       = Search-AzGraph -UseTenantScope @searchParams
+                        $searchParams.Skip += $pageResults.Count
+                        $ReturnData        += $pageResults
+                    } 
+                while ($pageResults.Count -eq $pageSize)
+            }
 
-    If ($First)
-        {
-            $First = $First - 1 # subtract first record (0)
-            $ReturnData = $ReturnData[0..$First]
-        }
-    If ($Skip)
-        {
-            $ReturnDataCount = $ReturnData.count
-            $ReturnData = $ReturnData[$Skip..$ReturnDataCount]
-        }
+        If ($First)
+            {
+                $First = $First - 1 # subtract first record (0)
+                $ReturnData = $ReturnData[0..$First]
+            }
+        If ($Skip)
+            {
+                $ReturnDataCount = $ReturnData.count
+                $ReturnData = $ReturnData[$Skip..$ReturnDataCount]
+            }
 
-    Return $ReturnData
+    #--------------------------------------------------------------------------
+    # Return Result
+    #--------------------------------------------------------------------------
+        Return $ReturnData
 }
 
 
@@ -819,8 +854,8 @@ Function Query-AzureResourceGraph
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD1JFNZCac3hyST
-# R7G6s4TkLEyWZGrWHIymReRCHJMZcKCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAVDui3OgyYwKAO
+# tr3ii+EovvgRfLJ1DrzQ0XIatGsd9aCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -928,17 +963,17 @@ Function Query-AzureResourceGraph
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIK5tZW7TCygR+WYEiO2lpSv2
-# Jx2nL4P9Dat5DY2/B3lHMA0GCSqGSIb3DQEBAQUABIICAFGAMjuidqecrHEdEmtL
-# icaGPMq6DUBDB8xqX4Ulo6nOhaAdl8ihTUZ2m2dbLvPALePAnZhZmjIcCW872mTE
-# +Ng3/IMH4J3FW1/upLjQbZstctGMwbfKkthTQeGuXHUp2hnN8jnvxacFli+BzqcI
-# 8P7tGp7a0JGM9XpViLRYH79jHJgP9j7+/OXNzlgvHr6kNuXX2T2NZQfU1jxSvRn5
-# pXzkRZFBnMV4pMLXu3MqOMvZC7iHDRg4t80vHesCUxzDVN+SjmtlCcpZHqlzYlRz
-# nC/+1mjqYzgpK8TI5PRbQYUF37CRyoXT1EJ1V8fSvuBgJ72sGxdUEqN4vX1/ekAO
-# nZO36Fk1FcGRRyx23bdV/IizQo66FmlZE/CSj/oXQBeN5iseNaUXUY/l++TAYSga
-# Q0dzt4yOS24vUQnezGRVEXHJhIfvhhwEzTop+uB+uMX3qebMPKvB3tBZSOP++4Mq
-# yqWDKjDNSGbXFiWBhGLdprtKch9qkFYKPHb65v3KMKoP7HZIWAczCrPB5raK7pjX
-# huBI1CCVS17yHNLbimdxppr7r+32p4gEBpUZA/XIRTtXCd1PvLA9Znyun2gUCndy
-# ahUV+GcQHkUfxHw1oUSX7wI8CnEeuxzgR/KUFlITJ2kiUjaal2ABtCitnNF0W1b0
-# J4fc2dgmfPyj9t1uoOn8jdnw
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIG2owjrr97ZIpURi7TAFJb0C
+# Px95CGQQDSX5BdVSi45DMA0GCSqGSIb3DQEBAQUABIICABS+leeUgp5nPa7sqqc1
+# 0HS3jwydMfUFpYVf15h//C42UaD5/HWC/LYa2VK0alJpY4Je7RGHPJ6tjdur3EZC
+# vEQefcU8izHEw9AvvalTjBfFSbubxu/YohOF81/aEiecdjnXS6Ohtw6vPfW5H/Zl
+# b85jyN1O+xrKIj8cZIMRpPfhwccE5w3yQOaMvMe6NhDn71dPCC0d59qfSYZ3P5uE
+# vRftz0wbSJZ6h5ovze5bDhxprQ4Xo4P1Im7VmVn1DmX07zpz+umURYX6jf32fh3W
+# GsTfwejKzN4o8T0SRLM4xKn0AVIxEBReFYIbbs/gdXvkXuugFAo4Nhi3UfS0E1Xr
+# 4Kb9J6MAO1kxkrhmiad7bm0tyjUoBpSd7CFcwPEO3XMA1mY3ungZXp67ewuqtDG7
+# iYrrHlQsHIjhlsKsSIsPnQys8riImXYLXixYagD1nSujP8EsBr+QMZxjfmeViN6Q
+# GxIDKWbbM2gQsU0xbiO0P302WdesyoBElMlvApnx+qW3ijZf70Qd0lKhfWEZcHp2
+# PzwIDd56MNXdipxjBCDeq1nNbS9XGWsxrlY3JrmLyplfNN+RUlWJGk/dLVI6wtYZ
+# MtSHBoGnWOsqT+CQ/7U3V/5tDyTrWIKTn/caTE9i+MMwNkF4wFtITCEoKeYI+Uer
+# gyVb5p2rWJgyVTmV3vjl3GCW
 # SIG # End signature block
