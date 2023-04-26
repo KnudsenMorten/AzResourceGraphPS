@@ -28,7 +28,7 @@ param(
           [string]$Function = "PsGallery",        # it will default to download if not specified
       [parameter(Mandatory=$false)]
           [ValidateSet("CurrentUser","AllUsers")]
-          [string]$Scope = "CurrentUser"        # it will default to download if not specified
+          [string]$Scope = "AllUsers"        # it will default to download if not specified
      )
 
 Write-Output ""
@@ -77,6 +77,7 @@ Write-Output ""
 
             "PsGallery"
                 {
+                        #------------------------------------------------------------------------------------------------------
                         # check for AzResourceGraphPS
                             $ModuleCheck = Get-Module -Name AzResourceGraphPS -ListAvailable -ErrorAction SilentlyContinue
                             If (!($ModuleCheck))
@@ -135,8 +136,34 @@ Write-Output ""
                                             import-module -Name AzResourceGraphPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
                                         }
                                 }
+
+                        #------------------------------------------------------------------------------------------------------
+                        # check for Az modules
+                            $ModuleCheck = Get-Module -Name Az.* -ListAvailable -ErrorAction SilentlyContinue
+                            If (!($ModuleCheck))
+                                {
+                                    Write-Output "Powershell module Az was not found !"
+                                    Write-Output "Installing latest version from PsGallery in scope $Scope .... Please Wait !"
+
+                                    Install-module -Name Az -Repository PSGallery -Force -Scope $Scope
+                                    import-module -Name Az -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+                                }
+
+                        #------------------------------------------------------------------------------------------------------
+                        # check for Az.ResourceGraph modules
+                            $ModuleCheck = Get-Module -Name Az.ResourceGraph -ListAvailable -ErrorAction SilentlyContinue
+                            If (!($ModuleCheck))
+                                {
+                                    Write-Output "Powershell module Az.ResourceGraph was not found !"
+                                    Write-Output "Installing latest version from PsGallery in scope $Scope .... Please Wait !"
+
+                                    Install-module -Name Az.ResourceGraph -Repository PSGallery -Force -Scope $Scope
+                                    import-module -Name Az.ResourceGraph -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+                                }
+                        #------------------------------------------------------------------------------------------------------
+
                 }
-            "LocalPath"        # Typucaly used in ConfigMgr environment (or similar) where you run the script locally
+            "LocalPath"        # Typicaly used in ConfigMgr environment (or similar) where you run the script locally
                 {
                     If (Test-Path "$($ScriptDirectory)\AzResourceGraphPS.psm1")
                         {
@@ -156,72 +183,161 @@ Write-Output ""
 # MAIN PROGRAM
 ############################################################################################################################################
 
-Connect-AzAccount
+    #---------------------------------------------------------------------------------------------                          
+    # Azure Management Group - with parent/Hierarchy
+    #---------------------------------------------------------------------------------------------                          
 
-#---------------------------------------------------------------------------------------------                          
-# Azure Management Group - with parent/Hierarchy
-#---------------------------------------------------------------------------------------------                          
+        #---------------------------------------------------------------------------------------------                          
+        # Show query only
+        #---------------------------------------------------------------------------------------------                          
+            KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant" -ShowQueryOnly
     
-    # Get all management groups from tenant
-    KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant"
+        #---------------------------------------------------------------------------------------------                          
+        # Get all management groups from tenant - Unattended login with AzApp & AzSecret - show only first 5
+        #---------------------------------------------------------------------------------------------                          
 
-    # Get all management groups from tenant - only show first 3
-    KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant" `
-                                                                -First 3
+            # Variables - optional, if you want unattended mode. Alternative script will prompt for login
 
-
-    # Get all management groups from tenant - format table
-    $Result = KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant"
-    $Result | ft
+            $AzAppId     = "7602a1ec-6234-4275-ac96-ce5fa4589d1a"
+            $AzAppSecret = "oji8Q~DB76c1mA0gfUqrIM6XD7NkfQCRGL65EcFT"
+            $TenantId    = "f0fa27a0-8e7c-4f63-9a77-ec94786b7c9e"
 
 
-    # Get all management groups under management group '2linkit' (including itself)
-    KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
-                                                                -ScopeTarget "2linkit"
+            # Disconnect existing sessions
+            Disconnect-AzAccount
 
-    # Get all management groups under management group '2linkit' - skip first 3
-    KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
-                                                                -ScopeTarget "2linkit" `
-                                                                -Skip 3
+            KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant" -AzAppId $AzAppId `
+                                                                                        -AzAppSecret $AzAppSecret `
+                                                                                        -TenantId $TenantId `
+                                                                                        -First 5
 
-    # Get all management groups under management group '2linkit' - only show first 3
-    KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
-                                                                -ScopeTarget "2linkit" `
-                                                                -First 3
+        #---------------------------------------------------------------------------------------------                          
+        # Get all management groups from tenant - Attended login with Prompt
+        #---------------------------------------------------------------------------------------------                          
+            # Disconnect existing sessions
+            Disconnect-AzAccount
 
-
-#---------------------------------------------------------------------------------------------                          
-# Azure Subscriptions
-#---------------------------------------------------------------------------------------------                          
-    KQL-ARG-AzSubscriptions | Query-AzureResourceGraph -Scope "Tenant" `
-
-    KQL-ARG-AzSubscriptions | Query-AzureResourceGraph -Scope "MG" `
-                                                       -ScopeTarget "2linkit" `
-
-#---------------------------------------------------------------------------------------------                          
-# Azure Role Assignments
-#---------------------------------------------------------------------------------------------                          
-    KQL-ARG-AzRoleAssignments | Query-AzureResourceGraph -Scope "MG" `
-                                                         -ScopeTarget "2linkit"
-
-    KQL-ARG-AzRoleAssignments | Query-AzureResourceGraph -Scope "MG" `
-                                                         -ScopeTarget "2linkit" `
-                                                         -First 5
-
-#---------------------------------------------------------------------------------------------                          
-# Azure Resource Groups
-#---------------------------------------------------------------------------------------------                          
-    KQL-ARG-AzRGs | Query-AzureResourceGraph -Scope "Sub" `
-                                             -ScopeTarget "fce4f282-fcc6-43fb-94d8-bf1701b862c3" `
-                                             -First 5
+            KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant" -First 5
 
 
-####################
-# HELP
-####################
+        #---------------------------------------------------------------------------------------------                          
+        # Get all management groups from tenant - format table
+        #---------------------------------------------------------------------------------------------                          
+            $Result = KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "Tenant"
+            $Result
+            $Result | ft
 
-# If you want to see which cmdlets are available by the version of the module, you can run the get-command
-get-command -module azresourcegraphps
+        #---------------------------------------------------------------------------------------------                          
+        # Get all management groups under management group '2linkit' (including itself)
+        #---------------------------------------------------------------------------------------------                          
+            KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
+                                                                        -ScopeTarget "2linkit"
 
-# Get help with a specific cmdlet with the command get-help Query-AzureResourceGraph -full
-get-help Query-AzureResourceGraph -full
+        #---------------------------------------------------------------------------------------------                          
+        # Get all management groups under management group '2linkit' - skip first 3
+        #---------------------------------------------------------------------------------------------                          
+            KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
+                                                                        -ScopeTarget "2linkit" `
+                                                                        -Skip 3
+
+        #---------------------------------------------------------------------------------------------                          
+        # Get all management groups under management group '2linkit' - only show first 3
+        #---------------------------------------------------------------------------------------------                          
+            KQL-ARG-AzMGsWithParentHierarchy | Query-AzureResourceGraph -Scope "MG" `
+                                                                        -ScopeTarget "2linkit" `
+                                                                        -First 3
+
+
+    #---------------------------------------------------------------------------------------------                          
+    # Azure Subscriptions
+    #---------------------------------------------------------------------------------------------                          
+
+        #---------------------------------------------------------------------------------------------                          
+        # Get all Azure Subscriptions from tenant
+        #---------------------------------------------------------------------------------------------                          
+            KQL-ARG-AzSubscriptions | Query-AzureResourceGraph -Scope "Tenant" `
+
+        #---------------------------------------------------------------------------------------------                          
+        # Get all Azure Subscriptions under management group '2linkit'
+        #---------------------------------------------------------------------------------------------                          
+            KQL-ARG-AzSubscriptions | Query-AzureResourceGraph -Scope "MG" `
+                                                               -ScopeTarget "2linkit" `
+
+    #---------------------------------------------------------------------------------------------                          
+    # Azure Role Assignments
+    #---------------------------------------------------------------------------------------------                          
+
+        #---------------------------------------------------------------------------------------------                          
+        # Get all Azure Role Assignments under management group '2linkit'
+        #---------------------------------------------------------------------------------------------                          
+            KQL-ARG-AzRoleAssignments | Query-AzureResourceGraph -Scope "MG" `
+                                                                 -ScopeTarget "2linkit"
+
+        #---------------------------------------------------------------------------------------------                          
+        # Get all Azure Role Assignments under management group '2linkit' - show only first 5
+        #---------------------------------------------------------------------------------------------                          
+            KQL-ARG-AzRoleAssignments | Query-AzureResourceGraph -Scope "MG" `
+                                                                 -ScopeTarget "2linkit" `
+                                                                 -First 5
+
+    #---------------------------------------------------------------------------------------------                          
+    # Azure Resource Groups
+    #---------------------------------------------------------------------------------------------                          
+
+        #---------------------------------------------------------------------------------------------                          
+        # Get all Azure Resource Groups in specific subscription - show only first 5 RGs
+        #---------------------------------------------------------------------------------------------                          
+            KQL-ARG-AzRGs | Query-AzureResourceGraph -Scope "Sub" `
+                                                     -ScopeTarget "fce4f282-fcc6-43fb-94d8-bf1701b862c3" `
+                                                     -First 5
+
+    #---------------------------------------------------------------------------------------------                          
+    # Help from PS-module
+    #---------------------------------------------------------------------------------------------                          
+
+        #---------------------------------------------------------------------------------------------                          
+        # If you want to see which cmdlets are available by the version of the module, you can run the get-command
+        #---------------------------------------------------------------------------------------------                          
+            get-command -module AzResourceGraphPS -All
+
+            <#
+            CommandType     Name                                               Version    Source                                                   
+            -----------     ----                                               -------    ------                                                   
+            Function        KQL-ARG-AzAvailabilitySets                         0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzBackupRecoveryServicesJobs               0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzBackupRecoveryServicesProtectionItems    0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzBackupRecoveryServicesVaults             0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzDefenderForCloudDevicesWithoutTVM        0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzDefenderForCloudPlans                    0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzDefenderForCloudPlansStatus              0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzDefenderForCloudRecommendationsSubAss... 0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzDefenderForCloudRecommendationsWithLink  0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzDefenderForCloudRecommendationsWithSu... 0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzExtensionStatus                          0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzHybridMachines                           0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzHybridMachinesWithTags                   0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzIPAddressAzNativeVMs                     0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzMGs                                      0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzMGsWithParentHierarchy                   0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzMonitorDCEs                              0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzMonitorDCRs                              0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzNativeVMs                                0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzNativeVMsHybridMachines                  0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzNativeVMsWithDefenderForCloudPlanEnabled 0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzNativeVMsWithTags                        0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzResources                                0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzResourcesWithTags                        0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzResourceTypes                            0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzRGs                                      0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzRGsWithTags                              0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzRoleAssignments                          0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzStorageAccounts                          0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzSubscriptions                            0.5.6      AzResourceGraphPS                                        
+            Function        KQL-ARG-AzSubscriptionsWithTags                    0.5.6      AzResourceGraphPS                                        
+            Function        Query-AzureResourceGraph                           0.5.6      AzResourceGraphPS  
+            #>
+
+        #---------------------------------------------------------------------------------------------                          
+        # Get help with a specific cmdlet with the command get-help Query-AzureResourceGraph -full
+        #---------------------------------------------------------------------------------------------                          
+            get-help Query-AzureResourceGraph -full
