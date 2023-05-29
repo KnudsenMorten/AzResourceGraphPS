@@ -45,7 +45,10 @@ I have [provided 4 demos](#how-to-get-started-) for you to try, but if you want 
 [Video 0m 48s - Sample usage of data - lookup against Lenovo warranty db](https://youtu.be/3ZDyTwiLU0w)  
 [Video 7m 25s - Deployment via ClientInspector DeploymentKit](https://youtu.be/_RNlSqRcetg) 
 
+
+
 ## Download latest version
+
 You can download latest version of AzLogDcrIngestPS here - or install from Powershell Gallery:
 
 [Install AzLogDcringestPS from Powershell Gallery](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
@@ -55,8 +58,8 @@ install-module AzLogDcrIngestPS
 ```
 
 [Download AzLogDcringestPS module from this Github repositry](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/AzLogDcrIngestPS.psm1) 
- 
 
+`ddsads`
 
 ## Quick links for more information
 [How to get started in your own environment (demo)](#how-to-get-started-)  
@@ -186,7 +189,7 @@ $global:Verbose                               = $true   # can be removed from sc
 ```
 
 ## Step 3 - Run demos
- 
+
 You can now run the different sections in the script and see the demos. The demos will use most functions in AzLogDcrIngestPS
 
 Start by running lines 1-275, which will load the initial header and build variables
@@ -244,7 +247,7 @@ I have outlined the things to notice during the demos - run the lines one by one
 
 <details>
   <summary><h1>Background for building this Powershell module</h1></summary>
-  
+
 For the last 5 years, I have been using the Log Analytics Data Collector API - also referred to 'Azure Monitor HTTP Data Collector API' - or my short name for it "MMA-method"
 
 
@@ -1637,55 +1640,55 @@ Else
 
     .SYNOPSIS
     Add property CollectionTime (based on current time) to all entries on the object
-
+    
     .DESCRIPTION
     Gives capability to do proper searching in queries to find latest set of records with same collection time
     Time Generated cannot be used when you are sending data in batches, as TimeGenerated will change
     An example where this is important is a complete list of applications for a computer. We want all applications to
     show up when queriying for the latest data
-
+    
     .PARAMETER Data
     Object to modify
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Updated object with CollectionTime
-
+    
     .EXAMPLE
-	
+    
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
     $Verbose                   = $true  # $true or $false
-
+    
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
     #-------------------------------------------------------------------------------------------
     $DNSName                   = (Get-CimInstance win32_computersystem).DNSHostName +"." + (Get-CimInstance win32_computersystem).Domain
     $ComputerName              = (Get-CimInstance win32_computersystem).DNSHostName
     [datetime]$CollectionTime  = ( Get-date ([datetime]::Now.ToUniversalTime()) -format "yyyy-MM-ddTHH:mm:ssK" )
-
+    
     $UserLoggedOnRaw           = Get-Process -IncludeUserName -Name explorer | Select-Object UserName -Unique
     $UserLoggedOn              = $UserLoggedOnRaw.UserName
-
+    
     $DataVariable = Get-CimInstance -ClassName Win32_Processor | Select-Object -ExcludeProperty "CIM*"
-
+    
     #-------------------------------------------------------------------------------------------
     # Preparing data structure
     #-------------------------------------------------------------------------------------------
     $DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$Verbose
     $DataVariable
-
+    
     # add CollectionTime to existing array
     $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
     $DataVariable
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
-
+    
     VERBOSE:   Adding CollectionTime to all entries in array .... please wait !
     Caption                                 : Intel64 Family 6 Model 165 Stepping 5
     Description                             : Intel64 Family 6 Model 165 Stepping 5
@@ -1754,70 +1757,70 @@ Else
 
     .SYNOPSIS
     Adds up to 3 extra columns and data to the object
-
+    
     .DESCRIPTION
     Gives capability to extend the data with for example Computer and UserLoggedOn, which are nice data to have in the inventory
-
+    
     .PARAMETER Data
     Object to modify
-
+    
     .PARAMETER Column1Name
     Name of the column to add (for example Computer)
-
+    
     .PARAMETER Column1Data
     Data to add to the column1 (for example $Env:Computer)
-
+    
     .PARAMETER Column2Name
     Name of the column to add (for example UserLoggedOn)
-
+    
     .PARAMETER Column2Data
     Data to add to the column1 (for example $UserLoggedOn)
-
+    
     .PARAMETER Column3Name
     Name of the column to add (for example ComputerType)
-
+    
     .PARAMETER Column3Data
     Data to add to the column1 (for example $ComputerType)
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Updated object with CollectionTime
-
+    
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
     $Verbose                   = $true  # $true or $false
-
+    
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
     #-------------------------------------------------------------------------------------------
     $DNSName                   = (Get-CimInstance win32_computersystem).DNSHostName +"." + (Get-CimInstance win32_computersystem).Domain
     $ComputerName              = (Get-CimInstance win32_computersystem).DNSHostName
     [datetime]$CollectionTime  = ( Get-date ([datetime]::Now.ToUniversalTime()) -format "yyyy-MM-ddTHH:mm:ssK" )
-
+    
     $UserLoggedOnRaw           = Get-Process -IncludeUserName -Name explorer | Select-Object UserName -Unique
     $UserLoggedOn              = $UserLoggedOnRaw.UserName
-
+    
     $DataVariable = Get-CimInstance -ClassName Win32_Processor | Select-Object -ExcludeProperty "CIM*"
     $DataVariable
-
+    
     #-------------------------------------------------------------------------------------------
     # Preparing data structure
     #-------------------------------------------------------------------------------------------
     $DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$Verbose
     $DataVariable
-
+    
     # add CollectionTime to existing array
     $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
     $DataVariable
-
+    
     # add Computer & UserLoggedOn info to existing array
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $ComputerName  -Column2Name UserLoggedOn -Column2Data $UserLoggedOn -Verbose:$verbose
     $DataVariable
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
@@ -1889,19 +1892,19 @@ Else
 
     .SYNOPSIS
     Rebuilds the source object to match modified schema structure - used after usage of ValidateFix-AzLogAnalyticsTableSchemaColumnNames
-
+    
     .DESCRIPTION
     Builds new PSCustomObject object
-
+    
     .PARAMETER Data
     This is the data array
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Updated $DataVariable with valid column names
-
+    
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
@@ -1909,13 +1912,13 @@ Else
     $DNSName                   = (Get-CimInstance win32_computersystem).DNSHostName +"." + (Get-CimInstance win32_computersystem).Domain
     $ComputerName              = (Get-CimInstance win32_computersystem).DNSHostName
     [datetime]$CollectionTime  = ( Get-date ([datetime]::Now.ToUniversalTime()) -format "yyyy-MM-ddTHH:mm:ssK" )
-
+    
     $UserLoggedOnRaw           = Get-Process -IncludeUserName -Name explorer | Select-Object UserName -Unique
     $UserLoggedOn              = $UserLoggedOnRaw.UserName
-
+    
     Write-Output "Get-Process is pretty slow .... take a cup coffee :-)"
     $DataVariable = Get-Process
-
+    
     #-------------------------------------------------------------------------------------------
     # Preparing data structure
     #-------------------------------------------------------------------------------------------
@@ -1924,38 +1927,38 @@ Else
     
     # add CollectionTime to existing array
     $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
-
+    
     # add Computer & UserLoggedOn info to existing array
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName -Column2Name UserLoggedOn -Column2Data $UserLoggedOn -Verbose:$Verbose
-
+    
     # adding prohibted columns to data - to demonstrate how it works
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name "Type" -Column1Data "MyDataType" -Verbose:$Verbose
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name "Id" -Column1Data "MyId" -Verbose:$Verbose
-
+    
     # schema - before changes - we see columns named Type and Id (prohibited)
     Get-ObjectSchemaAsArray -Data $DataVariable
-
+    
     # Data before changes - we see columns named Type and Id (prohibited)
     $DataVariable[0]
-
+    
     # Validating/fixing schema data structure of source data
     $DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$Verbose
-
+    
     # schema - after changes - we see columns named Type has been renamed to Type_ and Id to Id_ (prohibited)
     Get-ObjectSchemaAsArray -Data $DataVariable -Verbose:$Verbose
-
+    
     # Data after changes - we see data was transferred to new columns (type_ and id_ - and the wrong columns (type, id) were removed
     $DataVariable[0]
-
+    
     # Aligning data structure with schema (requirement for DCR)
     $DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$Verbose
     $DataVariable[0]
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
     VERBOSE:   Aligning source object structure with schema ... Please Wait !
-
+    
     BasePriority               : 8
     CollectionTime             : 12-03-2023 16:25:37
     Company                    : 
@@ -2062,47 +2065,47 @@ Else
 
     .SYNOPSIS
     Converts CIM array and remove CIM class information
-
+    
     .DESCRIPTION
     Used to remove "noice" information of columns which we shouldn't send into the logs
-
+    
     .PARAMETER Data
     Specifies the data object to modify
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Modified array
-
+    
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
     $Verbose                   = $true  # $true or $false
-
+    
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
     #-------------------------------------------------------------------------------------------
     $DNSName                   = (Get-CimInstance win32_computersystem).DNSHostName +"." + (Get-CimInstance win32_computersystem).Domain
     $ComputerName              = (Get-CimInstance win32_computersystem).DNSHostName
     [datetime]$CollectionTime  = ( Get-date ([datetime]::Now.ToUniversalTime()) -format "yyyy-MM-ddTHH:mm:ssK" )
-
+    
     $UserLoggedOnRaw           = Get-Process -IncludeUserName -Name explorer | Select-Object UserName -Unique
     $UserLoggedOn              = $UserLoggedOnRaw.UserName
-
+    
     $DataVariable = Get-CimInstance -ClassName Win32_Processor | Select-Object -ExcludeProperty "CIM*"
-
+    
     #-------------------------------------------------------------------------------------------
     # Preparing data structure
     #-------------------------------------------------------------------------------------------
     $DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$Verbose
     $DataVariable
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
-
+    
     VERBOSE:   Converting CIM array to Object & removing CIM class data in array .... please wait !
     Caption                                 : Intel64 Family 6 Model 165 Stepping 5
     Description                             : Intel64 Family 6 Model 165 Stepping 5
@@ -2169,45 +2172,45 @@ Else
 
     .SYNOPSIS
     Converts PS array and remove PS class information
-
+    
     .DESCRIPTION
     Used to remove "noice" information of columns which we shouldn't send into the logs
-
+    
     .PARAMETER Data
     Specifies the data object to modify
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Modified array
-
+    
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
     #-------------------------------------------------------------------------------------------
-
+    
     $verbose                                         = $true
-
+    
     Write-Output ""
     Write-Output "Collecting installed applications information via registry ... Please Wait !"
-
+    
     $UninstallValuesX86 = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* -ErrorAction SilentlyContinue
     $UninstallValuesX64 = Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* -ErrorAction SilentlyContinue
-
+    
     $DataVariable       = $UninstallValuesX86
     $DataVariable      += $UninstallValuesX64
-
+    
     #-------------------------------------------------------------------------------------------
     # Preparing data structure
     #-------------------------------------------------------------------------------------------
-
+    
     # removing apps without DisplayName fx KBs
     $DataVariable = $DataVariable | Where-Object { $_.DisplayName -ne $null }
     
     # We see lots of "noice", which we don't want in our logs - PSPath, PSParentPath, PSChildname, PSDrive, PSProvider
     $DataVariable[0]
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
@@ -2251,13 +2254,13 @@ Else
     PSChildName          : {54ECA61C-83AE-4EE3-A9F7-848155A33386}
     PSDrive              : HKLM
     PSProvider           : Microsoft.PowerShell.Core\Registry
-
+    
     # convert PS object and remove PS class information
     $DataVariable = Convert-PSArrayToObjectFixStructure -Data $DataVariable -Verbose:$Verbose
-
+    
     # Now we have removed the "noice" from all objects
     $DataVariable[0]
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
@@ -2301,41 +2304,41 @@ Else
 
     .SYNOPSIS
     Removes columns from the object which is considered "noice" and shouldn't be send to logs
-
+    
     .DESCRIPTION
     Ensures that the log schema and data looks nice and clean
-
+    
     .PARAMETER Data
     Object to modify
-
+    
     .PARAMETER ExcludeProperty
     Array of columns to remove from the data object
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Updated object
-
+    
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
     $Verbose                   = $true
-
+    
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
     #-------------------------------------------------------------------------------------------
     $DNSName                   = (Get-CimInstance win32_computersystem).DNSHostName +"." + (Get-CimInstance win32_computersystem).Domain
     $ComputerName              = (Get-CimInstance win32_computersystem).DNSHostName
     [datetime]$CollectionTime  = ( Get-date ([datetime]::Now.ToUniversalTime()) -format "yyyy-MM-ddTHH:mm:ssK" )
-
+    
     $UserLoggedOnRaw           = Get-Process -IncludeUserName -Name explorer | Select-Object UserName -Unique
     $UserLoggedOn              = $UserLoggedOnRaw.UserName
-
+    
     Write-Output "Get-Process is pretty slow .... take a cup coffee :-)"
     $DataVariable = Get-Process
-
+    
     #-------------------------------------------------------------------------------------------
     # Preparing data structure
     #-------------------------------------------------------------------------------------------
@@ -2344,19 +2347,19 @@ Else
     
     # add CollectionTime to existing array
     $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
-
+    
     # add Computer & UserLoggedOn info to existing array
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName -Column2Name UserLoggedOn -Column2Data $UserLoggedOn -Verbose:$Verbose
-
+    
     # we try to see the data in JSON format - and notice some columns, which we want to remote (noice)
     $DataVariable[0] | ConvertTo-Json
-
+    
     # We remove unnecessary columns in schema (StartInfo, __NounName, Threads) for all records
     $DataVariable = Filter-ObjectExcludeProperty -Data $DataVariable -ExcludeProperty StartInfo, __NounName, Threads -Verbose:$Verbose
-
+    
     # Now we can see, that data was removed - we have removed data, which aren't relevant
     $DataVariable[0] | ConvertTo-Json
-
+    
     # Schema after changes - we see the 3 columns (StartInfo, __NounName, Threads) are gone
     Get-ObjectSchemaAsArray -Data $DataVariable -Verbose:$Verbose
       
@@ -2442,41 +2445,41 @@ Else
     .SYNOPSIS
     Validates the column names in the schema are valid according the requirement for LogAnalytics tables
     Fixes any issues by rebuild the source object
-
+    
     .DESCRIPTION
     Checks for prohibited column names - and adds new column with <name>_ - and removes prohibited column name
     Checks for column name length is under 45 characters
     Checks for column names must not start with _ (underscore) - or contain " " (space) or . (period)
     In case of issues, an new source object is build
-
+    
     .PARAMETER Data
     This is the data array
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Updated $DataVariable with valid column names
-
+    
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
     $Verbose                   = $true  # $true or $false
-
+    
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
     #-------------------------------------------------------------------------------------------
     $DNSName                   = (Get-CimInstance win32_computersystem).DNSHostName +"." + (Get-CimInstance win32_computersystem).Domain
     $ComputerName              = (Get-CimInstance win32_computersystem).DNSHostName
     [datetime]$CollectionTime  = ( Get-date ([datetime]::Now.ToUniversalTime()) -format "yyyy-MM-ddTHH:mm:ssK" )
-
+    
     $UserLoggedOnRaw           = Get-Process -IncludeUserName -Name explorer | Select-Object UserName -Unique
     $UserLoggedOn              = $UserLoggedOnRaw.UserName
-
+    
     Write-Output "Get-Process is pretty slow .... take a cup coffee :-)"
     $DataVariable = Get-Process
-
+    
     #-------------------------------------------------------------------------------------------
     # Preparing data structure
     #-------------------------------------------------------------------------------------------
@@ -2485,29 +2488,29 @@ Else
     
     # add CollectionTime to existing array
     $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
-
+    
     # add Computer & UserLoggedOn info to existing array
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName -Column2Name UserLoggedOn -Column2Data $UserLoggedOn -Verbose:$Verbose
-
+    
     # adding prohibted columns to data - to demonstrate how it works
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name "Type" -Column1Data "MyDataType" -Verbose:$Verbose
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name "Id" -Column1Data "MyId" -Verbose:$Verbose
-
+    
     # schema - before changes - we see columns named Type and Id (prohibited)
     Get-ObjectSchemaAsArray -Data $DataVariable -Verbose:$Verbose
-
+    
     # Data before changes - we see columns named Type and Id (prohibited)
     $DataVariable[0]
-
+    
     # Validating/fixing schema data structure of source data
     $DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$verbose
-
+    
     # schema - after changes - we see data was transferred to new columns (type_ and id_ - and the wrong columns (type, id) were removed
     Get-ObjectSchemaAsArray -Data $DataVariable -Verbose:$Verbose
-
+    
     # Data after changes - we see data was transferred to new columns (type_ and id_ - and the wrong columns (type, id) were removed
     $DataVariable[0]
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
@@ -2516,7 +2519,7 @@ Else
     VERBOSE:   Adding columns to all entries in array .... please wait !
     VERBOSE:   Adding columns to all entries in array .... please wait !
     VERBOSE:   Adding columns to all entries in array .... please wait !
-
+    
     VERBOSE:   Validating schema structure of source data ... Please Wait !
     VERBOSE:   ISSUE - Column name is prohibited [ Id ]
     VERBOSE:   ISSUE - Column name is prohibited [ Type ]
@@ -2525,7 +2528,7 @@ Else
     VERBOSE:   ISSUE - Column name is prohibited [ Type ]
     VERBOSE:   ISSUE - Column name must start with character [ __NounName ]
     VERBOSE:   Issues found .... fixing schema structure of source data ... Please Wait !
-
+    
     name                       type      
     ----                       ----      
     BasePriority               int       
@@ -2712,41 +2715,41 @@ Else
 
     .SYNOPSIS
     Get status about Azure Loganalytics tables and Data Collection Rule.
-
+    
     .DESCRIPTION
     Used to detect if table/DCR must be create/updated - or it is valid to send in data
-
+    
     .PARAMETER DcrName
     Specifies the DCR name
-
+    
     .PARAMETER Tablename
     Specifies the table name in LogAnalytics
-
+    
     .PARAMETER SchemaSourceObject
     This is the schema in hash table format coming from the source object
-
+    
     .PARAMETER AzLogWorkspaceResourceId
     This is the Loganaytics Resource Id
-
+    
     .PARAMETER AzAppId
     This is the Azure app id
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
-
+    
     .PARAMETER TenantId
     This is the Azure AD tenant id
-
+    
     .PARAMETER Data
     This is the data array
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
-	TRUE means existing environment must be updated - or table/DCR must be created
-	FALSE means everything is ok including schema - next step is to post data
-	
+    TRUE means existing environment must be updated - or table/DCR must be created
+    FALSE means everything is ok including schema - next step is to post data
+    
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
     # Variables
@@ -2754,43 +2757,43 @@ Else
     $verbose                                         = $true
     $TableName                                       = 'InvClientComputerOSInfoV2'   # must not contain _CL
     $DcrName                                         = "dcr-" + $AzDcrPrefixClient + "-" + $TableName + "_CL"
-
+    
     $TenantId                                        = "xxxxx" 
     $LogIngestAppId                                  = "xxxxx" 
     $LogIngestAppSecret                              = "xxxxx" 
-
+    
     $DceName                                         = "dce-log-platform-management-client-demo1-p" 
     $LogAnalyticsWorkspaceResourceId                 = "/subscriptions/xxxxxx/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/workspaces/log-platform-management-client-demo1-p" 
     $AzDcrPrefixClient                               = "clt1" 
-
+    
     $TableName                                       = 'InvClientComputerOSInfoV2'   # must not contain _CL
     $DcrName                                         = "dcr-" + $AzDcrPrefixClient + "-" + $TableName + "_CL"
-
+    
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
     #-------------------------------------------------------------------------------------------
             
     Write-Output ""
     Write-Output "Collecting OS information ... Please Wait !"
-
+    
     $DataVariable = Get-CimInstance -ClassName Win32_OperatingSystem
-
+    
     #-------------------------------------------------------------------------------------------
     # Preparing data structure
     #-------------------------------------------------------------------------------------------
-
+    
     # convert CIM array to PSCustomObject and remove CIM class information
     $DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$Verbose
     
     # add CollectionTime to existing array
     $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
-
+    
     # add Computer & UserLoggedOn info to existing array
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName  -Column2Name UserLoggedOn -Column2Data $UserLoggedOn
-
+    
     # Validating/fixing schema data structure of source data
     $DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$Verbose
-
+    
     # Aligning data structure with schema (requirement for DCR)
     $DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$Verbose
 
@@ -2798,9 +2801,9 @@ Else
     $Schema = Get-ObjectSchemaAsArray -Data $DataVariable
     $StructureCheck = Get-AzLogAnalyticsTableAzDataCollectionRuleStatus -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -TableName $TableName -DcrName $DcrName -SchemaSourceObject $Schema `
                                                                         -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
-
+    
     $StructureCheck
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
@@ -2821,31 +2824,31 @@ Else
 
     .SYNOPSIS
     Gets the current tranformKql parameter on an existing DCR with the provided parameter
-
+    
     .DESCRIPTION
     Used to see the current transformation on a data collection rule
-
+    
     .PARAMETER $DcrResourceId
     This is the resource id of the data collection rule
-
+    
     .PARAMETER AzAppId
     This is the Azure app id og an app with Contributor permissions in LogAnalytics + Resource Group for DCRs
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
-
+    
     .PARAMETER TenantId
     This is the Azure AD tenant id
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Output of REST GET command. Should be 200 for success
-
+    
     .LINK
     https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
+    
     .EXAMPLE
 </details>
 
@@ -2854,85 +2857,85 @@ Else
 
     .SYNOPSIS
     Retrieves information about data collection rules and data collection endpoints - using Azure Resource Graph
-
+    
     .DESCRIPTION
     Used to retrieve information about data collection rules and data collection endpoints - using Azure Resource Graph
     Used by other functions which are looking for DCR/DCE by name
-
+    
     .PARAMETER DcrName
     Here you can put in the DCR name you want to find
-
+    
     .PARAMETER DceName
     Here you can put in the DCE name you want to find
-
+    
     .PARAMETER AzAppId
     This is the Azure app id
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
-
+    
     .PARAMETER TenantId
     This is the Azure AD tenant id
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Information about DCR/DCE
-
+    
     .EXAMPLE
     $verbose                                         = $true
-
+    
     $TenantId                                        = "xxxxx" 
     $LogIngestAppId                                  = "xxxxx" 
     $LogIngestAppSecret                              = "xxxxx" 
-
+    
     $DceName                                         = "dce-log-platform-management-client-demo1-p" 
     $LogAnalyticsWorkspaceResourceId                 = "/subscriptions/xxxxxx/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/workspaces/log-platform-management-client-demo1-p" 
     $AzDcrPrefixClient                               = "clt1" 
-
+    
     $AzDcrSetLogIngestApiAppPermissionsDcrLevel      = $false
     $AzDcrLogIngestServicePrincipalObjectId          = "xxxxxx" 
-
+    
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
     #-------------------------------------------------------------------------------------------
             
     Write-Output ""
     Write-Output "Collecting OS information ... Please Wait !"
-
+    
     $DataVariable = Get-CimInstance -ClassName Win32_OperatingSystem
-
+    
     #-------------------------------------------------------------------------------------------
     # Preparing data structure
     #-------------------------------------------------------------------------------------------
-
+    
     # convert CIM array to PSCustomObject and remove CIM class information
     $DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$Verbose
     
     # add CollectionTime to existing array
     $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
-
+    
     # add Computer & UserLoggedOn info to existing array
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName  -Column2Name UserLoggedOn -Column2Data $UserLoggedOn
-
+    
     # Validating/fixing schema data structure of source data
     $DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$Verbose
-
+    
     # Aligning data structure with schema (requirement for DCR)
     $DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$Verbose
-
+    
     # We change the tablename to something - for example add TEST (InvClientComputerOSInfoTESTV2) - table doesn't exist
     $TableName = 'InvClientComputerOSInfoTESTV2'   # must not contain _CL
     $DcrName   = "dcr-" + $AzDcrPrefixClient + "-" + $TableName + "_CL"
-
+    
     $Schema = Get-ObjectSchemaAsArray -Data $DataVariable
     $StructureCheck = Get-AzLogAnalyticsTableAzDataCollectionRuleStatus -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -TableName $TableName -DcrName $DcrName -SchemaSourceObject $Schema `
                                                                         -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
-
+    
     # build schema to be used for DCR
     $Schema = Get-ObjectSchemaAsHash -Data $DataVariable -ReturnType DCR
-
+    
     $StructureCheck = Get-AzLogAnalyticsTableAzDataCollectionRuleStatus -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -TableName $TableName -DcrName $DcrName -SchemaSourceObject $Schema `
                                                                         -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
 
@@ -2940,10 +2943,10 @@ Else
 
     $AzDcrDceDetails = Get-AzDcrDceDetails -DcrName $DcrName -DceName $DceName `
                                             -AzAppId $LogIngestAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
-
+    
     # required information is returned in the stream as variables $AzDcrDceDetails[0], $AzDcrDceDetails[1], etc
     $AzDcrDceDetails
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
@@ -2969,81 +2972,81 @@ Else
 
     .SYNOPSIS
     Create or Update Azure Data Collection Rule (DCR) used for log ingestion to Azure LogAnalytics using Log Ingestion API (combined)
-
+    
     .DESCRIPTION
     Combined function which will combine 3 functions in one call:
     Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
     CreateUpdate-AzLogAnalyticsCustomLogTableDcr
     CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
-
+    
     .PARAMETER Data
     Data object
-
+    
     .PARAMETER Tablename
     Specifies the table name in LogAnalytics
-
+    
     .PARAMETER SchemaSourceObject
     This is the schema in hash table format coming from the source object
-
+    
     .PARAMETER SchemaMode
     SchemaMode = Merge (default)
     It will do a merge/union of new properties and existing schema properties. DCR will import schema from table
-
+    
     SchemaMode = Overwrite
     It will overwrite existing schema in DCR/table – based on source object schema
     This parameter can be useful for separate overflow work
-
+    
     .PARAMETER AzLogWorkspaceResourceId
     This is the Loganaytics Resource Id
-
+    
     .PARAMETER DceName
     This is name of the Data Collection Endpoint to use for the upload
     Function will automatically look check in a global variable ($global:AzDceDetails) - or do a query using Azure Resource Graph to find DCE with name
     Goal is to find the log ingestion Uri on the DCE
-
+    
     Variable $global:AzDceDetails can be build before calling this cmdlet using this syntax
     $global:AzDceDetails = Get-AzDceListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose -Verbose:$Verbose
- 
+     
     .PARAMETER DcrName
     This is name of the Data Collection Rule to use for the upload
     Function will automatically look check in a global variable ($global:AzDcrDetails) - or do a query using Azure Resource Graph to find DCR with name
     Goal is to find the DCR immunetable id on the DCR
-
+    
     Variable $global:AzDcrDetails can be build before calling this cmdlet using this syntax
     $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose -Verbose:$Verbose
-
+    
     .PARAMETER TableName
     This is tablename of the LogAnalytics table (and is also used in the DCR naming)
-
+    
     .PARAMETER AzDcrSetLogIngestApiAppPermissionsDcrLevel
     Choose TRUE if you want to set Monitoring Publishing Contributor permissions on DCR level
     Choose FALSE if you would like to use inherited permissions from the resource group level (recommended)
-
+    
     .PARAMETER LogIngestServicePricipleObjectId
     This is the object id of the Azure App service-principal
     NOTE: Not the object id of the Azure app, but Object Id of the service principal (!)
-
+    
     .PARAMETER AzLogDcrTableCreateFromReferenceMachine
     Array with list of computers, where schema management can be done
-
+    
     .PARAMETER AzLogDcrTableCreateFromAnyMachine
     True means schema changes can be made from any computer - FALSE means it can only happen from reference machine(s)
-
+    
     .PARAMETER AzAppId
     This is the Azure app id
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
-
+    
     .PARAMETER TenantId
     This is the Azure AD tenant id
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
-
+    
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
     # Variables
@@ -3051,59 +3054,59 @@ Else
             
     $TableName                                       = 'InvClientComputerOSInfoTest4V2'   # must not contain _CL
     $DcrName                                         = "dcr-" + $AzDcrPrefixClient + "-" + $TableName + "_CL"
-
+    
     $TenantId                                        = "xxxxx" 
     $LogIngestAppId                                  = "xxxxx" 
     $LogIngestAppSecret                              = "xxxxx" 
-
+    
     $DceName                                         = "dce-log-platform-management-client-demo1-p" 
     $LogAnalyticsWorkspaceResourceId                 = "/subscriptions/xxxxxx/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/workspaces/log-platform-management-client-demo1-p" 
-
+    
     $AzDcrPrefixClient                               = "clt1" 
     $AzDcrSetLogIngestApiAppPermissionsDcrLevel      = $false
     $AzDcrLogIngestServicePrincipalObjectId          = "xxxxxx" 
-
+    
     $AzLogDcrTableCreateFromReferenceMachine         = @()
     $AzLogDcrTableCreateFromAnyMachine               = $true
-
+    
     # building global variable with all DCEs, which can be viewed by Log Ingestion app
     $global:AzDceDetails = Get-AzDceListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
     
     # building global variable with all DCRs, which can be viewed by Log Ingestion app
     $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
-
+    
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
     #-------------------------------------------------------------------------------------------
             
     Write-Output ""
     Write-Output "Collecting OS information"
-
+    
     $DataVariable = Get-CimInstance -ClassName Win32_OperatingSystem
-
+    
     #-------------------------------------------------------------------------------------------
     # Preparing data structure
     #-------------------------------------------------------------------------------------------
-
+    
     # convert CIM array to PSCustomObject and remove CIM class information
     $DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable
     
     # add CollectionTime to existing array
     $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable
-
+    
     # add Computer & UserLoggedOn info to existing array
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName -Column2Name UserLoggedOn -Column2Data $UserLoggedOn
-
+    
     # Validating/fixing schema data structure of source data
     $DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable
-
+    
     # Aligning data structure with schema (requirement for DCR)
     $DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable
-
+    
     #-------------------------------------------------------------------------------------------
     # Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
     #-------------------------------------------------------------------------------------------
-
+    
     CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId  -SchemaMode Merge `
                                          -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId `
                                          -DceName $DceName -DcrName $DcrName -TableName $TableName -Data $DataVariable `
@@ -3111,7 +3114,7 @@ Else
                                          -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
                                          -AzLogDcrTableCreateFromAnyMachine $AzLogDcrTableCreateFromAnyMachine `
                                          -AzLogDcrTableCreateFromReferenceMachine $AzLogDcrTableCreateFromReferenceMachine
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
@@ -3158,7 +3161,7 @@ Else
     Links             : {}
     ParsedHtml        : mshtml.HTMLDocumentClass
     RawContentLength  : 7764
-
+    
     VERBOSE: POST with -1-byte payload
     VERBOSE: received 1468-byte response of content type application/json; charset=utf-8
     VERBOSE: POST with -1-byte payload
@@ -3195,7 +3198,7 @@ Else
     Links             : {}
     ParsedHtml        : mshtml.HTMLDocumentClass
     RawContentLength  : 2094
-
+    
     VERBOSE: 
     VERBOSE: Updating DCR [ dcr-clt1-InvClientComputerOSInfoTest4V2_CL ] with full schema
     VERBOSE: /subscriptions/fce4f282-fcc6-43fb-94d8-bf1701b862c3/resourceGroups/rg-dcr-log-platform-management-client-demo1-p/providers/micros
@@ -3220,7 +3223,7 @@ Else
     Links             : {}
     ParsedHtml        : mshtml.HTMLDocumentClass
     RawContentLength  : 4546
-
+    
     VERBOSE: 
     VERBOSE: Waiting 10 sec to let Azure sync up so DCR rule can be retrieved from Azure Resource Graph
     VERBOSE: 
@@ -3236,118 +3239,118 @@ Else
 
     .SYNOPSIS
     Create or Update Azure Data Collection Rule (DCR) used for log ingestion to Azure LogAnalytics using Log Ingestion API
-
+    
     .DESCRIPTION
     Uses schema based on source object
-
+    
     .PARAMETER Tablename
     Specifies the table name in LogAnalytics
-
+    
     .PARAMETER SchemaSourceObject
     This is the schema in hash table format coming from the source object
-
+    
     .PARAMETER SchemaMode
     SchemaMode = Merge (default)
     It will do a merge/union of new properties and existing schema properties. DCR will import schema from table
-
+    
     SchemaMode = Overwrite
     It will overwrite existing schema in DCR/table – based on source object schema
     This parameter can be useful for separate overflow work
-
+    
     .PARAMETER AzLogWorkspaceResourceId
     This is the Loganaytics Resource Id
-
+    
     .PARAMETER DceName
     This is name of the Data Collection Endpoint to use for the upload
     Function will automatically look check in a global variable ($global:AzDceDetails) - or do a query using Azure Resource Graph to find DCE with name
     Goal is to find the log ingestion Uri on the DCE
-
+    
     Variable $global:AzDceDetails can be build before calling this cmdlet using this syntax
     $global:AzDceDetails = Get-AzDceListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose -Verbose:$Verbose
- 
+     
     .PARAMETER DcrName
     This is name of the Data Collection Rule to use for the upload
     Function will automatically look check in a global variable ($global:AzDcrDetails) - or do a query using Azure Resource Graph to find DCR with name
     Goal is to find the DCR immunetable id on the DCR
-
+    
     Variable $global:AzDcrDetails can be build before calling this cmdlet using this syntax
     $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose -Verbose:$Verbose
-
+    
     .PARAMETER TableName
     This is tablename of the LogAnalytics table (and is also used in the DCR naming)
-
+    
     .PARAMETER AzDcrSetLogIngestApiAppPermissionsDcrLevel
     Choose TRUE if you want to set Monitoring Publishing Contributor permissions on DCR level
     Choose FALSE if you would like to use inherited permissions from the resource group level (recommended)
-
+    
     .PARAMETER LogIngestServicePricipleObjectId
     This is the object id of the Azure App service-principal
     NOTE: Not the object id of the Azure app, but Object Id of the service principal (!)
-
+    
     .PARAMETER AzAppId
     This is the Azure app id
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
-
+    
     .PARAMETER TenantId
     This is the Azure AD tenant id
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
-
+    
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
     $verbose                                         = $true
-
+    
     $TenantId                                        = "xxxxx" 
     $LogIngestAppId                                  = "xxxxx" 
     $LogIngestAppSecret                              = "xxxxx" 
-
+    
     $DceName                                         = "dce-log-platform-management-client-demo1-p" 
     $LogAnalyticsWorkspaceResourceId                 = "/subscriptions/xxxxxx/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/workspaces/log-platform-management-client-demo1-p" 
     $AzDcrPrefixClient                               = "clt1" 
-
+    
     $AzDcrSetLogIngestApiAppPermissionsDcrLevel      = $false
     $AzDcrLogIngestServicePrincipalObjectId          = "xxxxxx" 
-
+    
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
     #-------------------------------------------------------------------------------------------
             
     Write-Output ""
     Write-Output "Collecting OS information ... Please Wait !"
-
+    
     $DataVariable = Get-CimInstance -ClassName Win32_OperatingSystem
-
+    
     #-------------------------------------------------------------------------------------------
     # Preparing data structure
     #-------------------------------------------------------------------------------------------
-
+    
     # convert CIM array to PSCustomObject and remove CIM class information
     $DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$Verbose
     
     # add CollectionTime to existing array
     $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
-
+    
     # add Computer & UserLoggedOn info to existing array
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName  -Column2Name UserLoggedOn -Column2Data $UserLoggedOn
-
+    
     # Validating/fixing schema data structure of source data
     $DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$Verbose
-
+    
     # Aligning data structure with schema (requirement for DCR)
     $DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$Verbose
-
+    
     # We change the tablename to something - for example add TEST (InvClientComputerOSInfoTESTV2) - table doesn't exist
     $TableName = 'InvClientComputerOSInfoTESTV2'   # must not contain _CL
     $DcrName   = "dcr-" + $AzDcrPrefixClient + "-" + $TableName + "_CL"
-
+    
     $Schema = Get-ObjectSchemaAsArray -Data $DataVariable
     $StructureCheck = Get-AzLogAnalyticsTableAzDataCollectionRuleStatus -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -TableName $TableName -DcrName $DcrName -SchemaSourceObject $Schema `
                                                                         -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
@@ -3355,7 +3358,7 @@ Else
 
     # we see that structure is missing, so we set the flag to enforce creating both DCR and table
     $StructureCheck
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
@@ -3364,16 +3367,16 @@ Else
     VERBOSE:   LogAnalytics table wasn't found !
     VERBOSE:   DCR was not found [ dcr-clt1-InvClientComputerOSInfoTESTV2_CL ]
     $True
-
+    
     # build schema to be used for LogAnalytics Table
     $Schema = Get-ObjectSchemaAsHash -Data $DataVariable -ReturnType Table -Verbose:$Verbose
-
+    
     CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -SchemaSourceObject $Schema -TableName $TableName `
                                                     -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose 
-
+    
     # build schema to be used for DCR
     $Schema = Get-ObjectSchemaAsHash -Data $DataVariable -ReturnType DCR
-
+    
     CreateUpdate-AzDataCollectionRuleLogIngestCustomLog -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -SchemaSourceObject $Schema `
                                                         -DceName $DceName -DcrName $DcrName -TableName $TableName -SchemaMode Merge `
                                                         -LogIngestServicePricipleObjectId  $AzDcrLogIngestServicePrincipalObjectId `
@@ -3418,7 +3421,7 @@ Else
     Links             : {}
     ParsedHtml        : mshtml.HTMLDocumentClass
     RawContentLength  : 2033
-
+    
     VERBOSE: 
     VERBOSE: Updating DCR [ dcr-clt1-InvClientComputerOSInfoTESTV2_CL ] with full schema
     VERBOSE: /subscriptions/fce4f282-fcc6-43fb-94d8-bf1701b862c3/resourceGroups/rg-dcr-log-platform-management-client-demo1-p/providers/micros
@@ -3443,7 +3446,7 @@ Else
     Links             : {}
     ParsedHtml        : mshtml.HTMLDocumentClass
     RawContentLength  : 4485
-
+    
     VERBOSE: 
     VERBOSE: Waiting 10 sec to let Azure sync up so DCR rule can be retrieved from Azure Resource Graph
     VERBOSE: 
@@ -3458,88 +3461,88 @@ Else
     .SYNOPSIS
     Create or Update Azure LogAnalytics Custom Log table - used together with Data Collection Rules (DCR)
     for Log Ingestion API upload to LogAnalytics
-
+    
     .DESCRIPTION
     Uses schema based on source object
-
+    
     .PARAMETER Tablename
     Specifies the table name in LogAnalytics
-
+    
     .PARAMETER SchemaSourceObject
     This is the schema in hash table format coming from the source object
-
+    
     .PARAMETER SchemaMode
     SchemaMode = Merge (default)
     It will do a merge/union of new properties and existing schema properties. DCR will import schema from table
-
+    
     SchemaMode = Overwrite
     It will overwrite existing schema in DCR/table – based on source object schema
     This parameter can be useful for separate overflow work
-
+    
     .PARAMETER AzLogWorkspaceResourceId
     This is the Loganaytics Resource Id
-
+    
     .PARAMETER AzAppId
     This is the Azure app id
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
-
+    
     .PARAMETER TenantId
     This is the Azure AD tenant id
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
-
+    
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
     $verbose                                         = $true
-
+    
     $TenantId                                        = "xxxxx" 
     $LogIngestAppId                                  = "xxxxx" 
     $LogIngestAppSecret                              = "xxxxx" 
-
+    
     $DceName                                         = "dce-log-platform-management-client-demo1-p" 
     $LogAnalyticsWorkspaceResourceId                 = "/subscriptions/xxxxxx/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/workspaces/log-platform-management-client-demo1-p" 
     $AzDcrPrefixClient                               = "clt1" 
-
+    
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
     #-------------------------------------------------------------------------------------------
             
     Write-Output ""
     Write-Output "Collecting OS information ... Please Wait !"
-
+    
     $DataVariable = Get-CimInstance -ClassName Win32_OperatingSystem
-
+    
     #-------------------------------------------------------------------------------------------
     # Preparing data structure
     #-------------------------------------------------------------------------------------------
-
+    
     # convert CIM array to PSCustomObject and remove CIM class information
     $DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$Verbose
     
     # add CollectionTime to existing array
     $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
-
+    
     # add Computer & UserLoggedOn info to existing array
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName  -Column2Name UserLoggedOn -Column2Data $UserLoggedOn
-
+    
     # Validating/fixing schema data structure of source data
     $DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$Verbose
-
+    
     # Aligning data structure with schema (requirement for DCR)
     $DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$Verbose
-
+    
     # We change the tablename to something - for example add TEST (InvClientComputerOSInfoTESTV2) - table doesn't exist
     $TableName = 'InvClientComputerOSInfoTESTV2'   # must not contain _CL
     $DcrName   = "dcr-" + $AzDcrPrefixClient + "-" + $TableName + "_CL"
-
+    
     $StructureCheck = Get-AzLogAnalyticsTableAzDataCollectionRuleStatus -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -TableName $TableName -DcrName $DcrName -SchemaSourceObject $Schema `
                                                                         -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
 
@@ -3556,13 +3559,13 @@ Else
     VERBOSE:   LogAnalytics table wasn't found !
     VERBOSE:   DCR was not found [ dcr-clt1-InvClientComputerOSInfoTESTV2_CL ]
     $True
-
+    
     # build schema to be used for LogAnalytics Table
     $Schema = Get-ObjectSchemaAsHash -Data $DataVariable -ReturnType Table -Verbose:$Verbose
-
+    
     CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -SchemaSourceObject $Schema -TableName $TableName `
                                                     -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose 
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
@@ -3607,67 +3610,67 @@ Else
 
     .SYNOPSIS
     Gets the schema of the object as array with column-names and their type (strin, boolean, dynamic, etc.)
-
+    
     .DESCRIPTION
     Used to validate the data structure - and give insight of any potential data manipulation
-
+    
     .PARAMETER Data
     Object to modify
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Updated object with CollectionTime
-
+    
     .EXAMPLE
     $verbose                                         = $true
-
+    
     $TenantId                                        = "xxxxx" 
     $LogIngestAppId                                  = "xxxxx" 
     $LogIngestAppSecret                              = "xxxxx" 
-
+    
     $TableName                                       = 'InvClientComputerOSInfoV2'   # must not contain _CL
     $DcrName                                         = "dcr-" + $AzDcrPrefixClient + "-" + $TableName + "_CL"
-
+    
     $DceName                                         = "dce-log-platform-management-client-demo1-p" 
     $LogAnalyticsWorkspaceResourceId                 = "/subscriptions/xxxxxx/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/workspaces/log-platform-management-client-demo1-p" 
     $AzDcrPrefixClient                               = "clt1" 
-
+    
     $AzDcrSetLogIngestApiAppPermissionsDcrLevel      = $false
     $AzDcrLogIngestServicePrincipalObjectId          = "xxxxxx" 
-
+    
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
     #-------------------------------------------------------------------------------------------
             
     Write-Output ""
     Write-Output "Collecting OS information ... Please Wait !"
-
+    
     $DataVariable = Get-CimInstance -ClassName Win32_OperatingSystem
-
+    
     #-------------------------------------------------------------------------------------------
     # Preparing data structure
     #-------------------------------------------------------------------------------------------
-
+    
     # convert CIM array to PSCustomObject and remove CIM class information
     $DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$Verbose
     
     # add CollectionTime to existing array
     $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
-
+    
     # add Computer & UserLoggedOn info to existing array
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName  -Column2Name UserLoggedOn -Column2Data $UserLoggedOn
-
+    
     # Validating/fixing schema data structure of source data
     $DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$Verbose
-
+    
     # Aligning data structure with schema (requirement for DCR)
     $DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$Verbose
-
+    
     $Schema = Get-ObjectSchemaAsArray -Data $DataVariable
     $Schema
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
@@ -3748,78 +3751,78 @@ Else
 
     .SYNOPSIS
     Gets the schema of the object as hash table with column-names and their type (strin, boolean, dynamic, etc.)
-
+    
     .DESCRIPTION
     Used to validate the data structure - and give insight of any potential data manipulation
     Support to return in both LogAnalytics table-format and DCR-format
-
+    
     .PARAMETER Data
     Object to modify
-
+    
     .PARAMETER ReturnType
     Object to modify
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Updated object with CollectionTime
-
+    
     .EXAMPLE
     $verbose                                         = $true
-
+    
     $TenantId                                        = "xxxxx" 
     $LogIngestAppId                                  = "xxxxx" 
     $LogIngestAppSecret                              = "xxxxx" 
-
+    
     $TableName                                       = 'InvClientComputerOSInfoV2'   # must not contain _CL
     $DcrName                                         = "dcr-" + $AzDcrPrefixClient + "-" + $TableName + "_CL"
-
+    
     $DceName                                         = "dce-log-platform-management-client-demo1-p" 
     $LogAnalyticsWorkspaceResourceId                 = "/subscriptions/xxxxxx/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/workspaces/log-platform-management-client-demo1-p" 
     $AzDcrPrefixClient                               = "clt1" 
-
+    
     $AzDcrSetLogIngestApiAppPermissionsDcrLevel      = $false
     $AzDcrLogIngestServicePrincipalObjectId          = "xxxxxx" 
-
+    
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
     #-------------------------------------------------------------------------------------------
             
     Write-Output ""
     Write-Output "Collecting OS information ... Please Wait !"
-
+    
     $DataVariable = Get-CimInstance -ClassName Win32_OperatingSystem
-
+    
     #-------------------------------------------------------------------------------------------
     # Preparing data structure
     #-------------------------------------------------------------------------------------------
-
+    
     # convert CIM array to PSCustomObject and remove CIM class information
     $DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$Verbose
     
     # add CollectionTime to existing array
     $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
-
+    
     # add Computer & UserLoggedOn info to existing array
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName  -Column2Name UserLoggedOn -Column2Data $UserLoggedOn
-
+    
     # Validating/fixing schema data structure of source data
     $DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$Verbose
-
+    
     # Aligning data structure with schema (requirement for DCR)
     $DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$Verbose
-
+    
     # build schema to be used for LogAnalytics Table
     $Schema = Get-ObjectSchemaAsHash -Data $DataVariable -ReturnType Table -Verbose:$Verbose
     $Schema
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
     PS $Schema = Get-ObjectSchemaAsHash -Data $DataVariable -ReturnType Table -Verbose:$Verbose
         $Schema
-
+    
     Name                           Value                                                                                                     
     ----                           -----                                                                                                     
     description                                                                                                                              
@@ -4029,17 +4032,17 @@ Else
     description                                                                                                                              
     name                           WindowsDirectory                                                                                          
     type                           string   
-
+    
     # build schema to be used for DCR
     $Schema = Get-ObjectSchemaAsHash -Data $DataVariable -ReturnType DCR -Verbose:$verbose
     $Schema
-
+    
     $Schema = Get-ObjectSchemaAsHash -Data $DataVariable -ReturnType DCR -Verbose:$verbose
     $Schema
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
-
+    
     Name                           Value                                                                                                     
     ----                           -----                                                                                                     
     name                           BootDevice                                                                                                
@@ -4185,40 +4188,40 @@ Else
 
     .SYNOPSIS
     Deletes the Azure Loganalytics defined in like-format, so you can fast clean-up for example after demo or testing
-
+    
     .DESCRIPTION
     Used to delete many data collection rules in one task
-
+    
     .PARAMETER DcrnameLike
     Here you can put in the DCR name(s) you want to delete using like-format - sample *demo* 
-
+    
     .PARAMETER AzLogWorkspaceResourceId
     This is resource id of the Azure LogAnalytics workspace
-
+    
     .PARAMETER AzAppId
     This is the Azure app id og an app with Contributor permissions in LogAnalytics + Resource Group for DCRs
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
-
+    
     .PARAMETER TenantId
     This is the Azure AD tenant id
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
-
+    
     .EXAMPLE
     $verbose                                         = $true
     $TenantId                                        = "xxxxx" 
     $LogIngestAppId                                  = "xxxxx" 
     $LogIngestAppSecret                              = "xxxxx" 
-
+    
     # delete Azure LogAnalytics data collection rules - based on name - NOTE: tenant-wide (use with caution) - DcrNameLike can include wildcard like *demo*
     Delete-AzDataCollectionRules -DcrNameLike "*test*" -Verbose:$true
-
+    
     # Output
     VERBOSE: Sent top=1000 skip=0 skipToken=
     VERBOSE: Received results: 69
@@ -4236,7 +4239,7 @@ Else
     StatusCode : 200
     Method     : DELETE
     Content    : 
-
+    
     Deleting Data Collection Rules [ dcr-clt1-InvClientComputerOSInfoTest4V2_CL ] ... Please Wait !
     Headers    : {[Pragma, System.String[]], [Request-Context, System.String[]], [x-ms-correlation-request-id, System.String[]], [x-ms-client
                  -request-id, System.String[]]...}
@@ -4244,7 +4247,7 @@ Else
     StatusCode : 200
     Method     : DELETE
     Content    : 
-
+    
     Deleting Data Collection Rules [ dcr-clt1-InvClientComputerOSInfoTest5V2_CL ] ... Please Wait !
     Headers    : {[Pragma, System.String[]], [Request-Context, System.String[]], [x-ms-correlation-request-id, System.String[]], [x-ms-client
                  -request-id, System.String[]]...}
@@ -4252,7 +4255,7 @@ Else
     StatusCode : 200
     Method     : DELETE
     Content    : 
-
+    
     Deleting Data Collection Rules [ dcr-clt1-InvClientComputerOSInfoTESTV2_CL ] ... Please Wait !
     Headers    : {[Pragma, System.String[]], [Request-Context, System.String[]], [x-ms-correlation-request-id, System.String[]], [x-ms-client
                  -request-id, System.String[]]...}
@@ -4261,49 +4264,49 @@ Else
     Method     : DELETE
     Content    : 
 </details>
- 
+
 <details>
   <summary><h3>Delete-AzLogAnalyticsCustomLogTables</h3></summary>
 
     .SYNOPSIS
     Deletes the Azure Loganalytics defined in like-format, so you can fast clean-up for example after demo or testing
-
+    
     .DESCRIPTION
     Used to delete many tables in one task
-
+    
     .PARAMETER TableNameLike
     Here you can put in the table name(s) you wan to delete using like-format - sample *demo* 
-
+    
     .PARAMETER AzLogWorkspaceResourceId
     This is resource id of the Azure LogAnalytics workspace
-
+    
     .PARAMETER AzAppId
     This is the Azure app id og an app with Contributor permissions in LogAnalytics + Resource Group for DCRs
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
-
+    
     .PARAMETER TenantId
     This is the Azure AD tenant id
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
-
+    
     .EXAMPLE
     $verbose                                         = $true
     $TenantId                                        = "xxxxx" 
     $LogIngestAppId                                  = "xxxxx" 
     $LogIngestAppSecret                              = "xxxxx" 
-
+    
     $LogAnalyticsWorkspaceResourceId                 = "/subscriptions/xxxxxx/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/workspaces/log-platform-management-client-demo1-p" 
 
 
     # delete Azure LogAnalytics custom logs tables with name like - * can be used like *demo*
     Delete-AzLogAnalyticsCustomLogTables -TableNameLike "*test*" -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -verbose:$verbose
-
+    
     # Output
     Getting list of tables in 
     /subscriptions/fce4f282-fcc6-43fb-94d8-bf1701b862c3/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/workspaces/log
@@ -4313,7 +4316,7 @@ Else
     LogAnalytics Resource Id
     /subscriptions/fce4f282-fcc6-43fb-94d8-bf1701b862c3/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/workspaces/log
     -platform-management-client-demo1-p
-
+    
     Table deletions in scope:
     InvClientComputerOSInfoTESTV2_CL
     InvClientComputerOSInfoTest3V2_CL
@@ -4322,65 +4325,65 @@ Else
     Deleting LogAnalytics table [ InvClientComputerOSInfoTESTV2_CL ] ... Please Wait !
     VERBOSE: DELETE with 0-byte payload
     VERBOSE: received 0-byte response of content type 
-
+    
     Deleting LogAnalytics table [ InvClientComputerOSInfoTest3V2_CL ] ... Please Wait !
     VERBOSE: DELETE with 0-byte payload
     VERBOSE: received 0-byte response of content type 
-
+    
     Deleting LogAnalytics table [ InvClientComputerOSInfoTest4V2_CL ] ... Please Wait !
     VERBOSE: DELETE with 0-byte payload
     VERBOSE: received 0-byte response of content type 
-
+    
     Deleting LogAnalytics table [ InvClientComputerOSInfoTest5V2_CL ] ... Please Wait !
     VERBOSE: DELETE with 0-byte payload
     VERBOSE: received 0-byte response of content type 
 </details>
- 
+
 <details>
   <summary><h3>Update-AzDataCollectionRuleDceEndpoint</h3></summary>
 
     .SYNOPSIS
     Updates the DceEndpointUri of the Data Collection Rule
-
+    
     .DESCRIPTION
     Used to change the Data Collection Endpoint in a Data Collection Rule
-
+    
     .PARAMETER DcrResourceId
     This is resource id of the Data Collection Rule which should be changed
-
+    
     .PARAMETER DceResourceId
     This is resource id of the Data Collection Endpoint to change to (target)
-
+    
     .PARAMETER AzAppId
     This is the Azure app id og an app with Contributor permissions in LogAnalytics + Resource Group for DCRs
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
-
+    
     .PARAMETER TenantId
     This is the Azure AD tenant id
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
-
+    
     .EXAMPLE
     $TableName                                       = 'InvClientComputerOSInfoTest4V2'   # must not contain _CL
     $DcrName                                         = "dcr-" + $AzDcrPrefixClient + "-" + $TableName + "_CL"
-
+    
     $TenantId                                        = "xxxxx" 
     $LogIngestAppId                                  = "xxxxx" 
     $LogIngestAppSecret                              = "xxxxx" 
-
+    
     $DceName                                         = "dce-log-platform-management-client-demo1-p" 
     $LogAnalyticsWorkspaceResourceId                 = "/subscriptions/xxxxxx/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/workspaces/log-platform-management-client-demo1-p" 
-
+    
     $AzDcrPrefixClient                               = "clt1" 
     $AzDcrSetLogIngestApiAppPermissionsDcrLevel      = $false
     $AzDcrLogIngestServicePrincipalObjectId          = "xxxxxx" 
-
+    
     $AzLogDcrTableCreateFromReferenceMachine         = @()
     $AzLogDcrTableCreateFromAnyMachine               = $true
 
@@ -4390,11 +4393,11 @@ Else
     
     # building global variable with all DCRs, which can be viewed by Log Ingestion app
     $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
-
+    
     # make sure the DCR & DCE actually exists
     $DcrName        = "dcr-clt1-InvClientComputerOSInfoTest5V2_CL"
     $DceNameTarget  = "dce-log-platform-management-client-demo1-p" 
-
+    
     # Get details about DCR using Azure Resource Graph
     $AzDcrDetails      = Get-AzDcrDceDetails -DcrName $DcrName -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$verbose
     
@@ -4409,10 +4412,10 @@ Else
     $AzDceDetails
     $DceResourceId     = $AzDceDetails[0]
     $DceResourceId
-
+    
     # update data collection endpoint - getting details about DCE using Azure Resource Graph
     Update-AzDataCollectionRuleDceEndpoint -DcrResourceId $DcrResourceId -DceResourceId $DceResourceId -Verbose:$verbose
-
+    
     # Output
     VERBOSE: GET with 0-byte payload
     VERBOSE: received 4797-byte response of content type application/json; charset=utf-8
@@ -4422,86 +4425,86 @@ Else
     VERBOSE: PUT with -1-byte payload
     VERBOSE: received 4769-byte response of content type application/json; charset=utf-8
 </details>
- 
+
 <details>
   <summary><h3>Update-AzDataCollectionRuleResetTransformKqlDefault</h3></summary>
 
     .SYNOPSIS
     Updates the tranformKql parameter on an existing DCR - and resets it back to default
-
+    
     .DESCRIPTION
     Used to set transformation back to default, where all data is being sent in - with needed TimeGenerated column
-
+    
     .PARAMETER $DcrResourceId
     This is the resource id of the data collection rule
-
+    
     .PARAMETER AzAppId
     This is the Azure app id og an app with Contributor permissions in LogAnalytics + Resource Group for DCRs
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
-
+    
     .PARAMETER TenantId
     This is the Azure AD tenant id
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
-
+    
     .EXAMPLE
     $TableName                                       = 'InvClientComputerOSInfoTest5V2'   # must not contain _CL
     $DcrName                                         = "dcr-" + $AzDcrPrefixClient + "-" + $TableName + "_CL"
-
+    
     $TenantId                                        = "xxxxx" 
     $LogIngestAppId                                  = "xxxxx" 
     $LogIngestAppSecret                              = "xxxxx" 
-
+    
     $DceName                                         = "dce-log-platform-management-client-demo1-p" 
     $LogAnalyticsWorkspaceResourceId                 = "/subscriptions/xxxxxx/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/workspaces/log-platform-management-client-demo1-p" 
-
+    
     $AzDcrPrefixClient                               = "clt1" 
     $AzDcrSetLogIngestApiAppPermissionsDcrLevel      = $false
     $AzDcrLogIngestServicePrincipalObjectId          = "xxxxxx" 
-
+    
     $AzLogDcrTableCreateFromReferenceMachine         = @()
     $AzLogDcrTableCreateFromAnyMachine               = $true
-
+    
     # building global variable with all DCEs, which can be viewed by Log Ingestion app
     $global:AzDceDetails = Get-AzDceListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
     
     # building global variable with all DCRs, which can be viewed by Log Ingestion app
     $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
-
+    
     Write-Output ""
     Write-Output "Collecting Defender demo data"
-
+    
     $DataVariable = Get-MpComputerStatus
-
+    
     #-------------------------------------------------------------------------------------------
     # Preparing data structure
     #-------------------------------------------------------------------------------------------
-
+    
     # convert CIM array to PSCustomObject and remove CIM class information
     $DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$verbose
     
     # add CollectionTime to existing array
     $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$verbose
-
+    
     # add Computer & UserLoggedOn info to existing array
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName -Column2Name UserLoggedOn -Column2Data $UserLoggedOn -Verbose:$verbose
-
+    
     # Validating/fixing schema data structure of source data
     $DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$verbose
-
+    
     # Aligning data structure with schema (requirement for DCR)
     $DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$verbose
-
+    
     #-------------------------------------------------------------------------------------------
     # Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
     #-------------------------------------------------------------------------------------------
-
+    
     CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId  `
                                         -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId `
                                         -DceName $DceName -DcrName $DcrName -TableName $TableName -Data $DataVariable `
@@ -4516,19 +4519,19 @@ Else
     
     # building global variable with all DCRs, which can be viewed by Log Ingestion app
     $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
-
+    
     $AzDcrDceDetails = Get-AzDcrDceDetails -DcrName $DcrName `
                                            -AzAppId $LogIngestAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
-
+    
     # make a DCR Event Log collection of security events - can be done through Sentinel
     $DcrResourceId = $AzDcrDceDetails[0]
-
+    
     # check the schema for an column name where we want to retrieve data from
     Get-ObjectSchemaAsArray -Data $DataVariable -Verbose:$Verbose
-
+    
     # set new transformation where we are adding a column AntivirusVersion with data from AMEngineVersion
     $transformKql = "source | extend TimeGenerated = now() | extend AntivirusVersion = AMEngineVersion"
-
+    
     Update-AzDataCollectionRuleTransformKql -DcrResourceId $DcrResourceId -transformKql $transformKql -Verbose:$Verbose
 
 
@@ -4542,10 +4545,10 @@ Else
     hts/dataCollectionRules/dcr-clt1-InvClientComputerOSInfoTest6V2_CL
     VERBOSE: PUT with -1-byte payload
     VERBOSE: received 4735-byte response of content type application/json; charset=utf-8
-
+    
     # force a reset of the tranformation
     Update-AzDataCollectionRuleResetTransformKqlDefault -DcrResourceId $DcrResourceId -Verbose:$true
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
@@ -4557,48 +4560,48 @@ Else
     VERBOSE: PUT with -1-byte payload
     VERBOSE: received 4691-byte response of content type application/json; charset=utf-8
 </details>
- 
+
 <details>
   <summary><h3>Update-AzDataCollectionRuleTransformKql</h3></summary>
 
     .SYNOPSIS
     Updates the tranformKql parameter on an existing DCR with the provided parameter
-
+    
     .DESCRIPTION
     Used to enable transformation on a data collection rule
-
+    
     .PARAMETER $DcrResourceId
     This is the resource id of the data collection rule
-
+    
     .PARAMETER $tranformKql
     This is tranformation query to use
-
+    
     .PARAMETER AzAppId
     This is the Azure app id og an app with Contributor permissions in LogAnalytics + Resource Group for DCRs
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
-
+    
     .PARAMETER TenantId
     This is the Azure AD tenant id
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
-
+    
     .EXAMPLE
     $Verbose = $true
-
+    
     # make a DCR Event Log collection of security events - can be done through Sentinel
     $DcrResourceId = "/subscriptions/fce4f282-fcc6-43fb-94d8-bf1701b862c3/resourceGroups/rg-logworkspaces/providers/microsoft.insights/dataCollectionRules/dcr-ingest-exclude-security-eventid"
-
+    
     # Remove transformation - send all data through pipeline
     $transformKql = "source"
-
+    
     Update-AzDataCollectionRuleTransformKql -DcrResourceId $DcrResourceId -transformKql $transformKql -Verbose:$Verbose
-
+    
     # Output
     VERBOSE: GET with 0-byte payload
     VERBOSE: received 1419-byte response of content type application/json; charset=utf-8
@@ -4607,12 +4610,12 @@ Else
     ngest-exclude-security-eventid
     VERBOSE: PUT with -1-byte payload
     VERBOSE: received 1419-byte response of content type application/json; charset=utf-8
-
+    
     # Add transformation to exclude event 8002, 5058, 4662, 4688
     $transformKql = "source | where (EventID != 8002) and (EventID != 5058) and (EventID != 4662) and (EventID != 4688)"
-
+    
     Update-AzDataCollectionRuleTransformKql -DcrResourceId $DcrResourceId -transformKql $transformKql -Verbose:$true
-
+    
     # Output
     VERBOSE: GET with 0-byte payload
     VERBOSE: received 1511-byte response of content type application/json; charset=utf-8
@@ -4632,119 +4635,119 @@ Else
 
     .SYNOPSIS
     Send data to LogAnalytics using Log Ingestion API and Data Collection Rule
-
+    
     .DESCRIPTION
     Data is either sent as one record (if only one exist), batches (calculated value of number of records to send per batch)
     - or BatchAmount (used only if the size of the records changes so you run into problems with limitations. 
     In case of diffent sizes, use 1 for BatchAmount
     Sending data in UTF8 format
-
+    
     .PARAMETER DceUri
     Here you can put in the DCE uri - typically found using Get-DceDcrDetails
-
+    
     .PARAMETER DcrImmutableId
     Here you can put in the DCR ImmunetableId - typically found using Get-DceDcrDetails
-
+    
     .PARAMETER DcrStream
     Here you can put in the DCR Stream name - typically found using Get-DceDcrDetails
-
+    
     .PARAMETER Data
     This is the data array
-
+    
     .PARAMETER AzAppId
     This is the Azure app id og an app with Contributor permissions in LogAnalytics + Resource Group for DCRs
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
-
+    
     .PARAMETER TenantId
     This is the Azure AD tenant id
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
-
+    
     .EXAMPLE
     $verbose                                         = $true
-
+    
     $TenantId                                        = "xxxxx" 
     $LogIngestAppId                                  = "xxxxx" 
     $LogIngestAppSecret                              = "xxxxx" 
-
+    
     $TableName                                       = 'InvClientComputerOSInfoV2'   # must not contain _CL
     $DcrName                                         = "dcr-" + $AzDcrPrefixClient + "-" + $TableName + "_CL"
-
+    
     $DceName                                         = "dce-log-platform-management-client-demo1-p" 
     $LogAnalyticsWorkspaceResourceId                 = "/subscriptions/xxxxxx/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/workspaces/log-platform-management-client-demo1-p" 
     $AzDcrPrefixClient                               = "clt1" 
-
+    
     $AzDcrSetLogIngestApiAppPermissionsDcrLevel      = $false
     $AzDcrLogIngestServicePrincipalObjectId          = "xxxxxx" 
-
+    
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
     #-------------------------------------------------------------------------------------------
             
     Write-Output ""
     Write-Output "Collecting OS information ... Please Wait !"
-
+    
     $DataVariable = Get-CimInstance -ClassName Win32_OperatingSystem
-
+    
     #-------------------------------------------------------------------------------------------
     # Preparing data structure
     #-------------------------------------------------------------------------------------------
-
+    
     # convert CIM array to PSCustomObject and remove CIM class information
     $DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$Verbose
     
     # add CollectionTime to existing array
     $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
-
+    
     # add Computer & UserLoggedOn info to existing array
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName  -Column2Name UserLoggedOn -Column2Data $UserLoggedOn
-
+    
     # Validating/fixing schema data structure of source data
     $DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$Verbose
-
+    
     # Aligning data structure with schema (requirement for DCR)
     $DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$Verbose
-
+    
     # We change the tablename to something - for example add TEST (InvClientComputerOSInfoTESTV2) - table doesn't exist
     $TableName = 'InvClientComputerOSInfoTESTV2'   # must not contain _CL
     $DcrName   = "dcr-" + $AzDcrPrefixClient + "-" + $TableName + "_CL"
-
+    
     $Schema = Get-ObjectSchemaAsArray -Data $DataVariable
     $StructureCheck = Get-AzLogAnalyticsTableAzDataCollectionRuleStatus -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -TableName $TableName -DcrName $DcrName -SchemaSourceObject $Schema `
                                                                         -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
-
+    
     # build schema to be used for DCR
     $Schema = Get-ObjectSchemaAsHash -Data $DataVariable -ReturnType DCR
-
+    
     $StructureCheck = Get-AzLogAnalyticsTableAzDataCollectionRuleStatus -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -TableName $TableName -DcrName $DcrName -SchemaSourceObject $Schema `
                                                                         -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
 
 
     # build schema to be used for LogAnalytics Table
     $Schema = Get-ObjectSchemaAsHash -Data $DataVariable -ReturnType Table -Verbose:$Verbose
-
+    
     CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -SchemaSourceObject $Schema -TableName $TableName `
                                                     -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose 
-
+    
     # build schema to be used for DCR
     $Schema = Get-ObjectSchemaAsHash -Data $DataVariable -ReturnType DCR
-
+    
     CreateUpdate-AzDataCollectionRuleLogIngestCustomLog -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -SchemaSourceObject $Schema `
                                                         -DceName $DceName -DcrName $DcrName -TableName $TableName `
                                                         -LogIngestServicePricipleObjectId  $AzDcrLogIngestServicePrincipalObjectId `
                                                         -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
                                                         -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
-
+    
     # here we post the data
     $AzDcrDceDetails = Get-AzDcrDceDetails -DcrName $DcrName -DceName $DceName `
                                             -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
-
+    
     Post-AzLogAnalyticsLogIngestCustomLogDcrDce  -DceUri $AzDcrDceDetails[2] -DcrImmutableId $AzDcrDceDetails[6] -TableName $TableName `
                                                     -DcrStream $AzDcrDceDetails[7] -Data $DataVariable -BatchAmount $BatchAmount `
                                                     -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
@@ -4755,56 +4758,56 @@ Else
     #-------------------------------------------------------------------------------------------
     VERBOSE: POST with -1-byte payload
     VERBOSE: received 1317-byte response of content type application/json; charset=utf-8
-
+    
       [ 1 / 1 ] - Posting data to Loganalytics table [ InvClientComputerOSInfoTESTV2_CL ] .... Please Wait !
     VERBOSE: POST with -1-byte payload
     VERBOSE: received -1-byte response of content type 
     SUCCESS - data uploaded to LogAnalytics
 </details>
- 
+
 <details>
   <summary><h3>Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output</h3></summary>
 
     .SYNOPSIS
     Send data to LogAnalytics using Log Ingestion API and Data Collection Rule (combined)
-
+    
     .DESCRIPTION
     Combined function which will combine 3 functions in one call:
     Get-AzDcrDceDetails
     Post-AzLogAnalyticsLogIngestCustomLogDcrDce
-
+    
     Data is either sent as one record (if only one exist), batches (calculated value of number of records to send per batch)
     - or BatchAmount (used only if the size of the records changes so you run into problems with limitations. 
     In case of diffent sizes, use 1 for BatchAmount
     Sending data in UTF8 format
-
+    
     .PARAMETER DceUri
     Here you can put in the DCE uri - typically found using Get-DceDcrDetails
-
+    
     .PARAMETER DcrImmutableId
     Here you can put in the DCR ImmunetableId - typically found using Get-DceDcrDetails
-
+    
     .PARAMETER DcrStream
     Here you can put in the DCR Stream name - typically found using Get-DceDcrDetails
-
+    
     .PARAMETER Tablename
     Specifies the table name in LogAnalytics
-
+    
     .PARAMETER Data
     This is the data array
-
+    
     .PARAMETER BatchAmount
     Sometimes it happens, that the data entries are of very different sizes. This parameter will allow you to force to specific amount per batch
-
+    
     .PARAMETER AzAppId
     This is the Azure app id og an app with Contributor permissions in LogAnalytics + Resource Group for DCRs
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
-
+    
     .PARAMETER TenantId
     This is the Azure AD tenant id
-
+    
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
     # Variables
@@ -4812,59 +4815,59 @@ Else
             
     $TableName                                       = 'InvClientComputerOSInfoTest4V2'   # must not contain _CL
     $DcrName                                         = "dcr-" + $AzDcrPrefixClient + "-" + $TableName + "_CL"
-
+    
     $TenantId                                        = "xxxxx" 
     $LogIngestAppId                                  = "xxxxx" 
     $LogIngestAppSecret                              = "xxxxx" 
-
+    
     $DceName                                         = "dce-log-platform-management-client-demo1-p" 
     $LogAnalyticsWorkspaceResourceId                 = "/subscriptions/xxxxxx/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/workspaces/log-platform-management-client-demo1-p" 
-
+    
     $AzDcrPrefixClient                               = "clt1" 
     $AzDcrSetLogIngestApiAppPermissionsDcrLevel      = $false
     $AzDcrLogIngestServicePrincipalObjectId          = "xxxxxx" 
-
+    
     $AzLogDcrTableCreateFromReferenceMachine         = @()
     $AzLogDcrTableCreateFromAnyMachine               = $true
-
+    
     # building global variable with all DCEs, which can be viewed by Log Ingestion app
     $global:AzDceDetails = Get-AzDceListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
     
     # building global variable with all DCRs, which can be viewed by Log Ingestion app
     $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
-
+    
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
     #-------------------------------------------------------------------------------------------
             
     Write-Output ""
     Write-Output "Collecting OS information"
-
+    
     $DataVariable = Get-CimInstance -ClassName Win32_OperatingSystem
-
+    
     #-------------------------------------------------------------------------------------------
     # Preparing data structure
     #-------------------------------------------------------------------------------------------
-
+    
     # convert CIM array to PSCustomObject and remove CIM class information
     $DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable
     
     # add CollectionTime to existing array
     $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable
-
+    
     # add Computer & UserLoggedOn info to existing array
     $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName -Column2Name UserLoggedOn -Column2Data $UserLoggedOn
-
+    
     # Validating/fixing schema data structure of source data
     $DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable
-
+    
     # Aligning data structure with schema (requirement for DCR)
     $DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable
-
+    
     #-------------------------------------------------------------------------------------------
     # Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
     #-------------------------------------------------------------------------------------------
-
+    
     CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId  `
                                         -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId `
                                         -DceName $DceName -DcrName $DcrName -TableName $TableName -Data $DataVariable `
@@ -4873,14 +4876,15 @@ Else
                                         -AzLogDcrTableCreateFromAnyMachine $AzLogDcrTableCreateFromAnyMachine `
                                         -AzLogDcrTableCreateFromReferenceMachine $AzLogDcrTableCreateFromReferenceMachine
 
-        
+
+​        
     #-----------------------------------------------------------------------------------------------
     # Upload data to LogAnalytics using DCR / DCE / Log Ingestion API
     #-----------------------------------------------------------------------------------------------
-
+    
     Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName -DcrName $DcrName -Data $DataVariable -TableName $TableName `
                                                         -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
@@ -4890,14 +4894,14 @@ Else
     VERBOSE: received 1342-byte response of content type application/json; charset=utf-8
     VERBOSE: POST with -1-byte payload
     VERBOSE: received 1317-byte response of content type application/json; charset=utf-8
-
+    
       [ 1 / 1 ] - Posting data to Loganalytics table [ InvClientComputerOSInfoTest4V2_CL ] .... Please Wait !
     VERBOSE: POST with -1-byte payload
     VERBOSE: received -1-byte response of content type 
       SUCCESS - data uploaded to LogAnalytics
-
+    
     VERBOSE: 
-
+    
     BootDevice                                : \Device\HarddiskVolume1
     BuildNumber                               : 22621
     BuildType                                 : Multiprocessor Free
@@ -4967,42 +4971,42 @@ Else
     Version                                   : 10.0.22621
     WindowsDirectory                          : C:\WINDOWS
 </details>
- 
+
 <details>
   <summary><h3>Get-AzDceListAll</h3></summary>
 
     .SYNOPSIS
     Builds list of all Data Collection Endpoints (DCEs), which can be retrieved by Azure using the RBAC context of the Log Ingestion App
-
+    
     .DESCRIPTION
     Data is retrieved using Azure Resource Graph
     Result is saved in global-variable in Powershell
     Main reason for saving as global-variable is to optimize number of times to do lookup - due to throttling in Azure Resource Graph
-
+    
     .PARAMETER AzAppId
     This is the Azure app id
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
-
+    
     .PARAMETER TenantId
     This is the Azure AD tenant id
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Updated object with CollectionTime
-
+    
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
     # Build data array
     #-------------------------------------------------------------------------------------------
-
+    
     # building global variable with all DCEs, which can be viewed by Log Ingestion app
     $global:AzDceDetails = Get-AzDceListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId
     $global:AzDceDetails
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
@@ -5026,42 +5030,42 @@ Else
     zones            : 
     extendedLocation :
 </details>
- 
+
 <details>
   <summary><h3>Get-AzDcrListAll</h3></summary>
 
     .SYNOPSIS
     Builds list of all Data Collection Rules (DCRs), which can be retrieved by Azure using the RBAC context of the Log Ingestion App
-
+    
     .DESCRIPTION
     Data is retrieved using Azure Resource Graph
     Result is saved in global-variable in Powershell
     Main reason for saving as global-variable is to optimize number of times to do lookup - due to throttling in Azure Resource Graph
-
+    
     .PARAMETER AzAppId
     This is the Azure app id
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
-
+    
     .PARAMETER TenantId
     This is the Azure AD tenant id
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     Updated object with CollectionTime
-
+    
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
     # Build data array
     #-------------------------------------------------------------------------------------------
-
+    
     # building global variable with all DCRs, which can be viewed by Log Ingestion app
     $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId
     $global:AzDcrDetails
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
@@ -5085,7 +5089,7 @@ Else
     identity         : 
     zones            : 
     extendedLocation : 
-
+    
     id               : /subscriptions/fce4f282-fcc6-43fb-94d8-bf1701b862c3/resourceGroups/rg-dcr-log-platform-management-client-demo1-p/provi
                        ders/microsoft.insights/dataCollectionRules/dcr-clt1-InvClientWindowsUpdateLastResultsV2_CL
     name             : dcr-clt1-InvClientWindowsUpdateLastResultsV2_CL
@@ -5106,7 +5110,7 @@ Else
     identity         : 
     zones            : 
     extendedLocation : 
-
+    
     id               : /subscriptions/fce4f282-fcc6-43fb-94d8-bf1701b862c3/resourceGroups/rg-dcr-log-platform-management-client-demo1-p/provi
                        ders/microsoft.insights/dataCollectionRules/dcr-clt1-InvClientWindowsUpdatePendingUpdatesV2_CL
     name             : dcr-clt1-InvClientWindowsUpdatePendingUpdatesV2_CL
@@ -5132,42 +5136,42 @@ Else
 <br>
 
 ## Category: Support functions (security)
- 
+
 <details>
   <summary><h3>Get-AzAccessTokenManagement</h3></summary>
-  
+
     .SYNOPSIS
     Get access token for connecting management.azure.com - used for REST API connectivity
-
+    
     .DESCRIPTION
     Can be used under current connected user - or by Azure app connectivity with secret
-
+    
     .PARAMETER AzAppId
     This is the Azure app id
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
-
+    
     .PARAMETER TenantId
     This is the Azure AD tenant id
-
+    
     .INPUTS
     None. You cannot pipe objects
-
+    
     .OUTPUTS
     JSON-header to use in invoke-webrequest / invoke-restmethod commands
-
+    
     .EXAMPLE
     # using App
     $Headers = Get-AzAccessTokenManagement -AzAppId $AzAppId `
                                            -AzAppSecret $AzAppSecret `
                                            -TenantId $TenantId -Verbose:$Verbose
-
+    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
     $Headers
-
+    
     Name                           Value                                                                                                     
     ----                           -----                                                                                                     
     Accept                         application/json                                                                                          
@@ -5178,10 +5182,10 @@ Else
 
     # connect using currently logged on admin
     $Headers = Get-AzAccessTokenManagement
-
+    
     #Output sample
     $Headers
-
+    
     Name                           Value                                                                                                     
     ----                           -----                                                                                                     
     Accept                         application/json                                                                                          
