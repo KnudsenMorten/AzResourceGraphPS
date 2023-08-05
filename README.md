@@ -3,9 +3,9 @@ Think of this PS-module as a helper for doing **Azure Resource Graph Queries** u
 
 
 
-Table of Context
+[toc]
 
-[TOC]
+
 
 ## Initial installation of AzResourceGraphPS
 
