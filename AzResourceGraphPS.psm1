@@ -1,674 +1,573 @@
-Function KQL-ARG-AzAvailabilitySets
+Function AzAvailabilitySets-Query-AzARG
 {
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
+$Query = @"
+    resources
+    | where type == 'microsoft.compute/availabilitysets'
+"@
+Return $Query
+}
 
-"resources `
-| where type == `"microsoft.compute/availabilitysets`" "
 
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Function AzBackupRecoveryServicesJobs-Query-AzARG
+{
+$Query = @"
+    recoveryservicesresources
+    | where type != 'microsoft.recoveryservices/vaults/backupjobs'
+"@
 Return $Query
 
 }
 
 
-Function KQL-ARG-AzBackupRecoveryServicesJobs
+Function AzBackupRecoveryServicesProtectionItems-Query-AzARG
 {
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
+$Query = @"
+    recoveryservicesresources
+    | where type == 'microsoft.recoveryservices/vaults/backupfabrics/protectioncontainers/protecteditems'
+"@
+Return $Query
+}
 
-"recoveryservicesresources `
-| where type != `"microsoft.recoveryservices/vaults/backupjobs`" "
 
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Function AzBackupRecoveryServicesVaults-Query-AzARG
+{
+$Query = @"
+    resources
+    | where type == 'microsoft.recoveryservices/vaults'
+"@
 Return $Query
 
 }
 
 
-Function KQL-ARG-AzBackupRecoveryServicesProtectionItems
+Function AzDefenderForCloudDevicesWithoutTVM-Query-AzARG
 {
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"recoveryservicesresources `
-| where type == `"microsoft.recoveryservices/vaults/backupfabrics/protectioncontainers/protecteditems`" "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = @"
+    securityresources
+    | where type == 'microsoft.security/assessments'
+    | where name contains 'ffff0522-1e88-47fc-8382-2a80ba848f5d'
+"@
 Return $Query
 
 }
 
 
-Function KQL-ARG-AzBackupRecoveryServicesVaults
+Function AzDefenderForCloudPlans-Query-AzARG
 {
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"resources `
-| where type == `"microsoft.recoveryservices/vaults`" "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = @"
+    securityresources
+    | where type == 'microsoft.security/pricings'
+    | project DefenderPlan=name
+    | distinct DefenderPlan
+    | order by DefenderPlan asc
+"@
 Return $Query
 
 }
 
 
-Function KQL-ARG-AzDefenderForCloudDevicesWithoutTVM
+Function AzDefenderForCloudPlansStatus-Query-AzARG
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"securityresources `
-| where type == `"microsoft.security/assessments`" ` 
-| where name contains `"ffff0522-1e88-47fc-8382-2a80ba848f5d`" "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = @"
+    securityresources
+    | where type == 'microsoft.security/pricings'
+    | extend tier = properties.pricingTier
+    | project DefenderPlan=name,subscriptionId,Pricing=properties.pricingTier
+    | order by DefenderPlan asc
+"@
 Return $Query
 
 }
 
 
-Function KQL-ARG-AzDefenderForCloudPlans
+Function AzDefenderForCloudRecommendationsSubAssessmentsWithDetailedInfo-Query-AzARG
 {
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
+$Query = @"
+    SecurityResources
+    | where type == 'microsoft.security/assessments/subassessments'
+    | extend AssessmentKey = extract('.*assessments/(.+?)/.*',1,  id)
+    | project AssessmentKey, subassessmentKey=name, id, parse_json(properties), resourceGroup, subscriptionId, tenantId
+    | extend SubAssessDescription = properties.description,
+            SubAssessDisplayName = properties.displayName,
+            SubAssessResourceId = properties.resourceDetails.id,
+            SubAssessResourceSource = properties.resourceDetails.source,
+            SubAssessCategory = properties.category,
+            SubAssessSeverity = properties.status.severity,
+            SubAssessCode = properties.status.code,
+            SubAssessTimeGenerated = properties.timeGenerated,
+            SubAssessRemediation = properties.remediation,
+            SubAssessImpact = properties.impact,
+            SubAssessVulnId = properties.id,
+            SubAssessMoreInfo = properties.additionalData,
+            SubAssessMoreInfoAssessedResourceType = properties.additionalData.assessedResourceType,
+            SubAssessMoreInfoData = properties.additionalData.data
+    | join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId "
+"@
+Return $Query
+}
 
-"securityresources `
-| where type == `"microsoft.security/pricings`" ` 
-| project DefenderPlan=name `
-| distinct DefenderPlan `
-| order by DefenderPlan asc"
 
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Function AzDefenderForCloudRecommendationsWithLink-Query-AzARG
+{
+$Query = @"
+    SecurityResources
+    | where type == 'microsoft.security/assessments'
+    | mvexpand Category=properties.metadata.categories
+    | extend AssessmentId=id,
+        AssessmentKey=name,
+        ResourceId=properties.resourceDetails.Id,
+        ResourceIdsplit = split(properties.resourceDetails.Id,'/'),
+	    RecommendationId=name,
+	    RecommendationName=properties.displayName,
+	    Source=properties.resourceDetails.Source,
+	    RecommendationState=properties.status.code,
+	    ActionDescription=properties.metadata.description,
+	    AssessmentType=properties.metadata.assessmentType,
+	    RemediationDescription=properties.metadata.remediationDescription,
+	    PolicyDefinitionId=properties.metadata.policyDefinitionId,
+	    ImplementationEffort=properties.metadata.implementationEffort,
+	    RecommendationSeverity=properties.metadata.severity,
+        Threats=properties.metadata.threats,
+	    UserImpact=properties.metadata.userImpact,
+	    AzPortalLink=properties.links.azurePortal,
+	    MoreInfo=properties
+    | extend ResourceSubId = tostring(ResourceIdsplit[(2)]),
+        ResourceRgName = tostring(ResourceIdsplit[(4)]),
+        ResourceType = tostring(ResourceIdsplit[(6)]),
+        ResourceName = tostring(ResourceIdsplit[(8)]),
+        FirstEvaluationDate = MoreInfo.status.firstEvaluationDate,
+        StatusChangeDate = MoreInfo.status.statusChangeDate,
+        Status = MoreInfo.status.code
+    | join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId
+    | where AssessmentType == 'BuiltIn'
+    | project-away kind,managedBy,sku,plan,tags,identity,zones,location,ResourceIdsplit,id,name,type,resourceGroup,subscriptionId, extendedLocation,subscriptionId1
+    | project SubName, ResourceSubId, ResourceRgName,ResourceType,ResourceName,TenantId=tenantId, RecommendationName, RecommendationId, RecommendationState, RecommendationSeverity, AssessmentType, PolicyDefinitionId, ImplementationEffort, UserImpact, Category, Threats, Source, ActionDescription, RemediationDescription, MoreInfo, ResourceId, AzPortalLink, AssessmentKey
+    | where RecommendationState == 'Unhealthy'
+"@
 Return $Query
 
 }
 
 
-Function KQL-ARG-AzDefenderForCloudPlansStatus
+Function AzDefenderForCloudRecommendationsWithSubAssessments-Query-AzARG
 {
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
+$Query = @"
+    SecurityResources
+    | where type == 'microsoft.security/assessments'
+    | mvexpand Category=properties.metadata.categories
+    | extend AssessmentId=id,
+        AssessmentKey=name,
+        ResourceId=properties.resourceDetails.Id,
+        ResourceIdsplit = split(properties.resourceDetails.Id,'/'),
+	    RecommendationId=name,
+	    RecommendationName=properties.displayName,
+	    Source=properties.resourceDetails.Source,
+	    RecommendationState=properties.status.code,
+	    ActionDescription=properties.metadata.description,
+	    AssessmentType=properties.metadata.assessmentType,
+	    RemediationDescription=properties.metadata.remediationDescription,
+	    PolicyDefinitionId=properties.metadata.policyDefinitionId,
+	    ImplementationEffort=properties.metadata.implementationEffort,
+	    RecommendationSeverity=properties.metadata.severity,
+        Threats=properties.metadata.threats,
+	    UserImpact=properties.metadata.userImpact,
+	    AzPortalLink=properties.links.azurePortal,
+	    MoreInfo=properties
+    | extend ResourceSubId = tostring(ResourceIdsplit[(2)]),
+        ResourceRgName = tostring(ResourceIdsplit[(4)]),
+        ResourceType = tostring(ResourceIdsplit[(6)]),
+        ResourceName = tostring(ResourceIdsplit[(8)]),
+        FirstEvaluationDate = MoreInfo.status.firstEvaluationDate,
+        StatusChangeDate = MoreInfo.status.statusChangeDate,
+        Status = MoreInfo.status.code
+    | join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId
+    | where AssessmentType == 'BuiltIn'
+    | project-away kind,managedBy,sku,plan,tags,identity,zones,location,ResourceIdsplit,id,name,type,resourceGroup,subscriptionId, extendedLocation,subscriptionId1
+    | project SubName, ResourceSubId, ResourceRgName,ResourceType,ResourceName,TenantId=tenantId, RecommendationName, RecommendationId, RecommendationState, RecommendationSeverity, AssessmentType, PolicyDefinitionId, ImplementationEffort, UserImpact, Category, Threats, Source, ActionDescription, RemediationDescription, MoreInfo, ResourceId, AzPortalLink, AssessmentKey
+    | where RecommendationState == 'Unhealthy'
+    | join kind=leftouter (
+	    securityresources
+	    | where type == 'microsoft.security/assessments/subassessments'
+	    | extend AssessmentKey = extract('.*assessments/(.+?)/.*',1,  id)
+            | project AssessmentKey, subassessmentKey=name, id, parse_json(properties), resourceGroup, subscriptionId, tenantId
+            | extend SubAssessmentSescription = properties.description,
+                SubAssessmentDisplayName = properties.displayName,
+                SubAssessmentResourceId = properties.resourceDetails.id,
+                SubAssessmentResourceSource = properties.resourceDetails.source,
+                SubAssessmentCategory = properties.category,
+                SubAssessmentSeverity = properties.status.severity,
+                SubAssessmentCode = properties.status.code,
+                SubAssessmentTimeGenerated = properties.timeGenerated,
+                SubAssessmentRemediation = properties.remediation,
+                SubAssessmentImpact = properties.impact,
+                SubAssessmentVulnId = properties.id,
+                SubAssessmentMoreInfo = properties.additionalData,
+                SubAssessmentMoreInfoAssessedResourceType = properties.additionalData.assessedResourceType,
+                SubAssessmentMoreInfoData = properties.additionalData.data
+    ) on AssessmentKey
+"@
+Return $Query
+}
 
-"securityresources `
-| where type == `"microsoft.security/pricings`" ` 
-| extend tier = properties.pricingTier `
-| project DefenderPlan=name,subscriptionId,Pricing=properties.pricingTier `
-| order by DefenderPlan asc"
 
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Function AzExtensionStatus-Query-AzARG
+{
+$Query = @"
+    Resources
+    | where (type == 'microsoft.compute/virtualmachines') or (type == 'microsoft.hybridcompute/machines')
+    | extend JoinID = toupper(id)
+    | join kind=leftouter(
+	    Resources
+	     | where (type == 'microsoft.compute/virtualmachines/extensions') or (type == 'microsoft.hybridcompute/machines/extensions')
+	     | extend VMId = toupper(substring(id, 0, indexof(id, '/extensions')))
+         | extend ExtName = name
+         | extend ExtprovisioningState = properties.provisioningState
+         | extend ExtType = properties.type
+         | extend ExtAutoUpgradeMinorVersion = properties.autoUpgradeMinorVersion
+         | extend ExtTypeHandlerVersion = properties.typeHandlerVersion
+         | extend ExtPublisher = properties.publisher
+         | extend ExtSettings = properties.settings
+         | extend ExtStatus = properties.instanceView
+         | extend ExtStatusMessage = properties.instanceView.status.message
+         ) on $left.JoinID == $right.VMId
+"@
 Return $Query
 
 }
 
 
-Function KQL-ARG-AzDefenderForCloudRecommendationsSubAssessmentsWithDetailedInfo
+Function AzHybridMachines-Query-AzARG
 {
 #--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"SecurityResources `
-| where type == 'microsoft.security/assessments/subassessments'
-| extend AssessmentKey = extract('.*assessments/(.+?)/.*',1,  id)
-| project AssessmentKey, subassessmentKey=name, id, parse_json(properties), resourceGroup, subscriptionId, tenantId
-| extend SubAssessDescription = properties.description,
-        SubAssessDisplayName = properties.displayName,
-        SubAssessResourceId = properties.resourceDetails.id,
-        SubAssessResourceSource = properties.resourceDetails.source,
-        SubAssessCategory = properties.category,
-        SubAssessSeverity = properties.status.severity,
-        SubAssessCode = properties.status.code,
-        SubAssessTimeGenerated = properties.timeGenerated,
-        SubAssessRemediation = properties.remediation,
-        SubAssessImpact = properties.impact,
-        SubAssessVulnId = properties.id,
-        SubAssessMoreInfo = properties.additionalData,
-        SubAssessMoreInfoAssessedResourceType = properties.additionalData.assessedResourceType,
-        SubAssessMoreInfoData = properties.additionalData.data `
-| join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = @"
+    resources
+    | where type == 'microsoft.hybridcompute/machines'
+"@
 Return $Query
 
 }
 
 
-Function KQL-ARG-AzDefenderForCloudRecommendationsWithLink
+Function AzHybridMachinesWithTags-Query-AzARG
 {
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"SecurityResources `
-| where type == 'microsoft.security/assessments' `
-| mvexpand Category=properties.metadata.categories `
-| extend AssessmentId=id, `
-    AssessmentKey=name, `
-    ResourceId=properties.resourceDetails.Id, `
-    ResourceIdsplit = split(properties.resourceDetails.Id,'/'), `
-	RecommendationId=name, `
-	RecommendationName=properties.displayName, `
-	Source=properties.resourceDetails.Source, `
-	RecommendationState=properties.status.code, `
-	ActionDescription=properties.metadata.description, `
-	AssessmentType=properties.metadata.assessmentType, `
-	RemediationDescription=properties.metadata.remediationDescription, `
-	PolicyDefinitionId=properties.metadata.policyDefinitionId, `
-	ImplementationEffort=properties.metadata.implementationEffort, `
-	RecommendationSeverity=properties.metadata.severity, `
-    Threats=properties.metadata.threats, `
-	UserImpact=properties.metadata.userImpact, `
-	AzPortalLink=properties.links.azurePortal, `
-	MoreInfo=properties `
-| extend ResourceSubId = tostring(ResourceIdsplit[(2)]), `
-    ResourceRgName = tostring(ResourceIdsplit[(4)]), `
-    ResourceType = tostring(ResourceIdsplit[(6)]), `
-    ResourceName = tostring(ResourceIdsplit[(8)]), `
-    FirstEvaluationDate = MoreInfo.status.firstEvaluationDate, `
-    StatusChangeDate = MoreInfo.status.statusChangeDate, `
-    Status = MoreInfo.status.code `
-| join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId `
-| where AssessmentType == 'BuiltIn' `
-| project-away kind,managedBy,sku,plan,tags,identity,zones,location,ResourceIdsplit,id,name,type,resourceGroup,subscriptionId, extendedLocation,subscriptionId1 `
-| project SubName, ResourceSubId, ResourceRgName,ResourceType,ResourceName,TenantId=tenantId, RecommendationName, RecommendationId, RecommendationState, RecommendationSeverity, AssessmentType, PolicyDefinitionId, ImplementationEffort, UserImpact, Category, Threats, Source, ActionDescription, RemediationDescription, MoreInfo, ResourceId, AzPortalLink, AssessmentKey `
-| where RecommendationState == 'Unhealthy' "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = @"
+    resources
+    | where type == 'microsoft.hybridcompute/machines'
+    | project id,name,type,location,resourceGroup,subscriptionId,tags,domain=tostring(properties.domainName)
+    | mvexpand tags
+    | extend tagKey = tostring(bag_keys(tags)[0])
+    | extend tagValue = tostring(tags[tagKey])
+"@
 Return $Query
 
 }
 
 
-Function KQL-ARG-AzDefenderForCloudRecommendationsWithSubAssessments
+Function AzIPAddressAzNativeVMs-Query-AzARG
 {
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
+$Query = @"
+    Resources
+    | where type =~ 'microsoft.compute/virtualmachines'
+    | project id, vmId = tolower(tostring(id)), vmName = name
+    | join (Resources
+        | where type =~ 'microsoft.network/networkinterfaces'
+        | mv-expand ipconfig=properties.ipConfigurations
+        | project vmId = tolower(tostring(properties.virtualMachine.id)), privateIp = ipconfig.properties.privateIPAddress, publicIpId = tostring(ipconfig.properties.publicIPAddress.id)
+        | join kind=leftouter (Resources
+            | where type =~ 'microsoft.network/publicipaddresses'
+            | project publicIpId = id, publicIp = properties.ipAddress
+        ) on publicIpId
+        | project-away publicIpId, publicIpId1
+        | summarize privateIps = make_list(privateIp), publicIps = make_list(publicIp) by vmId
+    ) on vmId
+    | project-away vmId, vmId1
+    | sort by vmName asc
+"@
+Return $Query
+}
 
-"SecurityResources `
-| where type == 'microsoft.security/assessments' `
-| mvexpand Category=properties.metadata.categories `
-| extend AssessmentId=id, `
-    AssessmentKey=name, `
-    ResourceId=properties.resourceDetails.Id, `
-    ResourceIdsplit = split(properties.resourceDetails.Id,'/'), `
-	RecommendationId=name, `
-	RecommendationName=properties.displayName, `
-	Source=properties.resourceDetails.Source, `
-	RecommendationState=properties.status.code, `
-	ActionDescription=properties.metadata.description, `
-	AssessmentType=properties.metadata.assessmentType, `
-	RemediationDescription=properties.metadata.remediationDescription, `
-	PolicyDefinitionId=properties.metadata.policyDefinitionId, `
-	ImplementationEffort=properties.metadata.implementationEffort, `
-	RecommendationSeverity=properties.metadata.severity, `
-    Threats=properties.metadata.threats, `
-	UserImpact=properties.metadata.userImpact, `
-	AzPortalLink=properties.links.azurePortal, `
-	MoreInfo=properties `
-| extend ResourceSubId = tostring(ResourceIdsplit[(2)]), `
-    ResourceRgName = tostring(ResourceIdsplit[(4)]), `
-    ResourceType = tostring(ResourceIdsplit[(6)]), `
-    ResourceName = tostring(ResourceIdsplit[(8)]), `
-    FirstEvaluationDate = MoreInfo.status.firstEvaluationDate, `
-    StatusChangeDate = MoreInfo.status.statusChangeDate, `
-    Status = MoreInfo.status.code `
-| join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId `
-| where AssessmentType == 'BuiltIn' `
-| project-away kind,managedBy,sku,plan,tags,identity,zones,location,ResourceIdsplit,id,name,type,resourceGroup,subscriptionId, extendedLocation,subscriptionId1 `
-| project SubName, ResourceSubId, ResourceRgName,ResourceType,ResourceName,TenantId=tenantId, RecommendationName, RecommendationId, RecommendationState, RecommendationSeverity, AssessmentType, PolicyDefinitionId, ImplementationEffort, UserImpact, Category, Threats, Source, ActionDescription, RemediationDescription, MoreInfo, ResourceId, AzPortalLink, AssessmentKey `
-| where RecommendationState == 'Unhealthy' `
-| join kind=leftouter (
-	securityresources
-	| where type == 'microsoft.security/assessments/subassessments'
-	| extend AssessmentKey = extract('.*assessments/(.+?)/.*',1,  id)
-        | project AssessmentKey, subassessmentKey=name, id, parse_json(properties), resourceGroup, subscriptionId, tenantId
-        | extend SubAssessmentSescription = properties.description,
-            SubAssessmentDisplayName = properties.displayName,
-            SubAssessmentResourceId = properties.resourceDetails.id,
-            SubAssessmentResourceSource = properties.resourceDetails.source,
-            SubAssessmentCategory = properties.category,
-            SubAssessmentSeverity = properties.status.severity,
-            SubAssessmentCode = properties.status.code,
-            SubAssessmentTimeGenerated = properties.timeGenerated,
-            SubAssessmentRemediation = properties.remediation,
-            SubAssessmentImpact = properties.impact,
-            SubAssessmentVulnId = properties.id,
-            SubAssessmentMoreInfo = properties.additionalData,
-            SubAssessmentMoreInfoAssessedResourceType = properties.additionalData.assessedResourceType,
-            SubAssessmentMoreInfoData = properties.additionalData.data
-) on AssessmentKey"
 
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Function AzMGs-Query-AzARG
+{
+$Query = @"
+    resourcecontainers
+    | where type == 'microsoft.management/managementgroups'
+"@
+Return $Query
+}
+
+
+Function AzMGsWithParentHierarchy-Query-AzARG
+{
+$Query = @"
+    resourcecontainers
+    | where type == 'microsoft.management/managementgroups'
+    | extend mgParent = properties.details.managementGroupAncestorsChain
+    | mv-expand with_itemindex=MGHierarchy mgParent
+    | project id, name, properties.displayName, mgParent, MGHierarchy, mgParent.name
+    | sort by MGHierarchy asc
+"@
+Return $Query
+}
+
+
+Function AzMonitorDCEs-Query-AzARG
+{
+$Query = @"
+    Resources
+    | where type =~ 'microsoft.insights/datacollectionendpoints'
+"@
+Return $Query
+}
+
+
+Function AzMonitorDCRs-Query-AzARG
+{
+$Query = @"
+    Resources
+    | where type =~ 'microsoft.insights/datacollectionrules'
+"@
+Return $Query
+}
+
+
+Function AzNativeVMs-Query-AzARG
+{
+$Query = @"
+    Resources
+    | where type == 'microsoft.compute/virtualmachines'
+    | extend osType = properties.storageProfile.osDisk.osType
+    | extend osVersion = properties.extended.instanceView.osVersion
+    | extend osName = properties.extended.instanceView.osName
+    | extend vmName = properties.osProfile.computerName
+    | extend licenseType = properties.licenseType
+    | extend PowerState = properties.extended.instanceView.powerState.displayStatus
+    | order by id, resourceGroup desc
+"@
+Return $Query
+}
+
+
+Function AzNativeVMsHybridMachines-Query-AzARG
+{
+$Query = @"
+    Resources
+    | where type in ('microsoft.compute/virtualmachines','microsoft.hybridcompute/machines')
+    | extend ostype = properties.osType
+    | extend provisioningState = properties.provisioningState
+    | extend licensetype = properties.licensetype
+    | extend displayname = properties.displayName
+    | extend status = properties.status
+    | extend computerName = properties.osprofile.computerName
+    | extend osVersion = properties.osVersion
+    | extend osName = properties.osName
+    | extend manufacturer = properties.detectedProperties.manufacturer
+    | extend model = properties.detectedProperties.model
+    | extend lastStatusChange = properties.lastStatusChange
+    | extend agentVersion = properties.agentVersion
+    | extend machineFqdn = properties.machineFqdn
+    | extend domainName = properties.domainName
+    | extend dnsFqdn = properties.dnsFqdn
+    | extend adFqdn = properties.adFqdn
+    | extend osSku = properties.osSku
+"@
 Return $Query
 
 }
 
 
-Function KQL-ARG-AzExtensionStatus
+Function AzNativeVMsWithDefenderForCloudPlanEnabled-Query-AzARG
 {
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"Resources `
-| where (type == `"microsoft.compute/virtualmachines`") or (type == `"microsoft.hybridcompute/machines`") `
-| extend JoinID = toupper(id) `
-| join kind=leftouter( `
-	Resources `
-	 | where (type == `"microsoft.compute/virtualmachines/extensions`") or (type == `"microsoft.hybridcompute/machines/extensions`") `
-	 | extend VMId = toupper(substring(id, 0, indexof(id, '/extensions')))
-     | extend ExtName = name
-     | extend ExtprovisioningState = properties.provisioningState
-     | extend ExtType = properties.type
-     | extend ExtAutoUpgradeMinorVersion = properties.autoUpgradeMinorVersion
-     | extend ExtTypeHandlerVersion = properties.typeHandlerVersion
-     | extend ExtPublisher = properties.publisher
-     | extend ExtSettings = properties.settings
-     | extend ExtStatus = properties.instanceView
-     | extend ExtStatusMessage = properties.instanceView.status.message
-     ) on `$left.JoinID == `$right.VMId"
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = @"
+    securityresources
+    | where type == 'microsoft.security/pricings'
+    | extend tier = properties.pricingTier
+    | where ( (name == 'VirtualMachines') and (properties.pricingTier == 'Standard') )
+    | project DefenderPlan=name,subscriptionId,Pricing=properties.pricingTier
+    | join kind=leftouter (
+            resources
+            | where type in ('microsoft.compute/virtualmachines','microsoft.hybridcompute/machines')
+            | project name, type, subscriptionId, resourceGroup, location
+            ) on subscriptionId
+    | project DefenderPlan, Pricing, name, type, subscriptionId, resourceGroup, location
+    | where name != ""
+"@
 Return $Query
 
 }
 
 
-Function KQL-ARG-AzHybridMachines
+Function AzNativeVMsWithTags-Query-AzARG
 {
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
+$Query = @"
+    resources
+    | where type == 'microsoft.compute/virtualmachines'
+    | project id,name,type,location,resourceGroup,subscriptionId,tags
+    | mvexpand tags
+    | extend tagKey = tostring(bag_keys(tags)[0])
+    | extend tagValue = tostring(tags[tagKey])
+"@
+Return $Query
+}
 
-"resources `
-| where type == `"microsoft.hybridcompute/machines`" "
 
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Function AzResources-Query-AzARG
+{
+$Query = @"
+    resources
+"@
+Return $Query
+}
+
+
+Function AzResourcesWithTags-Query-AzARG
+{
+$Query = @"
+    resources
+    | project id,name,type,location,resourceGroup,subscriptionId,tags
+    | mvexpand tags
+    | extend tagKey = tostring(bag_keys(tags)[0])
+    | extend tagValue = tostring(tags[tagKey])
+"@
+Return $Query
+}
+
+
+Function AzResourceTypes-Query-AzARG
+{
+$Query = @"
+    resources
+    | distinct type
+"@
 Return $Query
 
 }
 
 
-Function KQL-ARG-AzHybridMachinesWithTags
+Function AzRGs-Query-AzARG
 {
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"resources `
-| where type == `"microsoft.hybridcompute/machines`"
-| project id,name,type,location,resourceGroup,subscriptionId,tags,domain=tostring(properties.domainName) `
-| mvexpand tags `
-| extend tagKey = tostring(bag_keys(tags)[0]) `
-| extend tagValue = tostring(tags[tagKey]) "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = @"
+    resourcecontainers
+    | where type == 'microsoft.resources/subscriptions/resourcegroups'
+"@
 Return $Query
-
 }
 
 
-Function KQL-ARG-AzIPAddressAzNativeVMs
+Function AzRGsWithTags-Query-AzARG
 {
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"Resources `
-| where type =~ 'microsoft.compute/virtualmachines' `
-| project id, vmId = tolower(tostring(id)), vmName = name `
-| join (Resources `
-    | where type =~ 'microsoft.network/networkinterfaces' `
-    | mv-expand ipconfig=properties.ipConfigurations `
-    | project vmId = tolower(tostring(properties.virtualMachine.id)), privateIp = ipconfig.properties.privateIPAddress, publicIpId = tostring(ipconfig.properties.publicIPAddress.id) `
-    | join kind=leftouter (Resources `
-        | where type =~ 'microsoft.network/publicipaddresses' `
-        | project publicIpId = id, publicIp = properties.ipAddress `
-    ) on publicIpId `
-    | project-away publicIpId, publicIpId1 `
-    | summarize privateIps = make_list(privateIp), publicIps = make_list(publicIp) by vmId `
-) on vmId `
-| project-away vmId, vmId1 `
-| sort by vmName asc "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = @"
+    resourcecontainers
+    | project id,name,type,location,resourceGroup,subscriptionId,tags
+    | mvexpand tags
+    | extend tagKey = tostring(bag_keys(tags)[0])
+    | extend tagValue = tostring(tags[tagKey])
+"@
 Return $Query
-
 }
 
 
-Function KQL-ARG-AzMGs
+Function AzRoleAssignments-Query-AzARG
 {
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"resourcecontainers `
-| where type == 'microsoft.management/managementgroups' "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = @"
+    authorizationResources
+    | where type == 'microsoft.authorization/roleassignments'
+    | extend roleDefinitionIdFull = tostring(properties.roleDefinitionId)
+    | extend roleDefinitionIdsplit = split(roleDefinitionIdFull,'/')
+    | extend roleDefinitionId = tostring(roleDefinitionIdsplit[(4)])
+    | extend roleAssignmentPrincipalType = properties.principalType
+    | extend roleAssignmentDescription = properties.description
+    | extend roleAssignmentPrincipalId = properties.principalId
+    | extend roleAssignmentCreatedOn = properties.createdOn
+    | extend roleAssignmentUpdatedOn = properties.updatedOn
+    | extend roleAssignmentUpdatedById = properties.updatedBy
+    | extend roleAssignmentCreatedById = properties.createdBy
+    | extend roleAssignmentScope = properties.scope
+    | project-away managedBy,kind,sku,plan,tags,identity,zones,location,resourceGroup,subscriptionId, extendedLocation,tenantId
+    | join kind=leftouter (authorizationResources
+            | where type == 'microsoft.authorization/roledefinitions'
+            | extend roleDefinitionIdFull = tostring(id)
+            | extend roleDefinitionIdsplit = split(roleDefinitionIdFull,'/')
+            | extend roleDefinitionId = tostring(roleDefinitionIdsplit[(4)])
+            | extend description = properties.description
+            | extend roleName = properties.roleName
+            | extend roleType = properties.type
+            | project-away managedBy,kind,sku,plan,tags,identity,zones,location,resourceGroup,subscriptionId, extendedLocation,tenantId)
+      on roleDefinitionId
+    | project roleDefinitionId,roleName,roleType,roleAssignmentPrincipalType,roleAssignmentPrincipalId,roleAssignmentCreatedOn,roleAssignmentUpdatedOn,roleAssignmentUpdatedById,roleAssignmentCreatedById,roleAssignmentScope
+"@
 Return $Query
-
 }
 
 
-Function KQL-ARG-AzMGsWithParentHierarchy
+Function AzStorageAccounts-Query-AzARG
 {
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"resourcecontainers `
-| where type == 'microsoft.management/managementgroups' `
-| extend mgParent = properties.details.managementGroupAncestorsChain `
-| mv-expand with_itemindex=MGHierarchy mgParent `
-| project id, name, properties.displayName, mgParent, MGHierarchy, mgParent.name `
-| sort by MGHierarchy asc "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = @"
+    resources
+    | where type == 'microsoft.storage/storageaccounts'
+"@
 Return $Query
-
 }
 
 
-Function KQL-ARG-AzMonitorDCEs
+Function AzSubscriptions-Query-AzARG
 {
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"Resources `
-| where type =~ 'microsoft.insights/datacollectionendpoints' "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = @"
+    ResourceContainers
+    | where type =~ 'microsoft.resources/subscriptions'
+    | extend status = properties.state
+    | project id, subscriptionId, name, status | order by id, subscriptionId desc
+"@
 Return $Query
-
 }
 
 
-Function KQL-ARG-AzMonitorDCRs
+Function AzSubscriptionsWithTags-Query-AzARG
 {
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"Resources `
-| where type =~ 'microsoft.insights/datacollectionrules' "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$Query = @"
+    resourcecontainers
+    | where type == 'microsoft.resources/subscriptions'
+    | project id,name,type,location,subscriptionId,tags
+    | mvexpand tags
+    | extend tagKey = tostring(bag_keys(tags)[0])
+    | extend tagValue = tostring(tags[tagKey])
+"@
 Return $Query
-
 }
 
 
-Function KQL-ARG-AzNativeVMs
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"Resources `
-| where type == `"microsoft.compute/virtualmachines`" `
-| extend osType = properties.storageProfile.osDisk.osType `
-| extend osVersion = properties.extended.instanceView.osVersion `
-| extend osName = properties.extended.instanceView.osName `
-| extend vmName = properties.osProfile.computerName `
-| extend licenseType = properties.licenseType `
-| extend PowerState = properties.extended.instanceView.powerState.displayStatus `
-| order by id, resourceGroup desc "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function KQL-ARG-AzNativeVMsHybridMachines
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"Resources `
-| where type in (`"microsoft.compute/virtualmachines`",`"microsoft.hybridcompute/machines`") `
-| extend ostype = properties.osType `
-| extend provisioningState = properties.provisioningState `
-| extend licensetype = properties.licensetype `
-| extend displayname = properties.displayName `
-| extend status = properties.status `
-| extend computerName = properties.osprofile.computerName `
-| extend osVersion = properties.osVersion `
-| extend osName = properties.osName `
-| extend manufacturer = properties.detectedProperties.manufacturer `
-| extend model = properties.detectedProperties.model `
-| extend lastStatusChange = properties.lastStatusChange `
-| extend agentVersion = properties.agentVersion `
-| extend machineFqdn = properties.machineFqdn `
-| extend domainName = properties.domainName `
-| extend dnsFqdn = properties.dnsFqdn `
-| extend adFqdn = properties.adFqdn `
-| extend osSku = properties.osSku "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function KQL-ARG-AzNativeVMsWithDefenderForCloudPlanEnabled
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"securityresources `
-| where type == `"microsoft.security/pricings`" `
-| extend tier = properties.pricingTier `
-| where ( (name == `"VirtualMachines`") and (properties.pricingTier == `"Standard`") ) `
-| project DefenderPlan=name,subscriptionId,Pricing=properties.pricingTier `
-| join kind=leftouter ( `
-        resources  `
-        | where type in (`"microsoft.compute/virtualmachines`",`"microsoft.hybridcompute/machines`") `
-        | project name, type, subscriptionId, resourceGroup, location `
-        ) on subscriptionId `
-| project DefenderPlan, Pricing, name, type, subscriptionId, resourceGroup, location `
-| where name != `"`" "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function KQL-ARG-AzNativeVMsWithTags
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"resources `
-| where type == `"microsoft.compute/virtualmachines`" `
-| project id,name,type,location,resourceGroup,subscriptionId,tags `
-| mvexpand tags `
-| extend tagKey = tostring(bag_keys(tags)[0]) `
-| extend tagValue = tostring(tags[tagKey]) "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function KQL-ARG-AzResources
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"resources"
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function KQL-ARG-AzResourcesWithTags
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"resources `
-| project id,name,type,location,resourceGroup,subscriptionId,tags `
-| mvexpand tags `
-| extend tagKey = tostring(bag_keys(tags)[0]) `
-| extend tagValue = tostring(tags[tagKey]) "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function KQL-ARG-AzResourceTypes
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"resources `
-| distinct type "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function KQL-ARG-AzRGs
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"resourcecontainers `
-| where type == `"microsoft.resources/subscriptions/resourcegroups`" "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function KQL-ARG-AzRGsWithTags
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"resourcecontainers `
-| project id,name,type,location,resourceGroup,subscriptionId,tags `
-| mvexpand tags `
-| extend tagKey = tostring(bag_keys(tags)[0]) `
-| extend tagValue = tostring(tags[tagKey]) "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function KQL-ARG-AzRoleAssignments
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"authorizationResources `
-| where type == `"microsoft.authorization/roleassignments`" `
-| extend roleDefinitionIdFull = tostring(properties.roleDefinitionId) `
-| extend roleDefinitionIdsplit = split(roleDefinitionIdFull,'/') `
-| extend roleDefinitionId = tostring(roleDefinitionIdsplit[(4)]) `
-| extend roleAssignmentPrincipalType = properties.principalType `
-| extend roleAssignmentDescription = properties.description `
-| extend roleAssignmentPrincipalId = properties.principalId `
-| extend roleAssignmentCreatedOn = properties.createdOn `
-| extend roleAssignmentUpdatedOn = properties.updatedOn `
-| extend roleAssignmentUpdatedById = properties.updatedBy `
-| extend roleAssignmentCreatedById = properties.createdBy `
-| extend roleAssignmentScope = properties.scope `
-| project-away managedBy,kind,sku,plan,tags,identity,zones,location,resourceGroup,subscriptionId, extendedLocation,tenantId `
-| join kind=leftouter (authorizationResources `
-        | where type == `"microsoft.authorization/roledefinitions`" `
-        | extend roleDefinitionIdFull = tostring(id) `
-        | extend roleDefinitionIdsplit = split(roleDefinitionIdFull,'/') `
-        | extend roleDefinitionId = tostring(roleDefinitionIdsplit[(4)]) `
-        | extend description = properties.description `
-        | extend roleName = properties.roleName `
-        | extend roleType = properties.type `
-        | project-away managedBy,kind,sku,plan,tags,identity,zones,location,resourceGroup,subscriptionId, extendedLocation,tenantId) `
-  on roleDefinitionId `
-| project roleDefinitionId,roleName,roleType,roleAssignmentPrincipalType,roleAssignmentPrincipalId,roleAssignmentCreatedOn,roleAssignmentUpdatedOn,roleAssignmentUpdatedById,roleAssignmentCreatedById,roleAssignmentScope "
-
-#--- END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function KQL-ARG-AzStorageAccounts
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"resources `
-| where type == `"microsoft.storage/storageaccounts`" "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function KQL-ARG-AzSubscriptions
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"ResourceContainers `
-| where type =~ 'microsoft.resources/subscriptions' `
-| extend status = properties.state `
-| project id, subscriptionId, name, status | order by id, subscriptionId desc "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function KQL-ARG-AzSubscriptionsWithTags
-{
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-$Query = `
-
-"resourcecontainers `
-| where type == `"microsoft.resources/subscriptions`" `
-| project id,name,type,location,subscriptionId,tags `
-| mvexpand tags `
-| extend tagKey = tostring(bag_keys(tags)[0]) `
-| extend tagValue = tostring(tags[tagKey]) "
-
-# END -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Return $Query
-
-}
-
-
-Function Query-AzureResourceGraph
+Function Query-AzResourceGraph
 {
  <#
     .SYNOPSIS
-    Runs the query against Azure Resource Graph and returns the result
+    Runs query against Azure Resource Graph and returns the result
 
     .DESCRIPTION
-    You will pipe the query into function. Function will then run query against Azure Resource Graph, based on MG, Tenant or Subscription scope.
+    You can run custom query or pre-defined queries against Azure Resource Graph.
+    Query can be targetted on Tenant, MG or Subscription scope.
+
+    .PARAMETER Scope
+    This parameter defines the scope where necessary PS modules will be installed 
+    (if missing). Possible values are AllUsers (default) or CurrentUser
 
     .PARAMETER Query
     This parameter is the entire Query, which must be run against Azure Resource Graph
 
-    .PARAMETER Scope
-    You can choose between MG, Tenant or Subscription (or Sub as alias). If you don't choose Scope, then tenant is default.
-    If you choose MG, you will define a MG, which will be the root for query and all sub-MGs will be included
-    If you choose SUB, you will define a Subscription, which will be queried (only)
-    If you choose Tenant, you will search the entire tenant
+    .PARAMETER QueryScope
+    You can choose between MG, Tenant or Subscription (or Sub as alias). 
+    If you don't choose Scope, then tenant is default.
 
-    .PARAMETER ScopeTarget
-    If you choose MG, you will put in the mg-name like mg-2linkit. This MG will be the root for query and all sub-MGs will be included
-    If you choose Subscription, you will put in the subscription-name or subscription-id
-    If you choose Tenant, you will search the entire tenant and will NOT use ScopeTarget-parameter
+    .PARAMETER Target
+    Syntax if you chose -QueryScope MG
+    You will need to define -Target <mg-name> (Ex: -Target mg-2linkit)
+    This MG will be the root for query and all sub-MGs will be included
+    
+    Syntax if you chose -QueryScope SubScription:
+    You will need to define -Target <subscription name or id> (Ex: -Target MySub)
+
+    Syntax if you chose -QueryScope Tenant:
+    Search will automatically be done in the entire tenant
 
     .PARAMETER First
     This parameter will take only the first x records
@@ -676,9 +575,19 @@ Function Query-AzureResourceGraph
     .PARAMETER Skip
     This parameter will skip x records and then show the remaining
 
+    .PARAMETER SelectQuery
+    This switch will list all available queries in a GUI to select from
+
     .PARAMETER ShowQueryOnly
     This switch will only show the query - not run the query !
 
+    .PARAMETER InstallAutoUpdateCleanupOldVersions
+    This switch will install Az, Az.ResourceGraph and AzResourceGraphPS (if missing), 
+    auto-update PS modules Az.ResourceGraph and AzResourceGraphPS (if updates available) and
+    remove older versions of Az.ResourceGraph and AzResourceGraphPS (if found)
+    
+    NOTE: Parameter will NOT update or remove Az-module
+    
     .PARAMETER AzAppId
     This is the Azure app id
         
@@ -689,7 +598,7 @@ Function Query-AzureResourceGraph
     This is the Azure AD tenant id
 
     .INPUTS
-    Yes, yu can pipe query data into function
+    Yes, you can pipe query data into function
 
     .OUTPUTS
     Results from Azure Resource Graph, based on the defined parameters.
@@ -698,20 +607,80 @@ Function Query-AzureResourceGraph
     https://github.com/KnudsenMorten/AzResourceGraphPS
 
     .EXAMPLE
+    # Run pre-defined query against tenant - and output result to screen
+        AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -QueryScope Tenant
+
+    # Run pre-defined query against MG "2linkit"- and output result to screen
+        AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope MG -Target "2linkit"
+
+    # Run pre-defined query and return result to $Result-variable
+        $Result = AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope MG -Target "2linkit"
+        $Result | fl
+
+    # Run Custom Query and return result to $Result-variable
+        $Query = @"
+            resourcecontainers 
+            | where type == 'microsoft.management/managementgroups' 
+            | extend mgParent = properties.details.managementGroupAncestorsChain 
+            | mv-expand with_itemindex=MGHierarchy mgParent 
+            | project id, name, properties.displayName, mgParent, MGHierarchy, mgParent.name 
+            | sort by MGHierarchy asc
+"@
+
+        $Result = $Query | Query-AzResourceGraph -QueryScope "Tenant"
+        $Result | fl
+ 
+    # Show query only
+        AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -ShowQueryOnly
+
+    # Select from list of pre-defined queries
+        Query-AzResourceGraph -SelectQuery
+
+    # Run query using unattended login with AzApp & AzSecret
+        # Variables
+            $AzAppId     = "xxxx"
+            $AzAppSecret = "xxxx"
+            $TenantId    = "xxxx"
+
+        # Disconnect existing sessions
+            Disconnect-AzAccount
+
+        AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope "Tenant" -AzAppId $AzAppId `
+                                                                       -AzAppSecret $AzAppSecret `
+                                                                       -TenantId $TenantId `
+
+    # Get all Azure Resource Groups in specific subscription - show only first 2 RGs
+        AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope Subscription `
+                                                  -Target "fce4f282-fcc6-43fb-94d8-bf1701b862c3" `
+                                                  -First 2
+ 
+    # Get all management groups under management group '2linkit' - skip first 3
+        AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -QueryScope "MG" `
+                                                                        -Target "2linkit" `
+                                                                        -Skip 3
+
+    # Get all management groups under management group '2linkit' - only show first 3
+        AzMGsWithParentHierarchy | Query-AzResourceGraph -QueryScope "MG" `
+                                                         -Target "2linkit" `
+                                                         -First 3
  #>
 
     [CmdletBinding()]
     param(
-            [Parameter(Mandatory,ValueFromPipeline)]
+
+            [Parameter(ValueFromPipeline)]
                 [string]$Query,
             [Parameter()]
-                [string]$Scope,
+                [ValidateSet("Tenant","MG","Subscription")]
+                $QueryScope = "Tenant",
             [Parameter()]
-                [string]$ScopeTarget,
+                [string]$Target = $null,    # Only needed for MG or Subscription
             [Parameter()]
                 [string]$First,
             [Parameter()]
                 [string]$Skip,
+            [Parameter()]
+                [switch]$SelectQuery = $false,
             [Parameter()]
                 [switch]$ShowQueryOnly = $false,
             [Parameter()]
@@ -719,8 +688,244 @@ Function Query-AzureResourceGraph
             [Parameter()]
                 [string]$AzAppSecret,
             [Parameter()]
-                [string]$TenantId
+                [string]$TenantId,
+            [Parameter()]
+                [switch]$InstallAutoUpdateCleanupOldVersions = $false,
+            [Parameter()]
+                [ValidateSet("AllUsers","CurrentUser")]
+                $Scope = "AllUsers"
          )
+
+    #---------------------------------------------
+    # Header
+    #---------------------------------------------
+    Write-host ""
+    Write-host "----------------------------------------------------------------------"
+    Write-Host "AzResourceGraphPS | Morten Knudsen, Microsoft MVP (@knudsenmortendk)" -ForegroundColor Green
+    Write-Host ""
+    Write-host "Github repository: https://github.com/KnudsenMorten/AzResourceGraphPS"
+    Write-host "----------------------------------------------------------------------"
+
+
+    #--------------------------------------------------------------------------
+    # Check Prereq for PS Module
+    #--------------------------------------------------------------------------
+
+        If ($InstallAutoUpdateCleanupOldVersions -eq $true)
+            {
+
+                #####################################################################
+                # Az.ResourceGraph
+                #####################################################################
+
+                $Module = "Az.ResourceGraph"
+
+                $ModuleCheck = Get-Module -Name $Module -ListAvailable -ErrorAction SilentlyContinue
+                    If (!($ModuleCheck))
+                        {
+                            # check for NuGet package provider
+                            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+                            Write-host ""
+                            Write-host "Checking Powershell PackageProvider NuGet ... Please Wait !"
+                                if (Get-PackageProvider -ListAvailable -Name NuGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue) 
+                                    {
+                                        Write-Host "OK - PackageProvider NuGet is installed"
+                                    } 
+                                else 
+                                    {
+                                        try
+                                            {
+                                                Write-Host "Installing NuGet package provider .. Please Wait !"
+                                                Install-PackageProvider -Name NuGet -Scope $Scope -Confirm:$false -Force
+                                            }
+                                        catch [Exception] {
+                                            $_.message 
+                                            exit
+                                        }
+                                    }
+
+                            Write-host ""
+                            Write-host "Installing latest version of $($Module) from PsGallery in scope $($Scope) .... Please Wait !"
+
+                            Install-module -Name $Module -Repository PSGallery -Force -Scope $Scope
+                            import-module -Name $Module -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+                        }
+                    Else
+                        {
+                            #####################################
+                            # Check for any available updates                    
+                            #####################################
+
+                                # Current version
+                                $InstalledVersions = Get-module $Module -ListAvailable
+
+                                $LatestVersion = $InstalledVersions | Sort-Object Version -Descending | Select-Object -First 1
+
+                                $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
+
+                                # Online version in PSGallery (online)
+                                $OnlineVersion = Find-Module -Name $Module -Repository PSGallery
+
+                                # Compare versions
+                                if ( ([version]$Online.Version) -gt ([version]$LatestVersion.Version) ) 
+                                    {
+                                        Write-host ""
+                                        Write-host "Newer version ($($Online.version)) of $($Module) was detected in PSGallery"
+                                        Write-host ""
+                                        Write-host "Updating to latest version $($Online.version) of $($Module) from PSGallery ... Please Wait !"
+                            
+                                        Update-module Az.ResourceGraph -Force
+                                    }
+                                Else
+                                    {
+                                        # No new version detected ... continuing !
+                                        Write-host ""
+                                        Write-host "OK - Running latest version ($($LatestVersion.version)) of $($Module)"
+                                    }
+
+                            #####################################
+                            # Clean-up older versions, if found
+                            #####################################
+
+                                $InstalledVersions = Get-module $Module -ListAvailable
+                                $LatestVersion = $InstalledVersions | Sort-Object Version -Descending | Select-Object -First 1
+                                $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
+
+                                Write-host ""
+                                ForEach ($ModuleRemove in $CleanupVersions)
+                                    {
+                                        Write-Host "Removing older version $($ModuleRemove.Version) of $($ModuleRemove.Name) ... Please Wait !"
+
+                                        Uninstall-module -Name $ModuleRemove.Name -RequiredVersion $ModuleRemove.Version -Force -ErrorAction SilentlyContinue
+
+                                        # Removing left-overs if uninstall doesn't complete task
+                                        $ModulePath = (get-item $ModuleRemove.Path -ErrorAction SilentlyContinue).DirectoryName
+                                        if ( ($ModulePath) -and (Test-Path $ModulePath) )
+                                            {
+                                                $Result = takeown /F $ModulePath /A /R
+                                                $Result = icacls $modulePath /reset
+                                                $Result = icacls $modulePath /grant Administrators:'F' /inheritance:d /T
+                                                $Result = Remove-Item -Path $ModulePath -Recurse -Force -Confirm:$false
+                                            }
+                                    }
+                        } #If (!($ModuleCheck))
+
+
+                #####################################################################
+                # Az
+                #####################################################################
+                $Module = "Az"
+
+                $ModuleCheck = Get-Module -Name $Module -ListAvailable -ErrorAction SilentlyContinue
+                    If (!($ModuleCheck))
+                        {
+                            Write-host ""
+                            Write-host "Installing latest version of $($Module) from PsGallery in scope $($Scope) .... Please Wait !"
+
+                            Install-module -Name $Module -Repository PSGallery -Force -Scope $Scope
+                            import-module -Name $Module -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+                        }
+
+                #####################################################################
+                # AzResourceGraphPS
+                #####################################################################
+                $Module = "AzResourceGraphPS"
+
+                $ModuleCheck = Get-Module -Name $Module -ListAvailable -ErrorAction SilentlyContinue
+                    If (!($ModuleCheck))
+                        {
+                            Write-host ""
+                            Write-host "Installing latest version of $($Module) from PsGallery in scope $($Scope) .... Please Wait !"
+
+                            Install-module -Name $Module -Repository PSGallery -Force -Scope $Scope
+                            import-module -Name $Module -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+                        }
+                    Else
+                        {
+                            #####################################
+                            # Check for any available updates                    
+                            #####################################
+
+                                # Current version
+                                $InstalledVersions = Get-module $Module -ListAvailable
+
+                                $LatestVersion = $InstalledVersions | Sort-Object Version -Descending | Select-Object -First 1
+
+                                $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
+
+                                # Online version in PSGallery (online)
+                                $OnlineVersion = Find-Module -Name $Module -Repository PSGallery
+
+                                # Compare versions
+                                if ( ([version]$Online.Version) -gt ([version]$LatestVersion.Version) ) 
+                                    {
+                                        Write-host ""
+                                        Write-host "Newer version ($($Online.version)) of $($Module) was detected in PSGallery"
+                                        Write-host ""
+                                        Write-host "Updating to latest version $($Online.version) of $($Module) from PSGallery ... Please Wait !"
+                            
+                                        Update-module Az.ResourceGraph -Force
+                                    }
+                                Else
+                                    {
+                                        # No new version detected ... continuing !
+                                        Write-host ""
+                                        Write-host "OK - Running latest version ($($LatestVersion.version)) of $($Module)"
+                                    }
+
+                            #####################################
+                            # Clean-up older versions, if found
+                            #####################################
+
+                                $InstalledVersions = Get-module $Module -ListAvailable
+                                $LatestVersion = $InstalledVersions | Sort-Object Version -Descending | Select-Object -First 1
+                                $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
+
+                                Write-host ""
+                                ForEach ($ModuleRemove in $CleanupVersions)
+                                    {
+                                        Write-Host "Removing older version $($ModuleRemove.Version) of $($ModuleRemove.Name) ... Please Wait !"
+
+                                        Uninstall-module -Name $ModuleRemove.Name -RequiredVersion $ModuleRemove.Version -Force -ErrorAction SilentlyContinue
+
+                                        # Removing left-overs if uninstall doesn't complete task
+                                        $ModulePath = (get-item $ModuleRemove.Path -ErrorAction SilentlyContinue).DirectoryName
+                                        if ( ($ModulePath) -and (Test-Path $ModulePath) )
+                                            {
+                                                $Result = takeown /F $ModulePath /A /R
+                                                $Result = icacls $modulePath /reset
+                                                $Result = icacls $modulePath /grant Administrators:'F' /inheritance:d /T
+                                                $Result = Remove-Item -Path $ModulePath -Recurse -Force -Confirm:$false
+                                            }
+                                    }
+
+                        } #If (!($ModuleCheck))
+
+        } #If ($InstallAutoUpdateCleanupOldVersions -eq $true)
+
+
+    #--------------------------------------------------------------------------
+    # Checking Prereq for Query
+    #--------------------------------------------------------------------------
+
+        If ( ([string]::IsNullOrWhitespace($Query)) -and ([string]::IsNullOrWhitespace($InstallAutoUpdateCleanupOldVersions)) )
+            {
+                get-help Query-AzResourceGraph -full
+                Break
+            }
+
+        If ( ($QueryScope -eq "MG") -and (([string]::IsNullOrWhitespace($Target))) )
+            {
+                Write-host "When -QueryScope is MG, you need to define target using -Target <MG Name>" -ForegroundColor Red
+                Break
+            }
+
+        If ( ($QueryScope -eq "Subscription") -and (([string]::IsNullOrWhitespace($Target))) )
+            {
+                Write-host "When -QueryScope is Subscription, you need to define target using -Target <Subscription Name/Id>"  -ForegroundColor Red
+                Break
+            }
 
     #--------------------------------------------------------------------------
     # Connection
@@ -748,16 +953,6 @@ Function Query-AzureResourceGraph
     #--------------------------------------------------------------------------
         If ($ShowQueryOnly)
             {
-                Write-host ""
-                Write-host "----------------------------------------------------------------------"
-                Write-Host "AzResourceGraphPS - made by Morten Knudsen, Microsoft MVP" -ForegroundColor Green
-                Write-Host ""
-                Write-Host "Feel free to send new cool queries, which should be shared with"
-                Write-Host "community. You can send to my email mok@mortenknudsen.net - or "
-                Write-Host "through Github https://github.com/KnudsenMorten/AzResourceGraphPS "
-                Write-Host ""
-                Write-Host "I will make mention you in the credit section in README :-)"
-                Write-host "----------------------------------------------------------------------"
                 Write-host "Query, which will be run against Azure Resource Graph: "
                 Write-host ""
                 Write-host "$($Query)" -ForegroundColor Yellow
@@ -768,212 +963,126 @@ Function Query-AzureResourceGraph
             }
 
     #--------------------------------------------------------------------------
-    # Running Query
+    # Select built-in queries using GUI
     #--------------------------------------------------------------------------
-
-        Write-host ""
-        Write-host "----------------------------------------------------------------------"
-        Write-Host "AzResourceGraphPS - made by Morten Knudsen, Microsoft MVP" -ForegroundColor Green
-        Write-Host ""
-        Write-Host "Feel free to send new cool queries, which should be shared with"
-        Write-Host "community. You can send to my email mok@mortenknudsen.net - or "
-        Write-Host "through Github https://github.com/KnudsenMorten/AzResourceGraphPS "
-        Write-Host ""
-        Write-Host "I will make mention you in the credit section in README :-)"
-        Write-host "----------------------------------------------------------------------"
-        Write-host "Query, which will be run against Azure Resource Graph: "
-        Write-host ""
-        Write-host "$($Query)" -ForegroundColor Yellow
-        Write-host ""
-        Write-host "---------------------------------------------------------------------"
-        Write-host ""
-
-        $ReturnData   = @()
-        $pageSize     = 1000
-        $iteration    = 0
-
-        $searchParams = @{
-                            Query = $Query
-                             
-                            First = $pageSize
-                         }
-
-        If ($Scope -eq "MG") # Management group(s) to run query against
+        If ($SelectQuery)
             {
-                do
-                    {
-                        $iteration         += 1
-                        $pageResults       = Search-AzGraph -ManagementGroup $ScopeTarget @searchParams
-                        $searchParams.Skip += $pageResults.Count
-                        $ReturnData        += $pageResults
-                    } 
-                while ($pageResults.Count -eq $pageSize)
+                $SelectedQuery = Get-Command -Name "*-Query-AzARG" -ListImported | select Name | Out-GridView -Title 'Choose a predefined query' -PassThru
+                Write-host ""
+                Write-host "Selected Query:"
+                Write-host "    $($SelectedQuery.Name)" -ForegroundColor Yellow
+                Write-host ""
+
+                # Run the function
+                $Query = & $SelectedQuery.Name
             }
-        ElseIf ( ($Scope -eq "Subscription") -or ($Scope -eq "Sub") ) # Subscription(s) to run query against
-            {
-                do 
-                    {
-                        $iteration         += 1
-                        $pageResults       = Search-AzGraph -Subscription $ScopeTarget @searchParams
-                        $searchParams.Skip += $pageResults.Count
-                        $ReturnData        += $pageResults
-                    } 
-                while ($pageResults.Count -eq $pageSize)
-            }
-        ElseIf ( ($Scope -eq "Tenant") -or ($Scope -eq $null) )  # UseTenantScope = Run query across all available subscriptions in the current tenant
-            {
-                do 
-                    {
-                        $iteration         += 1
-                        $pageResults       = Search-AzGraph -UseTenantScope @searchParams
-                        $searchParams.Skip += $pageResults.Count
-                        $ReturnData        += $pageResults
-                    } 
-                while ($pageResults.Count -eq $pageSize)
-            }
+
+    #--------------------------------------------------------------------------
+    # First
+    #--------------------------------------------------------------------------
 
         If ($First)
             {
-                $First = $First - 1 # subtract first record (0)
-                $ReturnData = $ReturnData[0..$First]
+                Write-host ""
+                Write-host "Scoping - Only First Number of Records:"
+                Write-host "    $($First)" -ForegroundColor Yellow
+                Write-host ""
             }
+
+
+    #--------------------------------------------------------------------------
+    # Skip
+    #--------------------------------------------------------------------------
+
         If ($Skip)
             {
-                $ReturnDataCount = $ReturnData.count
-                $ReturnData = $ReturnData[$Skip..$ReturnDataCount]
+                Write-host ""
+                Write-host "Scoping - Skip Number of Records:"
+                Write-host "    $($Skip)" -ForegroundColor Yellow
+                Write-host ""
             }
 
     #--------------------------------------------------------------------------
-    # Return Result
+    # Running Query and returning result
     #--------------------------------------------------------------------------
-        Return $ReturnData
+
+        If (!([string]::IsNullOrWhitespace($Query)))
+            {
+                Write-host "Query Scope:"
+                Write-host "    $($QueryScope)" -ForegroundColor Yellow
+                Write-host ""
+                If ($Target)
+                    {
+                        Write-host "Target:"
+                        Write-host "    $($Target)" -ForegroundColor Yellow
+                        Write-host ""
+                    }
+                Write-host "Query, which will be run against Azure Resource Graph: "
+                Write-host ""
+                Write-host "$($Query)" -ForegroundColor Yellow
+                Write-host ""
+                Write-host "---------------------------------------------------------------------"
+                Write-host ""
+                Write-host "Running Query against Azure Resource Group ..."
+
+                $ReturnData   = @()
+                $pageSize     = 1000
+                $iteration    = 0
+
+                $searchParams = @{
+                                    Query = $Query
+                             
+                                    First = $pageSize
+                                 }
+
+                If ($QueryScope -eq "MG") # Management group(s) to run query against
+                    {
+                        do
+                            {
+                                $iteration         += 1
+                                $pageResults       = Search-AzGraph -ManagementGroup $Target @searchParams
+                                $searchParams.Skip += $pageResults.Count
+                                $ReturnData        += $pageResults
+                            } 
+                        while ($pageResults.Count -eq $pageSize)
+                    }
+                ElseIf ($QueryScope -eq "Subscription") # Subscription(s) to run query against
+                    {
+                        do 
+                            {
+                                $iteration         += 1
+                                $pageResults       = Search-AzGraph -Subscription $Target @searchParams
+                                $searchParams.Skip += $pageResults.Count
+                                $ReturnData        += $pageResults
+                            } 
+                        while ($pageResults.Count -eq $pageSize)
+                    }
+                ElseIf ($QueryScope -eq "Tenant")  # UseTenantScope = Run query across all available subscriptions in the current tenant
+                    {
+                        do 
+                            {
+                                $iteration         += 1
+                                $pageResults       = Search-AzGraph -UseTenantScope @searchParams
+                                $searchParams.Skip += $pageResults.Count
+                                $ReturnData        += $pageResults
+                            } 
+                        while ($pageResults.Count -eq $pageSize)
+                    }
+
+                If ($First)
+                    {
+                        $First = $First - 1 # subtract first record (0)
+                        $ReturnData = $ReturnData[0..$First]
+                    }
+                If ($Skip)
+                    {
+                        $ReturnDataCount = $ReturnData.count
+                        $ReturnData = $ReturnData[$Skip..$ReturnDataCount]
+                    }
+
+            #--------------------------------------------------------------------------
+            # Return Result
+            #--------------------------------------------------------------------------
+                Return $ReturnData
+        }
 }
-
-
-
-# SIG # Begin signature block
-# MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
-# BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAVDui3OgyYwKAO
-# tr3ii+EovvgRfLJ1DrzQ0XIatGsd9aCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
-# k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
-# ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
-# bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
-# CzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQD
-# EyBHbG9iYWxTaWduIENvZGUgU2lnbmluZyBSb290IFI0NTCCAiIwDQYJKoZIhvcN
-# AQEBBQADggIPADCCAgoCggIBALYtxTDdeuirkD0DcrA6S5kWYbLl/6VnHTcc5X7s
-# k4OqhPWjQ5uYRYq4Y1ddmwCIBCXp+GiSS4LYS8lKA/Oof2qPimEnvaFE0P31PyLC
-# o0+RjbMFsiiCkV37WYgFC5cGwpj4LKczJO5QOkHM8KCwex1N0qhYOJbp3/kbkbuL
-# ECzSx0Mdogl0oYCve+YzCgxZa4689Ktal3t/rlX7hPCA/oRM1+K6vcR1oW+9YRB0
-# RLKYB+J0q/9o3GwmPukf5eAEh60w0wyNA3xVuBZwXCR4ICXrZ2eIq7pONJhrcBHe
-# OMrUvqHAnOHfHgIB2DvhZ0OEts/8dLcvhKO/ugk3PWdssUVcGWGrQYP1rB3rdw1G
-# R3POv72Vle2dK4gQ/vpY6KdX4bPPqFrpByWbEsSegHI9k9yMlN87ROYmgPzSwwPw
-# jAzSRdYu54+YnuYE7kJuZ35CFnFi5wT5YMZkobacgSFOK8ZtaJSGxpl0c2cxepHy
-# 1Ix5bnymu35Gb03FhRIrz5oiRAiohTfOB2FXBhcSJMDEMXOhmDVXR34QOkXZLaRR
-# kJipoAc3xGUaqhxrFnf3p5fsPxkwmW8x++pAsufSxPrJ0PBQdnRZ+o1tFzK++Ol+
-# A/Tnh3Wa1EqRLIUDEwIrQoDyiWo2z8hMoM6e+MuNrRan097VmxinxpI68YJj8S4O
-# JGTfAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBhjAPBgNVHRMBAf8EBTADAQH/MB0G
-# A1UdDgQWBBQfAL9GgAr8eDm3pbRD2VZQu86WOzANBgkqhkiG9w0BAQwFAAOCAgEA
-# Xiu6dJc0RF92SChAhJPuAW7pobPWgCXme+S8CZE9D/x2rdfUMCC7j2DQkdYc8pzv
-# eBorlDICwSSWUlIC0PPR/PKbOW6Z4R+OQ0F9mh5byV2ahPwm5ofzdHImraQb2T07
-# alKgPAkeLx57szO0Rcf3rLGvk2Ctdq64shV464Nq6//bRqsk5e4C+pAfWcAvXda3
-# XaRcELdyU/hBTsz6eBolSsr+hWJDYcO0N6qB0vTWOg+9jVl+MEfeK2vnIVAzX9Rn
-# m9S4Z588J5kD/4VDjnMSyiDN6GHVsWbcF9Y5bQ/bzyM3oYKJThxrP9agzaoHnT5C
-# JqrXDO76R78aUn7RdYHTyYpiF21PiKAhoCY+r23ZYjAf6Zgorm6N1Y5McmaTgI0q
-# 41XHYGeQQlZcIlEPs9xOOe5N3dkdeBBUO27Ql28DtR6yI3PGErKaZND8lYUkqP/f
-# obDckUCu3wkzq7ndkrfxzJF0O2nrZ5cbkL/nx6BvcbtXv7ePWu16QGoWzYCELS/h
-# AtQklEOzFfwMKxv9cW/8y7x1Fzpeg9LJsy8b1ZyNf1T+fn7kVqOHp53hWVKUQY9t
-# W76GlZr/GnbdQNJRSnC0HzNjI3c/7CceWeQIh+00gkoPP/6gHcH1Z3NFhnj0qinp
-# J4fGGdvGExTDOUmHTaCX4GUT9Z13Vunas1jHOvLAzYIwggbmMIIEzqADAgECAhB3
-# vQ4DobcI+FSrBnIQ2QRHMA0GCSqGSIb3DQEBCwUAMFMxCzAJBgNVBAYTAkJFMRkw
-# FwYDVQQKExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENv
-# ZGUgU2lnbmluZyBSb290IFI0NTAeFw0yMDA3MjgwMDAwMDBaFw0zMDA3MjgwMDAw
-# MDBaMFkxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMS8w
-# LQYDVQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMDCC
-# AiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBANZCTfnjT8Yj9GwdgaYw90g9
-# z9DljeUgIpYHRDVdBs8PHXBg5iZU+lMjYAKoXwIC947Jbj2peAW9jvVPGSSZfM8R
-# Fpsfe2vSo3toZXer2LEsP9NyBjJcW6xQZywlTVYGNvzBYkx9fYYWlZpdVLpQ0LB/
-# okQZ6dZubD4Twp8R1F80W1FoMWMK+FvQ3rpZXzGviWg4QD4I6FNnTmO2IY7v3Y2F
-# QVWeHLw33JWgxHGnHxulSW4KIFl+iaNYFZcAJWnf3sJqUGVOU/troZ8YHooOX1Re
-# veBbz/IMBNLeCKEQJvey83ouwo6WwT/Opdr0WSiMN2WhMZYLjqR2dxVJhGaCJedD
-# CndSsZlRQv+hst2c0twY2cGGqUAdQZdihryo/6LHYxcG/WZ6NpQBIIl4H5D0e6lS
-# TmpPVAYqgK+ex1BC+mUK4wH0sW6sDqjjgRmoOMieAyiGpHSnR5V+cloqexVqHMRp
-# 5rC+QBmZy9J9VU4inBDgoVvDsy56i8Te8UsfjCh5MEV/bBO2PSz/LUqKKuwoDy3K
-# 1JyYikptWjYsL9+6y+JBSgh3GIitNWGUEvOkcuvuNp6nUSeRPPeiGsz8h+WX4VGH
-# aekizIPAtw9FbAfhQ0/UjErOz2OxtaQQevkNDCiwazT+IWgnb+z4+iaEW3VCzYkm
-# eVmda6tjcWKQJQ0IIPH/AgMBAAGjggGuMIIBqjAOBgNVHQ8BAf8EBAMCAYYwEwYD
-# VR0lBAwwCgYIKwYBBQUHAwMwEgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHQ4EFgQU
-# 2rONwCSQo2t30wygWd0hZ2R2C3gwHwYDVR0jBBgwFoAUHwC/RoAK/Hg5t6W0Q9lW
-# ULvOljswgZMGCCsGAQUFBwEBBIGGMIGDMDkGCCsGAQUFBzABhi1odHRwOi8vb2Nz
-# cC5nbG9iYWxzaWduLmNvbS9jb2Rlc2lnbmluZ3Jvb3RyNDUwRgYIKwYBBQUHMAKG
-# Omh0dHA6Ly9zZWN1cmUuZ2xvYmFsc2lnbi5jb20vY2FjZXJ0L2NvZGVzaWduaW5n
-# cm9vdHI0NS5jcnQwQQYDVR0fBDowODA2oDSgMoYwaHR0cDovL2NybC5nbG9iYWxz
-# aWduLmNvbS9jb2Rlc2lnbmluZ3Jvb3RyNDUuY3JsMFYGA1UdIARPME0wQQYJKwYB
-# BAGgMgEyMDQwMgYIKwYBBQUHAgEWJmh0dHBzOi8vd3d3Lmdsb2JhbHNpZ24uY29t
-# L3JlcG9zaXRvcnkvMAgGBmeBDAEEATANBgkqhkiG9w0BAQsFAAOCAgEACIhyJsav
-# +qxfBsCqjJDa0LLAopf/bhMyFlT9PvQwEZ+PmPmbUt3yohbu2XiVppp8YbgEtfjr
-# y/RhETP2ZSW3EUKL2Glux/+VtIFDqX6uv4LWTcwRo4NxahBeGQWn52x/VvSoXMNO
-# Ca1Za7j5fqUuuPzeDsKg+7AE1BMbxyepuaotMTvPRkyd60zsvC6c8YejfzhpX0FA
-# Z/ZTfepB7449+6nUEThG3zzr9s0ivRPN8OHm5TOgvjzkeNUbzCDyMHOwIhz2hNab
-# XAAC4ShSS/8SS0Dq7rAaBgaehObn8NuERvtz2StCtslXNMcWwKbrIbmqDvf+28rr
-# vBfLuGfr4z5P26mUhmRVyQkKwNkEcUoRS1pkw7x4eK1MRyZlB5nVzTZgoTNTs/Z7
-# KtWJQDxxpav4mVn945uSS90FvQsMeAYrz1PYvRKaWyeGhT+RvuB4gHNU36cdZytq
-# tq5NiYAkCFJwUPMB/0SuL5rg4UkI4eFb1zjRngqKnZQnm8qjudviNmrjb7lYYuA2
-# eDYB+sGniXomU6Ncu9Ky64rLYwgv/h7zViniNZvY/+mlvW1LWSyJLC9Su7UpkNpD
-# R7xy3bzZv4DB3LCrtEsdWDY3ZOub4YUXmimi/eYI0pL/oPh84emn0TCOXyZQK8ei
-# 4pd3iu/YTT4m65lAYPM8Zwy2CHIpNVOBNNwwggb1MIIE3aADAgECAgx5Y9ljauM7
-# cdkFAm4wDQYJKoZIhvcNAQELBQAwWTELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEds
-# b2JhbFNpZ24gbnYtc2ExLzAtBgNVBAMTJkdsb2JhbFNpZ24gR0NDIFI0NSBDb2Rl
-# U2lnbmluZyBDQSAyMDIwMB4XDTIzMDMyNzEwMjEzNFoXDTI2MDMyMzE2MTgxOFow
-# YzELMAkGA1UEBhMCREsxEDAOBgNVBAcTB0tvbGRpbmcxEDAOBgNVBAoTBzJsaW5r
-# SVQxEDAOBgNVBAMTBzJsaW5rSVQxHjAcBgkqhkiG9w0BCQEWD21va0AybGlua2l0
-# Lm5ldDCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAMykjWtM6hY5IRPe
-# VIVB+yX+3zcMJQR2gjTZ81LnGVRE94Zk2GLFAwquGYWt1shoTHTV5j6Ef2AXYBDV
-# kNruisJVJ17UsMGdsU8upwdZblFbLNzLw+qBXVC/OUVua9M0cub7CfUNkn/Won4D
-# 7i41QyuDXdZFOIfRhZ3qnCYCJCSgYLoUXAS6xei2tPkkk1w8aXEFxybyy7eRqQjk
-# HqIS5N4qH3YQkz+SbSlz/yj6mD65H5/Ts+lZxX2xL/8lgJItpdaJx+tarprv/tT+
-# +n9a13P53YNzCWOmyhd376+7DMXxxSzT24kq13Ks3xnUPGoWUx2UPRnJHjTWoBfg
-# Y7Zd3MffrdO0QEoDC9X5F5boh6oankVSOdSPRFns085KI+vkbt3bdG62MIeUbNtS
-# v7mZBX8gcYv0szlo0ey7bbOJWoiZFT2fB+pBVvxDhpYP0/3aFveM1wfhshaJBhxx
-# /2GCswYYBHH7B3+8j4BT8N8S030q4snys2Qt9tdFIHvSV7lIw/yorT1WM1cr+Lqo
-# 74eR+Hi982db0k68p2BGdCOY0QhhaNqxufwbK+gVWrQY57GIX/1cUrBt0akMsli2
-# 19xVmUGhIw85ZF7wcQplhslbUxyNUilY+c93q1bsIFjaOnjjvo56g+kyKICm5zsG
-# FQLRVaXUSLY+i8NSiH8fd64etaptAgMBAAGjggGxMIIBrTAOBgNVHQ8BAf8EBAMC
-# B4AwgZsGCCsGAQUFBwEBBIGOMIGLMEoGCCsGAQUFBzAChj5odHRwOi8vc2VjdXJl
-# Lmdsb2JhbHNpZ24uY29tL2NhY2VydC9nc2djY3I0NWNvZGVzaWduY2EyMDIwLmNy
-# dDA9BggrBgEFBQcwAYYxaHR0cDovL29jc3AuZ2xvYmFsc2lnbi5jb20vZ3NnY2Ny
-# NDVjb2Rlc2lnbmNhMjAyMDBWBgNVHSAETzBNMEEGCSsGAQQBoDIBMjA0MDIGCCsG
-# AQUFBwIBFiZodHRwczovL3d3dy5nbG9iYWxzaWduLmNvbS9yZXBvc2l0b3J5LzAI
-# BgZngQwBBAEwCQYDVR0TBAIwADBFBgNVHR8EPjA8MDqgOKA2hjRodHRwOi8vY3Js
-# Lmdsb2JhbHNpZ24uY29tL2dzZ2NjcjQ1Y29kZXNpZ25jYTIwMjAuY3JsMBMGA1Ud
-# JQQMMAoGCCsGAQUFBwMDMB8GA1UdIwQYMBaAFNqzjcAkkKNrd9MMoFndIWdkdgt4
-# MB0GA1UdDgQWBBQxxpY2q5yrKa7VFODTZhTfPKmyyTANBgkqhkiG9w0BAQsFAAOC
-# AgEAe38NgZR4IV9u264/n/jiWlHbBu847j1vpN6dovxMvdUQZ780eH3JzcvG8fo9
-# 1uO1iDIZksSigiB+d8Sj5Yvh+oXlfYEffjIQCwcIlWNciOzWYZzl9qPHXgdTnaIu
-# JA5cR846TepQLVMXc1Yb72Z7OGjldmRIxGjRimDsmzY+TdTu15lF4IkUj0VJhr8F
-# PYOdEVZVOXHtPmUjPqsq9M7WpALYbc0pUawcy0FOOwXqzaCk7O3vMXej4Oycm6RB
-# GfRH3JPOCvH2ddiIfPq2Lce4nhTuLsgumBJE2vOalVddIfTBjE9PpMub15lHyp1m
-# fW0ZJvXOghPvRqufMT3SjPTHt6PV8LwhQD8BiGSZ9rp94js4xTnGexSOFKLLMxWE
-# PTr5EPe3kmtspGgKCqLEZvsMYz7JlWNuaHBy+vdQZWV3376luwV4IHfGT+1wxe0E
-# 90dMRI+9SNIKkVvKV3FUtToZUh3Np4cCIHJLQ1eslXFzIJa6wrjVsnWM/3OyedpQ
-# JERGNYXlVmxdgGFjrY1I6UWII0Y1iZW3t+JvhXosUaha8i/YSxaDH+5H/Klad2OZ
-# Xq4Eg39QxkCELbmJmSU0sUYNnl0JTEu6jJY9UJMFikzf5s3p2ZuKdyMbRgN5GNNV
-# 883meI/X5KVHBJDG1epigMer7fFXMVZUGoI12iIz/gOolQExggMbMIIDFwIBATBp
-# MFkxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMS8wLQYD
-# VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
-# Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
-# AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIG2owjrr97ZIpURi7TAFJb0C
-# Px95CGQQDSX5BdVSi45DMA0GCSqGSIb3DQEBAQUABIICABS+leeUgp5nPa7sqqc1
-# 0HS3jwydMfUFpYVf15h//C42UaD5/HWC/LYa2VK0alJpY4Je7RGHPJ6tjdur3EZC
-# vEQefcU8izHEw9AvvalTjBfFSbubxu/YohOF81/aEiecdjnXS6Ohtw6vPfW5H/Zl
-# b85jyN1O+xrKIj8cZIMRpPfhwccE5w3yQOaMvMe6NhDn71dPCC0d59qfSYZ3P5uE
-# vRftz0wbSJZ6h5ovze5bDhxprQ4Xo4P1Im7VmVn1DmX07zpz+umURYX6jf32fh3W
-# GsTfwejKzN4o8T0SRLM4xKn0AVIxEBReFYIbbs/gdXvkXuugFAo4Nhi3UfS0E1Xr
-# 4Kb9J6MAO1kxkrhmiad7bm0tyjUoBpSd7CFcwPEO3XMA1mY3ungZXp67ewuqtDG7
-# iYrrHlQsHIjhlsKsSIsPnQys8riImXYLXixYagD1nSujP8EsBr+QMZxjfmeViN6Q
-# GxIDKWbbM2gQsU0xbiO0P302WdesyoBElMlvApnx+qW3ijZf70Qd0lKhfWEZcHp2
-# PzwIDd56MNXdipxjBCDeq1nNbS9XGWsxrlY3JrmLyplfNN+RUlWJGk/dLVI6wtYZ
-# MtSHBoGnWOsqT+CQ/7U3V/5tDyTrWIKTn/caTE9i+MMwNkF4wFtITCEoKeYI+Uer
-# gyVb5p2rWJgyVTmV3vjl3GCW
-# SIG # End signature block
