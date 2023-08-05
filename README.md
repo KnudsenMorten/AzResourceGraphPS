@@ -19,7 +19,7 @@ You can [find latest version of AzResourceGraphPS here (Github)](https://raw.git
 
 
 
-## Module Version Check with Auto-update & Clean-up old versions
+## Module Version-check with Auto-update & Clean-up old versions
 
 After the initial installation, you can check if the pre-requisites with the needed PS-modules are OK using the below cmdlet.
 
@@ -43,11 +43,11 @@ Query-AzResourceGraph -InstallAutoUpdateCleanupOldVersions -Scope AllUsers
 
 
 
-# Usage of Query-AzResourceGraph
+## Usage of Query-AzResourceGraph
 
 
 
-## Run pre-defined query against tenant - and output result to screen
+### Run pre-defined query against tenant - and output result to screen
 
 ```
 AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -QueryScope Tenant
@@ -57,7 +57,7 @@ AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -QueryScope Tenant
 
 
 
-## Run pre-defined query against MG "2linkit"- and output result to screen
+### Run pre-defined query against MG "2linkit"- and output result to screen
 
 ```
 AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope MG -Target "2linkit"
@@ -67,7 +67,7 @@ AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope MG -Target "2linkit"
 
 
 
-## Run pre-defined query and return result to $Result-variable
+### Run pre-defined query and return result to $Result-variable
 
 ```
 $Test = AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -QueryScope "MG" `
@@ -79,7 +79,7 @@ $test | fl
 
 
 
-## Run Custom Query and return result to $Result-variable
+### Run Custom Query and return result to $Result-variable
 
 ```
 $Query = @"
@@ -99,7 +99,7 @@ $Result | fl
 
 
 
-## Show query only
+### Show query only
 
 ```
 AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -ShowQueryOnly
@@ -109,7 +109,7 @@ AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -ShowQueryOnly
 
 
 
-## Select from list of pre-defined queries
+### Select from list of pre-defined queries
 
 ```
 Query-AzResourceGraph -SelectQuery
@@ -125,13 +125,13 @@ Example of output, where you can see the selected query from the previous list.
 
 
 
-## Run query with initial interactive login
+### Run query with initial interactive login
 
 ![](img/interactive-signin.jpg)
 
 
 
-## Run query using unattended login with AzApp & AzSecret
+### Run query using unattended login with AzApp & AzSecret
 
 ```
 # Variables
@@ -151,7 +151,7 @@ AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope "Tenant" -AzAppId $AzAppId
 
 
 
-## Show only first x records
+### Show only first x records
 
 ```
 # Get all Azure Resource Groups in specific subscription - show only first 2 RGs
@@ -164,7 +164,7 @@ AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope Subscription `
 
 
 
-## Skip first x records
+### Skip first x records
 
 ```
 # Get all management groups under management group '2linkit' - skip first 3
@@ -177,11 +177,11 @@ AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -QueryScope "MG" `
 
 
 
-# Troubleshooting
+## Troubleshooting
 
 
 
-## Query Context can be wrong
+### Query Context can be wrong
 
 Check the output for the Query Context Account to see which account the query runs under.
 
@@ -197,7 +197,7 @@ Check the output for the Query Context Account to see which account the query ru
 
 
 
-## Change Context
+### Change Context
 
 If you need to change the existing context, use the **Disconnect-AzAccount**. 
 
@@ -218,11 +218,11 @@ You can now make the query using either Azure App service principal or using int
 
 
 
-# Credits for queries
+## Credits for queries
 
 
 
-## Billy York
+### Billy York
 
 Github: https://github.com/scautomation/AzureResourceGraph-Examples
 
@@ -230,13 +230,13 @@ Blog: https://www.cloudsma.com/2021/01/azure-resource-graph-examples-repo/
 
 
 
-## Wesley Hackman
+### Wesley Hackman
 
 Github: https://github.com/whaakman/azure-resource-graph-samples
 
 
 
-## Wilfried Woivre
+### Wilfried Woivre
 
 Github: https://github.com/wilfriedwoivre/azure-resource-graph-queries
 
@@ -244,12 +244,12 @@ Blog: https://woivre.com/blog/2020/09/azure-resource-graph-community-samples
 
 
 
-## Ludovic Alarcon
+### Ludovic Alarcon
 
 Blog: https://ludovic-alarcon.com/Resource-Graph-NodePool/
 
 
 
-## Microsoft
+### Microsoft
 
 https://learn.microsoft.com/en-us/azure/governance/resource-graph/samples/samples-by-table
