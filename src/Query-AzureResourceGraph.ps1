@@ -43,11 +43,11 @@ Function Query-AzResourceGraph
     This switch will only show the query - not run the query !
 
     .PARAMETER InstallAutoUpdateCleanupOldVersions
-    This switch will install Az, Az.ResourceGraph and AzResourceGraphPS (if missing), 
+    This switch will install Az.Accounts, Az.ResourceGraph and AzResourceGraphPS (if missing), 
     auto-update PS modules Az.ResourceGraph and AzResourceGraphPS (if updates available) and
     remove older versions of Az.ResourceGraph and AzResourceGraphPS (if found)
     
-    NOTE: Parameter will NOT update or remove Az-module
+    NOTE: Parameter will NOT update or remove Az.Accounts-module
     
     .PARAMETER AzAppId
     This is the Azure app id
@@ -274,9 +274,9 @@ Function Query-AzResourceGraph
 
 
                 #####################################################################
-                # Az
+                # Az.Accounts
                 #####################################################################
-                $Module = "Az"
+                $Module = "Az.Accounts"
 
                 $ModuleCheck = Get-Module -Name $Module -ListAvailable -ErrorAction SilentlyContinue
                     If (!($ModuleCheck))
@@ -551,8 +551,8 @@ Function Query-AzResourceGraph
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU9Daz3/Y319BoD/lMsqLVmBIE
-# WnSggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU52KBr8R3Z59FLWYdPARwIUl7
+# kemggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -631,16 +631,16 @@ Function Query-AzResourceGraph
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# TMvwR4LvwEeRE3n58QRo1ZnY6icwDQYJKoZIhvcNAQEBBQAEggIAk1ZdrHF0PoSZ
-# dC+TbraF88go3Z9uFVslzea1Znqv3rOZ7gCSs9TxTwcmR3jBNS7qPm1o2DnBkDU7
-# ZegAGSCSsyCXvPHJperW0DHIcBUGXpXARbjmuFej7ot4MM3sHEdrNHIVccit2nDL
-# UttsNuOEkQFuKLwzYm4m3bED/SC4rBQK+vXLhFl+uiVm05gByfV253J9KPrtp7V0
-# EYnHgCD+zqb5uagdQlVqt0i8thIdTnu3r5VFXKCrBSBeS6skXAQ2kDrPkdXDGLu2
-# pYEptcILuxV09Nvxeo8bQ9h5GM4V09sDjcsd/67UKq9BSraU3mm4ftAsVYiSfFLE
-# BBBvxkd9YIM/bK/xTi850Pgu1vJLWmy1eRWlw0bFkIWle3CsNwvEFHleCvq65Ldm
-# P8VG8+IkhvGpGp586h/UOG1zuW4BjX2MeQmqJ6+gTxl8GsL8zZiTjZRQ4H7JiJxk
-# fFGxJknmQIN5Y2P78UW3xp1ehUSTtR8ypJPJ84G81iyzII/SJ30bvSKu9u22aLiB
-# t+TT+hd+fEpCVTj0L+nN80Oz1sREWdUuR0yL21+JOOelYg/2KHxVp1wWkVeJS9lD
-# 4hmhKTSz+Y+Ox4/xMDDQyxUOy4G2zIvth09hOaBPp7GFdbABwNV+fy6Uj5iq/VUE
-# Qn1l4/AFk6HBccQJ6AycsA6IMkbhK0k=
+# 7e0wAfWJCEu7dDH9gE4GEeZWkg0wDQYJKoZIhvcNAQEBBQAEggIAa1pXJVOm2c81
+# RqytTtg+q9dFbBYTsZsZMeTBM5T0cwtQA0jr0kW+n96K8yOzB3P4wDN4ZCA/3WrR
+# CnaYj6fLWcTbdt+68BqnzcYXlmAizs9i1loCEhvnLofBHr1vaEfXDyvh/i/8/IDm
+# +C1JoTl7cxRkTrs2dix7VT6xlXt5lpBNpWIU2TWR22DSyWPBOp98NvV69eaeuBRD
+# U6GWtwZokp7VgqPi4G19AC2fI4cPeSuaFBGTQo4qFJZ/BDQhGd4J1tlq02FJd7Z5
+# fEnDkBYgB8CKYV76h5qaFADcw9qNlUTcc0Ry44cKMxldwxEK7/1GA04hsHo72yqD
+# iOMY53t3Q1+JaCM7jeLfGxwYRHQFwGWJYXipN+bfEO7d45E4LVM4wgrnxZbv+CFj
+# Cy9TNulyBw0mqifC2qscwPfO0843499hT1qRrDoCMEuR7gXh6qMor5X32ptAjxny
+# tQbOhseMEMgmAn23qWpvXL4O1xD/8O5jSSS3TubR81T4wwQCETm9QxCVOywpBkGp
+# cHNRS4tE0kBhk+owb5ipfejCr0sAlNNARRADDRSnfQRLSIaXuLlLq3sR/6HliiSB
+# 62N7eUbIhsD0GVkRwe/zEPzwWmR5WsdOcywL+XWcHpf/JBrAheU5sXkLZ1BQ45qX
+# Qf5MzhKtGzyYdELEHGsb0S0freW1DW0=
 # SIG # End signature block
