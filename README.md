@@ -5,8 +5,6 @@ Think of this PS-module as a helper for doing **Azure Resource Graph Queries** u
 
 [toc]
 
-
-
 ## Initial installation of AzResourceGraphPS
 
 ```
