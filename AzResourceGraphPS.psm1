@@ -699,6 +699,7 @@ Function Query-AzResourceGraph
     Write-Host ""
     Write-host "Github repository: https://github.com/KnudsenMorten/AzResourceGraphPS"
     Write-host "----------------------------------------------------------------------"
+    Write-host ""
 
 
     #--------------------------------------------------------------------------
@@ -936,11 +937,11 @@ Function Query-AzResourceGraph
                     {
                         $AzAppSecretSecure = $AzAppSecret | ConvertTo-SecureString -AsPlainText -Force
                         $SecureCreds = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $AzAppId, $AzAppSecretSecure
-                        Connect-AzAccount -ServicePrincipal -Credential $SecureCreds -Tenant $TenantId -WarningAction SilentlyContinue
+                        $Context = Connect-AzAccount -ServicePrincipal -Credential $SecureCreds -Tenant $TenantId -WarningAction SilentlyContinue
                     }
                 Else
                     {
-                        Connect-AzAccount -WarningAction SilentlyContinue
+                        $Context = Connect-AzAccount -WarningAction SilentlyContinue
                     }
             }
 
@@ -977,49 +978,57 @@ Function Query-AzResourceGraph
     # First
     #--------------------------------------------------------------------------
 
-        If ($First)
-            {
-                Write-host ""
-                Write-host "Scoping - Only First Number of Records:"
-                Write-host "    $($First)" -ForegroundColor Yellow
-                Write-host ""
-            }
-
-
-    #--------------------------------------------------------------------------
-    # Skip
-    #--------------------------------------------------------------------------
-
-        If ($Skip)
-            {
-                Write-host ""
-                Write-host "Scoping - Skip Number of Records:"
-                Write-host "    $($Skip)" -ForegroundColor Yellow
-                Write-host ""
-            }
 
     #--------------------------------------------------------------------------
     # Running Query and returning result
     #--------------------------------------------------------------------------
 
+        $QueryContextAccount = (Get-AzContext).Account
+        $QueryContextTenant  = (Get-AzContext).Tenant
+
         If (!([string]::IsNullOrWhitespace($Query)))
             {
+                Write-host "Query Context Account:"
+                Write-host "    $($QueryContextAccount)" -ForegroundColor Yellow
+                Write-host ""
+                Write-host "Query Context Tenant:"
+                Write-host "    $($QueryContextTenant)" -ForegroundColor Yellow
+                Write-host ""
                 Write-host "Query Scope:"
                 Write-host "    $($QueryScope)" -ForegroundColor Yellow
                 Write-host ""
+
+                # Target defined
                 If ($Target)
                     {
                         Write-host "Target:"
                         Write-host "    $($Target)" -ForegroundColor Yellow
                         Write-host ""
                     }
+
+                # First defined
+                If ($First)
+                    {
+                        Write-host "Scoping - Only First Number of Records:"
+                        Write-host "    $($First)" -ForegroundColor Yellow
+                        Write-host ""
+                    }
+
+                # Skip defined
+                If ($Skip)
+                    {
+                        Write-host "Scoping - Skip Number of Records:"
+                        Write-host "    $($Skip)" -ForegroundColor Yellow
+                        Write-host ""
+                    }
+
                 Write-host "Query, which will be run against Azure Resource Graph: "
                 Write-host ""
                 Write-host "$($Query)" -ForegroundColor Yellow
                 Write-host ""
                 Write-host "---------------------------------------------------------------------"
                 Write-host ""
-                Write-host "Running Query against Azure Resource Group ..."
+                Write-host "Running Query against Azure Resource Group ... Please Wait !"
 
                 $ReturnData   = @()
                 $pageSize     = 1000

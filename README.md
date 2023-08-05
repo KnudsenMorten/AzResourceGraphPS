@@ -1,27 +1,13 @@
 # AzResourceGraphPS
-I'm really happy to announce my newest PS-module, **AzResourceGraphPS**.
-
-Think of this PS-module as a helper for **Microsoft Graph version-management, connectivity** and **data management** using **Microsoft Graph**. It does also support **generic Microsoft REST API connectivity** and **data management** like https://api.securitycenter.microsoft.com/api/machines. Lastly, it includes new custom cmdlets I use often like Get-MgUser-AllProperties-AllUsers
-
-| Function Name                      | Funtionality                                                 |
-| ---------------------------------- | ------------------------------------------------------------ |
-| Manage-Version-Microsoft.Graph     | Version management of Microsoft.Graph PS modules<br/>Installing latest version of Microsoft.Graph, if not found<br/>Shows older installed versions of Microsoft.Graph<br/>Checks if newer version if available from PSGallery of Microsoft.Graph<br/>Automatic clean-up old versions of Microsoft.Graph<br/>Update to latest version from PSGallery of Microsoft.Graph<br/>Remove all versions of Microsoft.Graph (complete re-install) |
-| InstallUpdate-MicrosoftGraphPS     | Install latest version of MicrosoftGraphPS, if not found<br/>Update to latest version of MicrosoftGraphPS, if switch (-AutoUpdate) is set |
-| Connect-MicrosoftGraphPS           | Connect to Microsoft Graph using Azure App & Secret<br/>Connect to Microsoft Graph using Azure App & Certificate Thumprint<br/>Connect to Microsoft Graph using interactive login and scope |
-| Invoke-MgGraphRequestPS            | Invoke command with pagination support to get/put/post/patch/delete data using Microsoft Graph REST endpoint. |
-| Connect-MicrosoftRestApiEndpointPS | Connect to REST API endpoint like https://api.securitycenter.microsoft.com using Azure App & Secret |
-| Invoke-MicrosoftRestApiRequestPS   | Invoke command to get/put/post/patch/delete data using Microsoft REST API endpoint<br/>Get data using Microsoft REST API endpoint like <br/>https://api.securitycenter.microsoft.com/api/machines |
-| Get-MgUser-AllProperties-AllUsers  | Get all properties for all users<br/>Expands manager information<br/>Excludes certain properties which cannot be returned within a user collection in bulk retrieval<br/><br/>The following properties are only supported when retrieving a single user: aboutMe, birthday, hireDate, interests, mySite, pastProjects, preferredName, <br/>responsibilities, schools, skills, mailboxSettings, DeviceEnrollmentLimit, print, SignInActivity |
+Think of this PS-module as a helper for doing **Azure Resource Graph Queries** using more than **+100 pre-defined queries** or you can make your own **custom queries**. You can connect using **Azure App** or through a **interactive login**. Solution supports **auto-update** so you will always have access to the latest queries, part of this solution.
 
 
 
-## Download of AzResourceGraphPS
+Table of Context
 
-You can [find latest version of AzResourceGraphPS here (Github)](https://raw.githubusercontent.com/KnudsenMorten/AzResourceGraphPS/main/AzResourceGraphPS.psm1) - or from [Powershell Gallery using this link](https://www.powershellgallery.com/packages/AzResourceGraphPS)
+[TOC]
 
-
-
-#### Initial installation of AzResourceGraphPS
+## Initial installation of AzResourceGraphPS
 
 ```
 install-module AzResourceGraphPS -Scope AllUsers -Force
@@ -29,7 +15,15 @@ install-module AzResourceGraphPS -Scope AllUsers -Force
 
 
 
-#### Install pre-requisites modules
+You can [find latest version of AzResourceGraphPS here (Github)](https://raw.githubusercontent.com/KnudsenMorten/AzResourceGraphPS/main/AzResourceGraphPS.psm1) - or from [Powershell Gallery using this link](https://www.powershellgallery.com/packages/AzResourceGraphPS)
+
+
+
+## Module Version Check with Auto-update & Clean-up old versions
+
+After the initial installation, you can check if the pre-requisites with the needed PS-modules are OK using the below cmdlet.
+
+Running the check will also auto-update **Az.ResourceGraph** and **AzResourceGraphPS** to latest version, if newer versions are detected. Lastly the cmdlet will remove any older versions of the required PS-modules, if found.
 
 ```
 Query-AzResourceGraph -InstallAutoUpdateCleanupOldVersions -Scope AllUsers
@@ -37,52 +31,55 @@ Query-AzResourceGraph -InstallAutoUpdateCleanupOldVersions -Scope AllUsers
 
 
 
-#### **Update modules to latest versions** & Remove older versions
-
-```
-Query-AzResourceGraph -InstallAutoUpdateCleanupOldVersions -Scope AllUsers
-```
+![](img/install.jpg)
 
 
 
-# Syntax
+![](img/Update.jpg)
 
 
 
-#### Install if missing + Update all modules to latest version + clean-up old modules if found
-
-```
-Query-AzResourceGraph -InstallAutoUpdateCleanupOldVersions -Scope AllUsers
-```
+![](img/install_both.jpg)
 
 
 
-#### Run pre-defined query against tenant - and output result to screen
+# Usage of Query-AzResourceGraph
+
+
+
+## Run pre-defined query against tenant - and output result to screen
 
 ```
 AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -QueryScope Tenant
 ```
 
+![](img/Predefined-query-tenant.jpg)
 
 
-#### Run pre-defined query against MG "2linkit"- and output result to screen
+
+## Run pre-defined query against MG "2linkit"- and output result to screen
 
 ```
 AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope MG -Target "2linkit"
 ```
 
+![](img/predefined-query-mg.jpg)
 
 
-#### Run pre-defined query and return result to $Result-variable
+
+## Run pre-defined query and return result to $Result-variable
 
 ```
-$Result = AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope MG -Target "2linkit"
-$Result | fl
+$Test = AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -QueryScope "MG" `
+                                                                     -Target "2linkit"
+$test | fl
 ```
 
+![](img/Output-result.jpg)
 
 
-#### Run Custom Query and return result to $Result-variable
+
+## Run Custom Query and return result to $Result-variable
 
 ```
 $Query = @"
@@ -98,25 +95,43 @@ $Result = $Query | Query-AzResourceGraph -QueryScope "Tenant"
 $Result | fl
 ```
 
+![](img/custom-query.jpg)
 
 
-#### Show query only
+
+## Show query only
 
 ```
 AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -ShowQueryOnly
 ```
 
+![](img/query_only.jpg)
 
 
-#### Select from list of pre-defined queries
+
+## Select from list of pre-defined queries
 
 ```
 Query-AzResourceGraph -SelectQuery
 ```
 
+![Skip](img/select-query.jpg)
 
 
-#### Run query using unattended login with AzApp & AzSecret
+
+Example of output, where you can see the selected query from the previous list.
+
+![Skip](img/Selected-query-output.jpg)
+
+
+
+## Run query with initial interactive login
+
+![](img/interactive-signin.jpg)
+
+
+
+## Run query using unattended login with AzApp & AzSecret
 
 ```
 # Variables
@@ -132,9 +147,11 @@ AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope "Tenant" -AzAppId $AzAppId
                                                                -TenantId $TenantId
 ```
 
+![](img/App-login.jpg)
 
 
-#### Show only first x records
+
+## Show only first x records
 
 ```
 # Get all Azure Resource Groups in specific subscription - show only first 2 RGs
@@ -143,9 +160,11 @@ AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope Subscription `
                                           -First 2
 ```
 
+![Skip](img/Scoping-first.jpg)
 
 
-#### Skip first x records
+
+## Skip first x records
 
 ```
 # Get all management groups under management group '2linkit' - skip first 3
@@ -154,7 +173,48 @@ AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -QueryScope "MG" `
                                                              -Skip 3
 ```
 
+![Skip](img/Scoping-skip.jpg)
 
+
+
+# Troubleshooting
+
+
+
+## Query Context can be wrong
+
+Check the output for the Query Context Account to see which account the query runs under.
+
+#### Interactive account (admin)
+
+![](img/query-context-interactive-admin.jpg)
+
+
+
+#### Azure app service principal
+
+![](img/App-context.jpg)
+
+
+
+## Change Context
+
+If you need to change the existing context, use the **Disconnect-AzAccount**. 
+
+```
+# Disconnect existing sessions
+Disconnect-AzAccount
+```
+
+
+
+You can now make the query using either Azure App service principal or using interactive login.
+
+![](img/interactive-signin.jpg)
+
+
+
+![](img/App-login.jpg)
 
 
 
