@@ -1904,6 +1904,9 @@ Function Query-AzResourceGraph
     https://github.com/KnudsenMorten/AzResourceGraphPS
 
     .EXAMPLE
+    # Install if missing + Update all modules to latest version + clean-up old modules if found
+        Query-AzResourceGraph -InstallAutoUpdateCleanupOldVersions -Scope AllUsers
+
     # Run pre-defined query against tenant - and output result to screen
         AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -QueryScope Tenant
 
@@ -2062,7 +2065,7 @@ Function Query-AzResourceGraph
                                 $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
 
                                 # Online version in PSGallery (online)
-                                $OnlineVersion = Find-Module -Name $Module -Repository PSGallery
+                                $Online = Find-Module -Name $Module -Repository PSGallery
 
                                 # Compare versions
                                 if ( ([version]$Online.Version) -gt ([version]$LatestVersion.Version) ) 
@@ -2072,7 +2075,8 @@ Function Query-AzResourceGraph
                                         Write-host ""
                                         Write-host "Updating to latest version $($Online.version) of $($Module) from PSGallery ... Please Wait !"
                             
-                                        Update-module Az.ResourceGraph -Force
+                                        remove-module $Module -Force
+                                        Update-module $Module -Force
                                     }
                                 Else
                                     {
@@ -2152,7 +2156,7 @@ Function Query-AzResourceGraph
                                 $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
 
                                 # Online version in PSGallery (online)
-                                $OnlineVersion = Find-Module -Name $Module -Repository PSGallery
+                                $Online = Find-Module -Name $Module -Repository PSGallery
 
                                 # Compare versions
                                 if ( ([version]$Online.Version) -gt ([version]$LatestVersion.Version) ) 
@@ -2162,7 +2166,8 @@ Function Query-AzResourceGraph
                                         Write-host ""
                                         Write-host "Updating to latest version $($Online.version) of $($Module) from PSGallery ... Please Wait !"
                             
-                                        Update-module Az.ResourceGraph -Force
+                                        remove-module $Module -Force
+                                        Update-module $Module -Force
                                     }
                                 Else
                                     {
@@ -2389,8 +2394,8 @@ Function Query-AzResourceGraph
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD+JVKgsE9zmnwT
-# oylhbXWeMCHiP1lxTTENElhrNRJ+aaCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBtZ3sn16RzkCUS
+# pKpVCLhfrIUk5CBxxx/CqLvGLYJ67qCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -2498,17 +2503,17 @@ Function Query-AzResourceGraph
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEINiF9aFR8MGz1bRNxgVSJEiU
-# 35a2hK+GGOIeGYOpy60eMA0GCSqGSIb3DQEBAQUABIICAC6Qf0y8qyoAMrhlVbFp
-# 0KDPgIAuKBqWS4GauP6jbRYeBh9uuPljgDB7CQO9EPP/SPjLsLUf8qHYCWq03OIx
-# PL75p3aIIztVM1Ak3AbavN9VU8TSzfk46r7XVD2L94EPFWhCel2tP0vmteZG+/3K
-# WBXnB5DIf4+tlg0xPRHnD3WU1htERIur2YtTujuY0my3+morrwRD18PoZgiOxQwP
-# XA1YvI4lA7W4rB+TaQtWXv9e9J6Hs8Jat/SAP0yf1GY7cf8U1zzLueCp9ReDfWsG
-# 3xF3SNwHeiWrvRwvnItjk+IGFIbV6gRNeXGo1rKba5XYEjiB+/oVCLmHQ0pg7OPX
-# x/E+kYIDhu2GhFP0yOOFxm/y79PPgIPyHjeOe1D+dl7KTdGTK+0smVQy3w2tnl79
-# mgjx1KSmeXAuBgEUkLcd4k4wTYHO0oMBFZyDN4drFJHgpFoRH0gs/hfXsKgfsXMj
-# r6oh27T20/e3CbDAbHxBPRc6/xd7Th7btF7SQqvbX1+6RmdFs/8EYXjGAyrz2VSe
-# RxF15X7tXt3Dew2uPxGoV2vSELi+nN/1Suvx/r51jm2iGX7sqta4TbNteMLVC+3G
-# SptFYXGfPx6BCzSM2XyV+LBCzJVbX6bzIOUdWtbiz8XG2iz7AadiBnrtF8irM4ag
-# 1xsPZpHbf6gHpToUZVNHuZ81
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIF2s3GgdthTM4kDtjlNOU5hK
+# ETccmlUNALq5wx3EGFnPMA0GCSqGSIb3DQEBAQUABIICAD3Cx4HWSaUPPKYbFaIt
+# dAT7aamUPyg0W1f0lgfPxTteYn8JYxLj2N2A7pQf0zYBlUUME7fIc/jW6pUVTy/u
+# ibRo6iMwHcFqOIjOdYlamdZsDupvxo75rH23D1Bd8IwDPiNHX7H+6n2ypuGrNDwe
+# zxLhLIYs6leDKN6E4iB6jKGszds0ZG09J6Uwa+NpW5szWrazllEKMcfLRb3CvuDH
+# eIFPaWOtLT1b8gSlXc3MKO+59/gOCrKBLfMLdbX7K60QL2VRRQ0AyhNfG/Gx7HXA
+# m0FiGqEmQ281KGWJT99EliXZY5c/rswKpPx2OjxfhOMJx47YqQUabN4wXREI+UXy
+# rwKVArc99PSrHOkmv8h214Yqw9P7YU3bKVeF1N/c8BL8A9d2oZyHVp6fvoGBTqyd
+# L0fb0TtG6832Ou93svq8M9E3lWkqoNkv5h1cpe0z4i0fh9KVSNggAXLvmlPFXdVY
+# jH4jb8ywiQjFdwUoHKU7RRNtVyt40ZJI3rMmrewcD2O08jJkuWzACxiyAUWHOk/v
+# Tow2CanXHSuOgLutimN3ZCHU4OoL+vYIbnxg/ZHxnF8eUtyQr77YyGi1CaI2IlSB
+# MHF5BE3zDuhzamWcRijtqaGRHSNYM6nyPzM8ybs+5c3jAbln1P//hcOD/amPQ8lv
+# bz6cZxCLrt+muHEZ30EOb3cl
 # SIG # End signature block
