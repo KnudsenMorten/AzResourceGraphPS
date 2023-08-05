@@ -1,25 +1,34 @@
-Function Query-AzureResourceGraph
+Function Query-AzResourceGraph
 {
  <#
     .SYNOPSIS
-    Runs the query against Azure Resource Graph and returns the result
+    Runs query against Azure Resource Graph and returns the result
 
     .DESCRIPTION
-    You will pipe the query into function. Function will then run query against Azure Resource Graph, based on MG, Tenant or Subscription scope.
+    You can run custom query or pre-defined queries against Azure Resource Graph.
+    Query can be targetted on Tenant, MG or Subscription scope.
+
+    .PARAMETER Scope
+    This parameter defines the scope where necessary PS modules will be installed 
+    (if missing). Possible values are AllUsers (default) or CurrentUser
 
     .PARAMETER Query
     This parameter is the entire Query, which must be run against Azure Resource Graph
 
-    .PARAMETER Scope
-    You can choose between MG, Tenant or Subscription (or Sub as alias). If you don't choose Scope, then tenant is default.
-    If you choose MG, you will define a MG, which will be the root for query and all sub-MGs will be included
-    If you choose SUB, you will define a Subscription, which will be queried (only)
-    If you choose Tenant, you will search the entire tenant
+    .PARAMETER QueryScope
+    You can choose between MG, Tenant or Subscription (or Sub as alias). 
+    If you don't choose Scope, then tenant is default.
 
-    .PARAMETER ScopeTarget
-    If you choose MG, you will put in the mg-name like mg-2linkit. This MG will be the root for query and all sub-MGs will be included
-    If you choose Subscription, you will put in the subscription-name or subscription-id
-    If you choose Tenant, you will search the entire tenant and will NOT use ScopeTarget-parameter
+    .PARAMETER Target
+    Syntax if you chose -QueryScope MG
+    You will need to define -Target <mg-name> (Ex: -Target mg-2linkit)
+    This MG will be the root for query and all sub-MGs will be included
+    
+    Syntax if you chose -QueryScope SubScription:
+    You will need to define -Target <subscription name or id> (Ex: -Target MySub)
+
+    Syntax if you chose -QueryScope Tenant:
+    Search will automatically be done in the entire tenant
 
     .PARAMETER First
     This parameter will take only the first x records
@@ -27,9 +36,19 @@ Function Query-AzureResourceGraph
     .PARAMETER Skip
     This parameter will skip x records and then show the remaining
 
+    .PARAMETER SelectQuery
+    This switch will list all available queries in a GUI to select from
+
     .PARAMETER ShowQueryOnly
     This switch will only show the query - not run the query !
 
+    .PARAMETER InstallAutoUpdateCleanupOldVersions
+    This switch will install Az, Az.ResourceGraph and AzResourceGraphPS (if missing), 
+    auto-update PS modules Az.ResourceGraph and AzResourceGraphPS (if updates available) and
+    remove older versions of Az.ResourceGraph and AzResourceGraphPS (if found)
+    
+    NOTE: Parameter will NOT update or remove Az-module
+    
     .PARAMETER AzAppId
     This is the Azure app id
         
@@ -40,7 +59,7 @@ Function Query-AzureResourceGraph
     This is the Azure AD tenant id
 
     .INPUTS
-    Yes, yu can pipe query data into function
+    Yes, you can pipe query data into function
 
     .OUTPUTS
     Results from Azure Resource Graph, based on the defined parameters.
@@ -49,20 +68,80 @@ Function Query-AzureResourceGraph
     https://github.com/KnudsenMorten/AzResourceGraphPS
 
     .EXAMPLE
+    # Run pre-defined query against tenant - and output result to screen
+        AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -QueryScope Tenant
+
+    # Run pre-defined query against MG "2linkit"- and output result to screen
+        AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope MG -Target "2linkit"
+
+    # Run pre-defined query and return result to $Result-variable
+        $Result = AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope MG -Target "2linkit"
+        $Result | fl
+
+    # Run Custom Query and return result to $Result-variable
+        $Query = @"
+            resourcecontainers 
+            | where type == 'microsoft.management/managementgroups' 
+            | extend mgParent = properties.details.managementGroupAncestorsChain 
+            | mv-expand with_itemindex=MGHierarchy mgParent 
+            | project id, name, properties.displayName, mgParent, MGHierarchy, mgParent.name 
+            | sort by MGHierarchy asc
+"@
+
+        $Result = $Query | Query-AzResourceGraph -QueryScope "Tenant"
+        $Result | fl
+ 
+    # Show query only
+        AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -ShowQueryOnly
+
+    # Select from list of pre-defined queries
+        Query-AzResourceGraph -SelectQuery
+
+    # Run query using unattended login with AzApp & AzSecret
+        # Variables
+            $AzAppId     = "xxxx"
+            $AzAppSecret = "xxxx"
+            $TenantId    = "xxxx"
+
+        # Disconnect existing sessions
+            Disconnect-AzAccount
+
+        AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope "Tenant" -AzAppId $AzAppId `
+                                                                       -AzAppSecret $AzAppSecret `
+                                                                       -TenantId $TenantId `
+
+    # Get all Azure Resource Groups in specific subscription - show only first 2 RGs
+        AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope Subscription `
+                                                  -Target "fce4f282-fcc6-43fb-94d8-bf1701b862c3" `
+                                                  -First 2
+ 
+    # Get all management groups under management group '2linkit' - skip first 3
+        AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -QueryScope "MG" `
+                                                                        -Target "2linkit" `
+                                                                        -Skip 3
+
+    # Get all management groups under management group '2linkit' - only show first 3
+        AzMGsWithParentHierarchy | Query-AzResourceGraph -QueryScope "MG" `
+                                                         -Target "2linkit" `
+                                                         -First 3
  #>
 
     [CmdletBinding()]
     param(
-            [Parameter(Mandatory,ValueFromPipeline)]
+
+            [Parameter(ValueFromPipeline)]
                 [string]$Query,
             [Parameter()]
-                [string]$Scope,
+                [ValidateSet("Tenant","MG","Subscription")]
+                $QueryScope = "Tenant",
             [Parameter()]
-                [string]$ScopeTarget,
+                [string]$Target = $null,    # Only needed for MG or Subscription
             [Parameter()]
                 [string]$First,
             [Parameter()]
                 [string]$Skip,
+            [Parameter()]
+                [switch]$SelectQuery = $false,
             [Parameter()]
                 [switch]$ShowQueryOnly = $false,
             [Parameter()]
@@ -70,8 +149,244 @@ Function Query-AzureResourceGraph
             [Parameter()]
                 [string]$AzAppSecret,
             [Parameter()]
-                [string]$TenantId
+                [string]$TenantId,
+            [Parameter()]
+                [switch]$InstallAutoUpdateCleanupOldVersions = $false,
+            [Parameter()]
+                [ValidateSet("AllUsers","CurrentUser")]
+                $Scope = "AllUsers"
          )
+
+    #---------------------------------------------
+    # Header
+    #---------------------------------------------
+    Write-host ""
+    Write-host "----------------------------------------------------------------------"
+    Write-Host "AzResourceGraphPS | Morten Knudsen, Microsoft MVP (@knudsenmortendk)" -ForegroundColor Green
+    Write-Host ""
+    Write-host "Github repository: https://github.com/KnudsenMorten/AzResourceGraphPS"
+    Write-host "----------------------------------------------------------------------"
+
+
+    #--------------------------------------------------------------------------
+    # Check Prereq for PS Module
+    #--------------------------------------------------------------------------
+
+        If ($InstallAutoUpdateCleanupOldVersions -eq $true)
+            {
+
+                #####################################################################
+                # Az.ResourceGraph
+                #####################################################################
+
+                $Module = "Az.ResourceGraph"
+
+                $ModuleCheck = Get-Module -Name $Module -ListAvailable -ErrorAction SilentlyContinue
+                    If (!($ModuleCheck))
+                        {
+                            # check for NuGet package provider
+                            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+                            Write-host ""
+                            Write-host "Checking Powershell PackageProvider NuGet ... Please Wait !"
+                                if (Get-PackageProvider -ListAvailable -Name NuGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue) 
+                                    {
+                                        Write-Host "OK - PackageProvider NuGet is installed"
+                                    } 
+                                else 
+                                    {
+                                        try
+                                            {
+                                                Write-Host "Installing NuGet package provider .. Please Wait !"
+                                                Install-PackageProvider -Name NuGet -Scope $Scope -Confirm:$false -Force
+                                            }
+                                        catch [Exception] {
+                                            $_.message 
+                                            exit
+                                        }
+                                    }
+
+                            Write-host ""
+                            Write-host "Installing latest version of $($Module) from PsGallery in scope $($Scope) .... Please Wait !"
+
+                            Install-module -Name $Module -Repository PSGallery -Force -Scope $Scope
+                            import-module -Name $Module -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+                        }
+                    Else
+                        {
+                            #####################################
+                            # Check for any available updates                    
+                            #####################################
+
+                                # Current version
+                                $InstalledVersions = Get-module $Module -ListAvailable
+
+                                $LatestVersion = $InstalledVersions | Sort-Object Version -Descending | Select-Object -First 1
+
+                                $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
+
+                                # Online version in PSGallery (online)
+                                $OnlineVersion = Find-Module -Name $Module -Repository PSGallery
+
+                                # Compare versions
+                                if ( ([version]$Online.Version) -gt ([version]$LatestVersion.Version) ) 
+                                    {
+                                        Write-host ""
+                                        Write-host "Newer version ($($Online.version)) of $($Module) was detected in PSGallery"
+                                        Write-host ""
+                                        Write-host "Updating to latest version $($Online.version) of $($Module) from PSGallery ... Please Wait !"
+                            
+                                        Update-module Az.ResourceGraph -Force
+                                    }
+                                Else
+                                    {
+                                        # No new version detected ... continuing !
+                                        Write-host ""
+                                        Write-host "OK - Running latest version ($($LatestVersion.version)) of $($Module)"
+                                    }
+
+                            #####################################
+                            # Clean-up older versions, if found
+                            #####################################
+
+                                $InstalledVersions = Get-module $Module -ListAvailable
+                                $LatestVersion = $InstalledVersions | Sort-Object Version -Descending | Select-Object -First 1
+                                $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
+
+                                Write-host ""
+                                ForEach ($ModuleRemove in $CleanupVersions)
+                                    {
+                                        Write-Host "Removing older version $($ModuleRemove.Version) of $($ModuleRemove.Name) ... Please Wait !"
+
+                                        Uninstall-module -Name $ModuleRemove.Name -RequiredVersion $ModuleRemove.Version -Force -ErrorAction SilentlyContinue
+
+                                        # Removing left-overs if uninstall doesn't complete task
+                                        $ModulePath = (get-item $ModuleRemove.Path -ErrorAction SilentlyContinue).DirectoryName
+                                        if ( ($ModulePath) -and (Test-Path $ModulePath) )
+                                            {
+                                                $Result = takeown /F $ModulePath /A /R
+                                                $Result = icacls $modulePath /reset
+                                                $Result = icacls $modulePath /grant Administrators:'F' /inheritance:d /T
+                                                $Result = Remove-Item -Path $ModulePath -Recurse -Force -Confirm:$false
+                                            }
+                                    }
+                        } #If (!($ModuleCheck))
+
+
+                #####################################################################
+                # Az
+                #####################################################################
+                $Module = "Az"
+
+                $ModuleCheck = Get-Module -Name $Module -ListAvailable -ErrorAction SilentlyContinue
+                    If (!($ModuleCheck))
+                        {
+                            Write-host ""
+                            Write-host "Installing latest version of $($Module) from PsGallery in scope $($Scope) .... Please Wait !"
+
+                            Install-module -Name $Module -Repository PSGallery -Force -Scope $Scope
+                            import-module -Name $Module -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+                        }
+
+                #####################################################################
+                # AzResourceGraphPS
+                #####################################################################
+                $Module = "AzResourceGraphPS"
+
+                $ModuleCheck = Get-Module -Name $Module -ListAvailable -ErrorAction SilentlyContinue
+                    If (!($ModuleCheck))
+                        {
+                            Write-host ""
+                            Write-host "Installing latest version of $($Module) from PsGallery in scope $($Scope) .... Please Wait !"
+
+                            Install-module -Name $Module -Repository PSGallery -Force -Scope $Scope
+                            import-module -Name $Module -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+                        }
+                    Else
+                        {
+                            #####################################
+                            # Check for any available updates                    
+                            #####################################
+
+                                # Current version
+                                $InstalledVersions = Get-module $Module -ListAvailable
+
+                                $LatestVersion = $InstalledVersions | Sort-Object Version -Descending | Select-Object -First 1
+
+                                $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
+
+                                # Online version in PSGallery (online)
+                                $OnlineVersion = Find-Module -Name $Module -Repository PSGallery
+
+                                # Compare versions
+                                if ( ([version]$Online.Version) -gt ([version]$LatestVersion.Version) ) 
+                                    {
+                                        Write-host ""
+                                        Write-host "Newer version ($($Online.version)) of $($Module) was detected in PSGallery"
+                                        Write-host ""
+                                        Write-host "Updating to latest version $($Online.version) of $($Module) from PSGallery ... Please Wait !"
+                            
+                                        Update-module Az.ResourceGraph -Force
+                                    }
+                                Else
+                                    {
+                                        # No new version detected ... continuing !
+                                        Write-host ""
+                                        Write-host "OK - Running latest version ($($LatestVersion.version)) of $($Module)"
+                                    }
+
+                            #####################################
+                            # Clean-up older versions, if found
+                            #####################################
+
+                                $InstalledVersions = Get-module $Module -ListAvailable
+                                $LatestVersion = $InstalledVersions | Sort-Object Version -Descending | Select-Object -First 1
+                                $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
+
+                                Write-host ""
+                                ForEach ($ModuleRemove in $CleanupVersions)
+                                    {
+                                        Write-Host "Removing older version $($ModuleRemove.Version) of $($ModuleRemove.Name) ... Please Wait !"
+
+                                        Uninstall-module -Name $ModuleRemove.Name -RequiredVersion $ModuleRemove.Version -Force -ErrorAction SilentlyContinue
+
+                                        # Removing left-overs if uninstall doesn't complete task
+                                        $ModulePath = (get-item $ModuleRemove.Path -ErrorAction SilentlyContinue).DirectoryName
+                                        if ( ($ModulePath) -and (Test-Path $ModulePath) )
+                                            {
+                                                $Result = takeown /F $ModulePath /A /R
+                                                $Result = icacls $modulePath /reset
+                                                $Result = icacls $modulePath /grant Administrators:'F' /inheritance:d /T
+                                                $Result = Remove-Item -Path $ModulePath -Recurse -Force -Confirm:$false
+                                            }
+                                    }
+
+                        } #If (!($ModuleCheck))
+
+        } #If ($InstallAutoUpdateCleanupOldVersions -eq $true)
+
+
+    #--------------------------------------------------------------------------
+    # Checking Prereq for Query
+    #--------------------------------------------------------------------------
+
+        If ( ([string]::IsNullOrWhitespace($Query)) -and ([string]::IsNullOrWhitespace($InstallAutoUpdateCleanupOldVersions)) )
+            {
+                get-help Query-AzResourceGraph -full
+                Break
+            }
+
+        If ( ($QueryScope -eq "MG") -and (([string]::IsNullOrWhitespace($Target))) )
+            {
+                Write-host "When -QueryScope is MG, you need to define target using -Target <MG Name>" -ForegroundColor Red
+                Break
+            }
+
+        If ( ($QueryScope -eq "Subscription") -and (([string]::IsNullOrWhitespace($Target))) )
+            {
+                Write-host "When -QueryScope is Subscription, you need to define target using -Target <Subscription Name/Id>"  -ForegroundColor Red
+                Break
+            }
 
     #--------------------------------------------------------------------------
     # Connection
@@ -99,16 +414,6 @@ Function Query-AzureResourceGraph
     #--------------------------------------------------------------------------
         If ($ShowQueryOnly)
             {
-                Write-host ""
-                Write-host "----------------------------------------------------------------------"
-                Write-Host "AzResourceGraphPS - made by Morten Knudsen, Microsoft MVP" -ForegroundColor Green
-                Write-Host ""
-                Write-Host "Feel free to send new cool queries, which should be shared with"
-                Write-Host "community. You can send to my email mok@mortenknudsen.net - or "
-                Write-Host "through Github https://github.com/KnudsenMorten/AzResourceGraphPS "
-                Write-Host ""
-                Write-Host "I will make mention you in the credit section in README :-)"
-                Write-host "----------------------------------------------------------------------"
                 Write-host "Query, which will be run against Azure Resource Graph: "
                 Write-host ""
                 Write-host "$($Query)" -ForegroundColor Yellow
@@ -119,92 +424,135 @@ Function Query-AzureResourceGraph
             }
 
     #--------------------------------------------------------------------------
-    # Running Query
+    # Select built-in queries using GUI
     #--------------------------------------------------------------------------
-
-        Write-host ""
-        Write-host "----------------------------------------------------------------------"
-        Write-Host "AzResourceGraphPS - made by Morten Knudsen, Microsoft MVP" -ForegroundColor Green
-        Write-Host ""
-        Write-Host "Feel free to send new cool queries, which should be shared with"
-        Write-Host "community. You can send to my email mok@mortenknudsen.net - or "
-        Write-Host "through Github https://github.com/KnudsenMorten/AzResourceGraphPS "
-        Write-Host ""
-        Write-Host "I will make mention you in the credit section in README :-)"
-        Write-host "----------------------------------------------------------------------"
-        Write-host "Query, which will be run against Azure Resource Graph: "
-        Write-host ""
-        Write-host "$($Query)" -ForegroundColor Yellow
-        Write-host ""
-        Write-host "---------------------------------------------------------------------"
-        Write-host ""
-
-        $ReturnData   = @()
-        $pageSize     = 1000
-        $iteration    = 0
-
-        $searchParams = @{
-                            Query = $Query
-                             
-                            First = $pageSize
-                         }
-
-        If ($Scope -eq "MG") # Management group(s) to run query against
+        If ($SelectQuery)
             {
-                do
-                    {
-                        $iteration         += 1
-                        $pageResults       = Search-AzGraph -ManagementGroup $ScopeTarget @searchParams
-                        $searchParams.Skip += $pageResults.Count
-                        $ReturnData        += $pageResults
-                    } 
-                while ($pageResults.Count -eq $pageSize)
+                $SelectedQuery = Get-Command -Name "*-Query-AzARG" -ListImported | select Name | Out-GridView -Title 'Choose a predefined query' -PassThru
+                Write-host ""
+                Write-host "Selected Query:"
+                Write-host "    $($SelectedQuery.Name)" -ForegroundColor Yellow
+                Write-host ""
+
+                # Run the function
+                $Query = & $SelectedQuery.Name
             }
-        ElseIf ( ($Scope -eq "Subscription") -or ($Scope -eq "Sub") ) # Subscription(s) to run query against
-            {
-                do 
-                    {
-                        $iteration         += 1
-                        $pageResults       = Search-AzGraph -Subscription $ScopeTarget @searchParams
-                        $searchParams.Skip += $pageResults.Count
-                        $ReturnData        += $pageResults
-                    } 
-                while ($pageResults.Count -eq $pageSize)
-            }
-        ElseIf ( ($Scope -eq "Tenant") -or ($Scope -eq $null) )  # UseTenantScope = Run query across all available subscriptions in the current tenant
-            {
-                do 
-                    {
-                        $iteration         += 1
-                        $pageResults       = Search-AzGraph -UseTenantScope @searchParams
-                        $searchParams.Skip += $pageResults.Count
-                        $ReturnData        += $pageResults
-                    } 
-                while ($pageResults.Count -eq $pageSize)
-            }
+
+    #--------------------------------------------------------------------------
+    # First
+    #--------------------------------------------------------------------------
 
         If ($First)
             {
-                $First = $First - 1 # subtract first record (0)
-                $ReturnData = $ReturnData[0..$First]
+                Write-host ""
+                Write-host "Scoping - Only First Number of Records:"
+                Write-host "    $($First)" -ForegroundColor Yellow
+                Write-host ""
             }
+
+
+    #--------------------------------------------------------------------------
+    # Skip
+    #--------------------------------------------------------------------------
+
         If ($Skip)
             {
-                $ReturnDataCount = $ReturnData.count
-                $ReturnData = $ReturnData[$Skip..$ReturnDataCount]
+                Write-host ""
+                Write-host "Scoping - Skip Number of Records:"
+                Write-host "    $($Skip)" -ForegroundColor Yellow
+                Write-host ""
             }
 
     #--------------------------------------------------------------------------
-    # Return Result
+    # Running Query and returning result
     #--------------------------------------------------------------------------
-        Return $ReturnData
+
+        If (!([string]::IsNullOrWhitespace($Query)))
+            {
+                Write-host "Query Scope:"
+                Write-host "    $($QueryScope)" -ForegroundColor Yellow
+                Write-host ""
+                If ($Target)
+                    {
+                        Write-host "Target:"
+                        Write-host "    $($Target)" -ForegroundColor Yellow
+                        Write-host ""
+                    }
+                Write-host "Query, which will be run against Azure Resource Graph: "
+                Write-host ""
+                Write-host "$($Query)" -ForegroundColor Yellow
+                Write-host ""
+                Write-host "---------------------------------------------------------------------"
+                Write-host ""
+                Write-host "Running Query against Azure Resource Group ..."
+
+                $ReturnData   = @()
+                $pageSize     = 1000
+                $iteration    = 0
+
+                $searchParams = @{
+                                    Query = $Query
+                             
+                                    First = $pageSize
+                                 }
+
+                If ($QueryScope -eq "MG") # Management group(s) to run query against
+                    {
+                        do
+                            {
+                                $iteration         += 1
+                                $pageResults       = Search-AzGraph -ManagementGroup $Target @searchParams
+                                $searchParams.Skip += $pageResults.Count
+                                $ReturnData        += $pageResults
+                            } 
+                        while ($pageResults.Count -eq $pageSize)
+                    }
+                ElseIf ($QueryScope -eq "Subscription") # Subscription(s) to run query against
+                    {
+                        do 
+                            {
+                                $iteration         += 1
+                                $pageResults       = Search-AzGraph -Subscription $Target @searchParams
+                                $searchParams.Skip += $pageResults.Count
+                                $ReturnData        += $pageResults
+                            } 
+                        while ($pageResults.Count -eq $pageSize)
+                    }
+                ElseIf ($QueryScope -eq "Tenant")  # UseTenantScope = Run query across all available subscriptions in the current tenant
+                    {
+                        do 
+                            {
+                                $iteration         += 1
+                                $pageResults       = Search-AzGraph -UseTenantScope @searchParams
+                                $searchParams.Skip += $pageResults.Count
+                                $ReturnData        += $pageResults
+                            } 
+                        while ($pageResults.Count -eq $pageSize)
+                    }
+
+                If ($First)
+                    {
+                        $First = $First - 1 # subtract first record (0)
+                        $ReturnData = $ReturnData[0..$First]
+                    }
+                If ($Skip)
+                    {
+                        $ReturnDataCount = $ReturnData.count
+                        $ReturnData = $ReturnData[$Skip..$ReturnDataCount]
+                    }
+
+            #--------------------------------------------------------------------------
+            # Return Result
+            #--------------------------------------------------------------------------
+                Return $ReturnData
+        }
 }
 
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUYqIjTklkDGfSny0hoSKD+icW
-# 3vOggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU9Daz3/Y319BoD/lMsqLVmBIE
+# WnSggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -283,16 +631,16 @@ Function Query-AzureResourceGraph
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# 3qhAt4/WAom2O7PFQxxUqItkg5gwDQYJKoZIhvcNAQEBBQAEggIAN7/Crgk1W3t+
-# 1uZygSbKnND9Yq0XFy8dyDSm3De+09//rJGORpMbRjAtMzv6OW/6x420qNsG7KZk
-# 7DF6N4xfOOo1q2cy2coht+rSl3NFSU7Nl/o3gq9oO+FVjez0r8wOsV4T3S9crEsk
-# gSxgZ94oXbDLX+BAuczo6bo9FN3VJwur2lEZ/EVRUJFGDFuw1nqobLRZkxVZbLtA
-# MmjsTGKatH4ioXRuq0D4XHSJdG/t7pezc+GhguVvwoj165LpkmsNqVYVeyAJLXHw
-# mgX/IAtPogzzQEdJo+lsfcyFCnYTAWWUxTBxAK2HzgDZPUcnpaG6aE24vZQWjrHS
-# aE+l0d4KmbozlybURiwJh1Escj/QcFnI1qFf4FmJwN72tcA23QxbPsgwUla02ku1
-# Q0QMwhXTe3y9BoVrFei4xr6QueyowtS9aV48HWE9i5pgW2v03oV4GYtFt9U+g70B
-# DIQARSby5WPxncPGM64HPXcB9x30YYYySlDcLgIwjXYfCVv/8JCZfp4ujyjaqSUb
-# S1I9SLFhfrdx+uWHcnBAYuKDJYpOx4sgPRob+SoJzkaQzptjE0QQQsB24hfKzfG+
-# cWvJazjZ/FShv4L6jMOf3cXkrxdWCpR1bVwDLvuYwfchEkqRU9FYPXGzRAF+cJCD
-# 3aK+bmFAvGX3lWNjBJiS1jv67nSSACU=
+# TMvwR4LvwEeRE3n58QRo1ZnY6icwDQYJKoZIhvcNAQEBBQAEggIAk1ZdrHF0PoSZ
+# dC+TbraF88go3Z9uFVslzea1Znqv3rOZ7gCSs9TxTwcmR3jBNS7qPm1o2DnBkDU7
+# ZegAGSCSsyCXvPHJperW0DHIcBUGXpXARbjmuFej7ot4MM3sHEdrNHIVccit2nDL
+# UttsNuOEkQFuKLwzYm4m3bED/SC4rBQK+vXLhFl+uiVm05gByfV253J9KPrtp7V0
+# EYnHgCD+zqb5uagdQlVqt0i8thIdTnu3r5VFXKCrBSBeS6skXAQ2kDrPkdXDGLu2
+# pYEptcILuxV09Nvxeo8bQ9h5GM4V09sDjcsd/67UKq9BSraU3mm4ftAsVYiSfFLE
+# BBBvxkd9YIM/bK/xTi850Pgu1vJLWmy1eRWlw0bFkIWle3CsNwvEFHleCvq65Ldm
+# P8VG8+IkhvGpGp586h/UOG1zuW4BjX2MeQmqJ6+gTxl8GsL8zZiTjZRQ4H7JiJxk
+# fFGxJknmQIN5Y2P78UW3xp1ehUSTtR8ypJPJ84G81iyzII/SJ30bvSKu9u22aLiB
+# t+TT+hd+fEpCVTj0L+nN80Oz1sREWdUuR0yL21+JOOelYg/2KHxVp1wWkVeJS9lD
+# 4hmhKTSz+Y+Ox4/xMDDQyxUOy4G2zIvth09hOaBPp7GFdbABwNV+fy6Uj5iq/VUE
+# Qn1l4/AFk6HBccQJ6AycsA6IMkbhK0k=
 # SIG # End signature block
