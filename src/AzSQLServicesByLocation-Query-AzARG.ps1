@@ -1,17 +1,43 @@
-Function AzAppServicesHttpsOnly-Query-AzARG
+Function AzSQLServicesByLocation-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    extend httpsOnly = aliases['Microsoft.Web/sites/httpsOnly'] 
-    | where type =~'Microsoft.Web/Sites' and httpsOnly =~ 'false' 
-    | project AppService=['name'], Kind=['kind'], Subscription=['subscriptionId']
+resources
+| where type=~ 'Microsoft.DBforMySQL/servers' 
+    or type=~'Microsoft.SQL/servers/databases' 
+    or type=~'Microsoft.DBforPostgreSQL/servers' 
+    or type=~'Microsoft.DBforMariaDB/servers'
+| summarize count() by location 
+| project location, total=count_ 
+| order by total desc
 "@
-Return $Query
+
+$Description = "Count of SQL services by location"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
+
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUdmAw06DnS3Jtkr8RwnX1qnHQ
-# XXGggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUWTLvDTB1ssoJM7gT6Bpm29Gr
+# lPaggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -90,16 +116,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# gB/xyxP/pzNwJxHN1+G1hityKRYwDQYJKoZIhvcNAQEBBQAEggIAUVSu50CC3O8t
-# sz7KpnE+xwL8VTlJJ+NCn3IJzwLjXUA6PTaj2FD97Q0h2ZG71UQAl50UkEZdQla5
-# fLFk11d9YvCPkCFdR4650b59ecReIOBQa1zeQlJ+B0zNa9+MrLcy9KXRxwSeGOy7
-# LglXFsJEaod+fnwQgMZx1v26fPA6X72SaOr2JVSRBfxfpX0pR/j7qGCdez+lloY4
-# 9snb2cZ+EIzaDwaJZVJpbhwh7nAr0RDCH6fpIY0c7Skj8voYMvL8IjXlWUT/4ML1
-# Gplj6iAy+658Stx5tUJMRs78LlLn7e1Axlqg+/gy4rexv/51SG9VvWa7wW0Crs8y
-# ou+0113LosGsTlnUkJikKofqXrVjLL23naHbF0P+w5RRtZCbDnXxRzTToXVHUxHk
-# Pex+clbyrXFpqtUfzQH3qTdd/kr4fjdCVJfb2G6lNNTagMmS3fZZgkzncGAl4Szx
-# /l+xf6HhVpbFyC1YReP4ZQeCmleTlyPI9LYiWaqm3Gh8wVp9/aTUwggmQQWvTvJa
-# o0LykArS8KRtXnoQZL9FteBQQ16mjhxfd8eB1D8Z8L/ExQrhzIi4MsyaNsC8N2Kq
-# 5dpniho8G8IEqGJ9rB2kWBh8cI889B0WLamR3Lvs3oBvCCdyLdzIq6LsWmc2r7Cw
-# E1jfyxgCoVLkHmAajya4qmyTe28BVws=
+# DYgmrjhUzCe1lTB9ZsClo/LyIGUwDQYJKoZIhvcNAQEBBQAEggIApoUNzw8KF6X6
+# /7+Vyp9AduH9rHlzTE5qutuauSAZ9/hfnn+iYa6OIAfxh61USR9f07S7kAIGE5g7
+# a5dHJ6GpGZuhDuX/20MA8+eIav4R/lYBI1jTVmH2UTrt7AfZYsXeZVPWIo0sgc47
+# SoeX1KnM/TEX9jjiz16tzVN7ipbbrndpRgH19puce/TeDFtkxs5XyBtPbqlECR4z
+# cFXqX2M0KsmgkApipSV2bD8GXT4xmHdOlKcCgIt+3043HDJfMYw/DOOmoPETAxe9
+# K2pGCyIUGqnFjtj+HiVX4zuCltv8uMAl3a6nAIpYUwV0Hk4FLsCz5WO4GRMAvOnZ
+# kIkcjLnzzQbyvtkGjtPp+sVibNU1/2pTWZuHWgj6Cl/9Ye3bhVYqCojbC0k3tddC
+# qPgVo/xsN8NaVuxuEofHP5auu7Eb9HE94wy3OupgktqqpPvhUGkVxIV1nbBSS7OO
+# F9I5H4d4jxgRpAqFyIx/p02hdCLiYpW+kFR5ttnUWTfwJXdmRrkzOTujpB0JDjEo
+# lzw89WEAJBtlwtrhIK9M+mYWu4zsm+S+MQtnjytfL+L3r6Lym0GQUepUUefAlkBs
+# 1Qg5Su17iRntZ8kp8ySGZzRJOOAagACACCqHjptSX+ZUfbnsmxU1k3e+OrTc3siB
+# Prtdw1jSbEIz2Vx0WH/3vbo4wN0/Cbc=
 # SIG # End signature block

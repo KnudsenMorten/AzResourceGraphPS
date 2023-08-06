@@ -1,16 +1,37 @@
 Function AzMonDataCollectionEndpoints-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    Resources
-    | where type =~ 'microsoft.insights/datacollectionendpoints'
+Resources
+| where type =~ 'microsoft.insights/datacollectionendpoints'
 "@
-Return $Query
+
+$Description = "Data Collection Endpoints"
+$Category    = "Configuration"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
+
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUQb7M3pFPEAdn5Fy1QltaBzxb
-# Q9Oggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU+YoSX7jrvIR1IGSq8SdyRNUb
+# Qsmggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -89,16 +110,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# S0N1zRgmunNh8yznqU+4EF4QJJYwDQYJKoZIhvcNAQEBBQAEggIAefseoadSAoY9
-# AGGlEWp6sLZFjuI4PeABc3rk3HadTXZ28trTQC26fAwWntrB5/eidh6Le/YfnS7f
-# TJv4AeNdgDCTI54WkbyaWySKPv4Ln6njNgFgboa64JSZXiuqKxoyltbBXOLGCroB
-# PhWNhS528XeyxNIvhD+eAdpIPeWg7O9eSF6XbWm0fWBbztD7RFmZ3eFiojPl5taI
-# PYSX/nLU6uUcQm9Fm/9hWsXWzlL7XgoKEVDG4uNaEVPDE3DwfC5b24KPd2oQXduK
-# CXkK9ZhDYSdVkWm5f2kLTN0IB4nQvOvDQYnYD2d8NJGerHYuf12y/KvpR9P2EeDQ
-# Y5ytRxYza/X1tnlYGjf4EZ4O0qz0MaFeyk9UM9UnV2GY2W2dGh0GMoJQJ1V19Yyj
-# HhOBfab8/kRQq1pvgwXrOXyVYTN6MDVH+7Ba+TbHg+wY5QYmqMet7TZW76sqGUiU
-# InPJsK0x6u69QYQ04wWntz2r8fkrSGZRMOnGCc1JoTIiDbmOPEEmjLOUTruVUcKu
-# 0Xs6lurfd8gbrQlApaihVOSoqmH09N1G6aKUUWMFBePzP/Vv38aVjLZpWnGfDBQE
-# gtlqBeLsE6rc/ETEXShv34D0PYl9AeWblSjgukv25eX+fxCNGJl4VjMYM98oG22T
-# uyxQkvZ8M7BCqJfySIhIMOUDsenu6hk=
+# 3IEGYfo4AUlZy/DKeKTQhVIAbHcwDQYJKoZIhvcNAQEBBQAEggIAZiDDQ9E+j4F8
+# 3kIZM6xrypP6oOr/oS8c1bqqveIiL5Lhu9ZU1T2QKr590k885yvEuwJQSV0OdyQY
+# jT6tzLkI0/mRCUE5RGaC1DqfcaXn4eMxidwzduwd26Wd0C0jB7XvblTzsq48wsVs
+# 3JWcPm8VIJh+cj7oWM2FYyz03Q9CE+95M8kxOu79vOrSYpFmV67/iiotKP/YQh/e
+# 4/G3G+pkQyquiVLTl2IOq2dvVgb+rAqLQW0Mc00f4E9o8yXjl2tyz9QOqPpp+4uP
+# T62rMOFsjgVpN+LP2+8UShMcU3dP2Tgk0Z7DYR54i12wQSuv6dBQor12rehOxfuf
+# wUGa63/RfB6b2D3IVISPcFSuIOCrY6RHyDARxsj01fTVPJ2i3mYUZCUV5wvx7gdl
+# G1R8HOjyLFlKZJ8REx3wk90lVCmjEuz8duohpzGZpNWer8AlOx30f9toeeWyPLfQ
+# B1grG8BFecQRxaCeCX0otaS9HfNyY35Klmjo1/RKx9gEJePfml0Z5w4WsG4MQy1T
+# i8dFdgCwCXRKiJA3cKBoboHj1/vLI5FCRSZ5EXTTpxxzhAWZrsZra+URw2JIWl1e
+# ZSUVFh1i+EkIXcKCA72nq1z1AkqJSJ/mmYX7ToTtzAadWrhCn4kvSbjZ9KSP5Ruy
+# /jxLEboEgMh6ea82EU4bweVTD7crMWM=
 # SIG # End signature block

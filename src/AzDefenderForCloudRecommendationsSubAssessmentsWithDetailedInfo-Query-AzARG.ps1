@@ -1,34 +1,53 @@
 Function AzDefenderForCloudRecommendationsSubAssessmentsWithDetailedInfo-Query-AzARG
 {
-$Query = @"
-    SecurityResources
-    | where type == 'microsoft.security/assessments/subassessments'
-    | extend AssessmentKey = extract('.*assessments/(.+?)/.*',1,  id)
-    | project AssessmentKey, subassessmentKey=name, id, parse_json(properties), resourceGroup, subscriptionId, tenantId
-    | extend SubAssessDescription = properties.description,
-            SubAssessDisplayName = properties.displayName,
-            SubAssessResourceId = properties.resourceDetails.id,
-            SubAssessResourceSource = properties.resourceDetails.source,
-            SubAssessCategory = properties.category,
-            SubAssessSeverity = properties.status.severity,
-            SubAssessCode = properties.status.code,
-            SubAssessTimeGenerated = properties.timeGenerated,
-            SubAssessRemediation = properties.remediation,
-            SubAssessImpact = properties.impact,
-            SubAssessVulnId = properties.id,
-            SubAssessMoreInfo = properties.additionalData,
-            SubAssessMoreInfoAssessedResourceType = properties.additionalData.assessedResourceType,
-            SubAssessMoreInfoData = properties.additionalData.data
-    | join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId "
-"@
-Return $Query
-}
+  [CmdletBinding()]
+  param(
 
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+SecurityResources
+| where type == 'microsoft.security/assessments/subassessments'
+| extend AssessmentKey = extract('.*assessments/(.+?)/.*',1,  id)
+| project AssessmentKey, subassessmentKey=name, id, parse_json(properties), resourceGroup, subscriptionId, tenantId
+| extend SubAssessDescription = properties.description,
+        SubAssessDisplayName = properties.displayName,
+        SubAssessResourceId = properties.resourceDetails.id,
+        SubAssessResourceSource = properties.resourceDetails.source,
+        SubAssessCategory = properties.category,
+        SubAssessSeverity = properties.status.severity,
+        SubAssessCode = properties.status.code,
+        SubAssessTimeGenerated = properties.timeGenerated,
+        SubAssessRemediation = properties.remediation,
+        SubAssessImpact = properties.impact,
+        SubAssessVulnId = properties.id,
+        SubAssessMoreInfo = properties.additionalData,
+        SubAssessMoreInfoAssessedResourceType = properties.additionalData.assessedResourceType,
+        SubAssessMoreInfoData = properties.additionalData.data
+| join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId "
+"@
+
+$Description = "Defender for Cloud Recommendations with Sub assessment (detailed info)"
+$Category    = "Configuration"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUcfnEvmlNz6T9zNfHOT79Lti5
-# BOyggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU2lfeuy8jrXwLuXe+wHuKE8/m
+# VEeggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -107,16 +126,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# YHnX0SlJ96pHgJfQz+WOqResuYswDQYJKoZIhvcNAQEBBQAEggIAwF6gjT6szTN/
-# fYtxAtyVw6eNMplGNu22fQx93/nIdWd8LurI+WI12atxtWWQg89nxRSgkPCEHFib
-# EdVSaZUYjWVDc6IeK9LevUjREcguuBiC9paBXQoc5JnuZ9L5rgWhLNsdKPVGbjPZ
-# Uos7rvmuzSAkqkgkR/BVC8Z9JIx/a5y2n1h1oqMa+kfx3jHrCQm9GJFO4Nfa4k/4
-# kr6azVok41LMDYca3kqgfN3SXiUIvsLDIeAPDvjGMDtj0ygF88eFPxcWsNy5DzwF
-# bcuxvFKZMmW6ZS9kjgu5ZcEdzCtEKPLEFtl7bbZtk8pKb5sr6AIdhkSbDoiaRNOC
-# YU5FCMhrbj7hze3LU3x1aHt4e6RGo71eHzBgZ0/06/PIHjCi+Mf+yH3SXwdDZiWd
-# w3QV1OPTXWf8ERQvAG9SMDwLLq21n5nJjOrVpDFRDaBU72Cj2mtXO6mHOwq2VuQt
-# Wi5pY7P6TVXE5H1RtCamehzKfbE6CYp+ueA4pWONlOIeoB9etSytkoVbAMq6muIL
-# T1NGDNUxPAME+4kcqLZrf2sehEyPyCJR8A1/Bl7wbO/EcX1qlfl8/gPtSUj3k2cF
-# GARoYbWppHaapUHsDjRz4iRTYC2v98ThAKAslqqLuVUn5AjsSz52Wo+imiW89qU3
-# kescNk8buVqbV1QGhX2DjhnGlymrjNc=
+# gWB7Q9Mm93rxQ2D6xK8LFRI/uXgwDQYJKoZIhvcNAQEBBQAEggIArJOi4+FuadLT
+# KX+krEEamUh+BUlO2DOA/o26f1WMNIb7tjCtuLHH3RoJvXkxJnWknM0+HiTF//kq
+# afEdPwPA/jnwSNT07DRkl1f1kg6avjzZ8gGQeY2zBi5GAK2eJ4bi1zxWQ8oZ3gL9
+# p9ShOxyKOtp0fhwf9D9vEcrf+eeyKRfWYozE5U7lJQRIxeG9rAMn4aVY81r9NVim
+# yeoDFfiI4cVDWS+h/uhwwZNHJaaq/R3Js1/DgU90+mqg2INe937MYLwaokpGqDaQ
+# HZxmXPF5lXnPWmji4lrKxVF3Q1kkffXYct/GoHUgF+HPaMezhyJz0XpEWA1S6e3J
+# GJhVjY4PRw3uv9ZwOWwedQLrsQuNxCSudg7AX2gbPEWipUXZm85cTW5C/AAly53c
+# lZzLxeypjhLn/148DmTKbpWJe1E7tndcihXP3wA4nxIE4Cko98VitZyRm3DMFx38
+# Egl5naRsvGkZI7cEw9OO9bfh1Sj/LsiGHn3dtR7CrkUFkcImkRYzcuxx/vkjuzeX
+# l4qw/N9nfxLxns0Ed0E6fQkH6rRnogMHyTCyV04+uyB2+aI54hAPcVmW0PNnvKCX
+# /Rnl2vQkvM7FoI59F6oog+Ep7mfBDBBCQyaTrlKMi8s2X88BGZM2clPtO8p1bfLo
+# oayq4ETMODob7Y8UPyiUsfNl/AklPA4=
 # SIG # End signature block

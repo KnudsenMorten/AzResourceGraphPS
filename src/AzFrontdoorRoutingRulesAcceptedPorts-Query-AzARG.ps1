@@ -1,19 +1,39 @@
 Function AzFrontdoorRoutingRulesAcceptedPorts-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type == "microsoft.network/frontdoors"
-    | project subscriptionId, frontDoorName=name, routingRules = (properties.routingRules)
-    | mv-expand routingRules
-    | project subscriptionId, frontDoorName, routingRuleName=routingRules.name, protocols = routingRules.properties.acceptedProtocols
+resources
+| where type == "microsoft.network/frontdoors"
+| project subscriptionId, frontDoorName=name, routingRules = (properties.routingRules)
+| mv-expand routingRules
+| project subscriptionId, frontDoorName, routingRuleName=routingRules.name, protocols = routingRules.properties.acceptedProtocols
 "@
-Return $Query
+
+$Description = "Frontdoor Routing rules with accepted ports"
+$Category    = "Configuration"
+$Credit      = "Wilfried Woivre (@wilfriedwoivre)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU6Yc5FmUOj+VeOwDKcepfgvrA
-# TCCggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUGgHC0lFGsrciiaDf2QhftWmD
+# pdKggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -92,16 +112,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# sFaYsw3FUX8V1W4YyJm4o8cp2FowDQYJKoZIhvcNAQEBBQAEggIArlXQw7CrlOQn
-# P5FdGKZzrXjCbj5vxcmFFh/nSaVfRdKGZVU+0RlgmD/6bAjgSkgziT/wniIVSRoF
-# Wuu56cUvW7Dj+/mD1ZUug3DMVsqCY64i3HaL4zhMpITko3rBW6fhitujioSF8z7s
-# fT+N8byeSnRqkchoIW6eotOIBerxukj0a4JMXxVKWWWagf+IcSdFNbkb/o87g24x
-# k8lCfFcNqrFEU80StKcVEp3ys1KhQFXLgixlcfyp2lEWRGO6c2+4PQVh1qUdAjB8
-# zvJfhlt3+yG8HtyxiQRRFeDO/LSwB5k2NCQWEi12AHRahNJWKcHuFeSjJ3OW0F8U
-# MYue18jAlSiN5PTLBg0ehNpY0v2S+YSs5gx516BJ9t/b4tTkC70qq4dJHK1h4ISI
-# lnnLHtmPoCWpc41mSJGUdG75O1uzmYu7ggwYwo+UWE3wowF18XZdk25KcDpyFPVn
-# JujiEye+LwM6AJ2E2laRvALadCQxY9UlDipK85pS68BaYwFE1TdBGNS0viqONeA9
-# j6qdSxwl/j1qrOV82AglYxyIr+JzeXsOMP0M8QnUci/Qf2sp9Uqe6KJhvo1qQ0wq
-# vbQPFKQQ3BveNHej0DEPT5HJ7diV7/ZQUjNpd/YJJ3joqio7gA56QedicuAusAFz
-# KcjaCXc9AGHiz95wSDAuh0k3PBCDysU=
+# fBmPtuuF7iD/G6FdhVBCMTl2US0wDQYJKoZIhvcNAQEBBQAEggIAf37fni8gb76x
+# 6RRdiVQ8q0ROda02lW5EP1iYDdil2VAl8cH+J78YczEF8WHgGu1lMXNKbq8YwVNr
+# yJkVN3G3TXV7jG9mDbt+kp5X9fT16O1DJVVTQ8wtrxrQhe5vsoh6FPObzsxGB8sk
+# DDFiNjPP4ErQ1RluakSh6nqDiRdvR69s05rkGtLH4wkwDj9JGUu5tF1zpPHMq8sJ
+# LfpuiHS6yuMuZz9KiDm6kmFjtpmirvKv+QAzIlwvj3uJmZIbU4GAmAZKGSrqeKch
+# LGpkg56jKeU/87cJ6sSklabqmHbk7SuozvJcp5pgT2YdIG169KrmE8kp/Q8dg/D9
+# FMfDPq4DHBHFyipFgMvT1xBPSXzTpmAjHbI8jwQO5nyZNzVFTIV4N2dPTihcIG+O
+# fAQn++9Jagh5rhBQdVbgoO3GqdTevUeszPd6saadty4GGTXOs3n/82nlME4Pzmf3
+# VNSjc0DOGLlLHNo3yv4ZpPB//U+cod2RiNfjmNa+HZ7DcV71Nsa6m1UwgwwNwL3j
+# oRif3PVoT3tUV6MfUMeRF8lW83wdNzo0kbPzeEBntDuMl4Hho0a1wrXzL7f04AHG
+# Za51H5DtV6T4viZQ8+LxNm2jLE4lAgjqqbV3tAurE/DXsAElusy+QNP/S/3gwgJe
+# Z1NSrjkYicTr/QgCAjUQT0PYZkAJAuI=
 # SIG # End signature block

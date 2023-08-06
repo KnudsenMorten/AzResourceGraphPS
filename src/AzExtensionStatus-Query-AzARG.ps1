@@ -1,32 +1,53 @@
 Function AzExtensionStatus-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    Resources
-    | where (type == 'microsoft.compute/virtualmachines') or (type == 'microsoft.hybridcompute/machines')
-    | extend JoinID = toupper(id)
-    | join kind=leftouter(
-	    Resources
-	     | where (type == 'microsoft.compute/virtualmachines/extensions') or (type == 'microsoft.hybridcompute/machines/extensions')
-	     | extend VMId = toupper(substring(id, 0, indexof(id, '/extensions')))
-         | extend ExtName = name
-         | extend ExtprovisioningState = properties.provisioningState
-         | extend ExtType = properties.type
-         | extend ExtAutoUpgradeMinorVersion = properties.autoUpgradeMinorVersion
-         | extend ExtTypeHandlerVersion = properties.typeHandlerVersion
-         | extend ExtPublisher = properties.publisher
-         | extend ExtSettings = properties.settings
-         | extend ExtStatus = properties.instanceView
-         | extend ExtStatusMessage = properties.instanceView.status.message
-         ) on $left.JoinID == $right.VMId
+Resources
+| where (type == 'microsoft.compute/virtualmachines') or (type == 'microsoft.hybridcompute/machines')
+| extend JoinID = toupper(id)
+| join kind=leftouter(
+	Resources
+	    | where (type == 'microsoft.compute/virtualmachines/extensions') or (type == 'microsoft.hybridcompute/machines/extensions')
+	    | extend VMId = toupper(substring(id, 0, indexof(id, '/extensions')))
+        | extend ExtName = name
+        | extend ExtprovisioningState = properties.provisioningState
+        | extend ExtType = properties.type
+        | extend ExtAutoUpgradeMinorVersion = properties.autoUpgradeMinorVersion
+        | extend ExtTypeHandlerVersion = properties.typeHandlerVersion
+        | extend ExtPublisher = properties.publisher
+        | extend ExtSettings = properties.settings
+        | extend ExtStatus = properties.instanceView
+        | extend ExtStatusMessage = properties.instanceView.status.message
+        ) on `$left.JoinID == `$right.VMId
 "@
-Return $Query
+
+$Description = "Extension status"
+$Category    = "Configuration"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
+
 
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUYRfRyVmDpoNNCqE/o0BxzBrV
-# Gj2ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUgVprYMKIICffrJdvJwoeTtV9
+# nMSggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -105,16 +126,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# 5TGm8BDZDrVjmB4JbTtfIRp8H9gwDQYJKoZIhvcNAQEBBQAEggIActmBIK9LnAec
-# wmIzp7LLLpG6xz2br9IsFzhwSHNKG0PVJcvvw2EYrdOdn0OiJqXPTr/9VHZ+7mUW
-# fWqrVMFbnz/GrZiPLVdUiy1twIzX4/63qv9PiVEiOBKAaU+FL/7ivziu9u306qqq
-# 8c4pVGIgRRDHS8/MXCYxZ7SZwK/xESpZqfd8p768fOqEGt92WhkNJ9/4F0At5Smn
-# +UJtHIDbG3JHLMwEDcUhWilK1hjOebOWhpJiu4vQXcceljwt4mD2ky7b44ZXZu4T
-# q0u2EeyRaIZlO7Nj06wxwHkOPZkpCntasxZMcxUvT5LpSNqWMyq3+6xAUfZFBLuu
-# qbY90FzbSljAGEF8YPG99eyH45wrdxr3MpCoRl5Mil78/WgIU3OWuKVuTEhWq5Jg
-# AzNN3Ua+fdtATCu91K1TerTJ7N8uEbMaBc5euvWGvNsKW+avhAk+Pv0ABCVEa2wO
-# u+xqcDXxceebVj1WFxRembQDlyTO74OXcPTo2ugVlYLVC77z0NTBsK7+RIdrNRx/
-# mXQa24MtWYDD4pxGhovEUrXBMU0npWe3IIfDewe5aphFHgJ0iLKYZ355Ub6+0aZZ
-# sV69cxm21jbjH3t6916/1tFHSvTbce2s/w+0NLBcLPsTJjd9MuUZY5ETBvF4ohZB
-# VgVZmfb4ee+1Lop/nF9ZKUbEmwGQrIY=
+# K4FNyNcYQkTvjBEJqzxzlLkLXkswDQYJKoZIhvcNAQEBBQAEggIAQfHFj8uhyYyO
+# 4BWilk2yYc3Tl8mra2TvaIWKJhr/i4k1ZoJn2q9ahb/RVN0S74xNMvs4FmuvoW5/
+# Ea+x8oLxcXjHw683Sh6oTFfE0nzrokKu/bLQ/ttiFu2CjCK5vO9122tx4D35oJro
+# 042eZ0k7xaz9MsioB9rf1ahb5WVc7HqrbtgM0h5Q9vka4EbOOMUkA8qwirREulBc
+# BptchyfOxS+7Ba8xRiG4BBoi0VT6f7jmiwDdV9YRnPqsoW/gsoOg5wD08PRmNAh9
+# eP+jOuqhG2VdcOgD8PUVvB0Eawg10FguXlL8paBDCsDa3GfzuA8s0DPT9jcia1hw
+# rKJEy0T+mbtz571/lnzqATbS99Le7cfUHBSXO5XhZfWiAF1MNZTqlvt8O16mOEo2
+# f4x7Z7/uz6jmE8HU4+WDvdGu5JQGkxPvtmG9pyyDuDPp2I70je7tPlVsPLVmxiKJ
+# vBKPlzHdLtrlIeF0Z2Os0pdGYdG6Zr8DgCN8hqniUL6E87trIqbQspkbhiEYCqJO
+# VHaJ/Dr0ZFvJ3r7+XQK2qa79gaMOVdQwZTV8s/O2moU0zzYweQRV2G3ZfzeUCwB4
+# NnHmlAqxFO3Hg1LpwnQP1L/9UV7Qg5UgDYvYuY4TzHAEeUcNKyu9Cg0FseBHXKwi
+# B6uTEYvriv3ba0EHtSrfTGu2d7KQhAw=
 # SIG # End signature block

@@ -1,4 +1,4 @@
-Function AzSubscriptionsCountByMG-Query-AzARG
+Function AzStorageAccountSecurity-Query-AzARG
 {
   [CmdletBinding()]
   param(
@@ -8,17 +8,21 @@ Function AzSubscriptionsCountByMG-Query-AzARG
        )
 
 $Query = @"
-resourcecontainers
-| where type == 'microsoft.resources/subscriptions'
-| project subscriptionName = name, managementgroup = (properties.managementGroupAncestorsChain)
-| mv-expand managementgroup
-| extend mgName=tostring(managementgroup.displayName)
-| summarize total = count() by mgName
-| order by total desc
+resources
+| where type =~ 'microsoft.storage/storageaccounts'
+| extend Prop = properties
+| extend HTTPSOnly = properties.supportsHttpsTrafficOnly 
+| extend BlobEncryption = properties.enableBlobEncryption
+| extend FileEncryption = properties.enableFileEncryption
+| join kind=inner (resourcecontainers
+        | where type == "microsoft.resources/subscriptions"
+        | project subscriptionId, subscriptionName=name )
+    on $left.subscriptionId == $right.subscriptionId
+| project name, kind, HTTPSOnly, BlobEncryption, FileEncryption, location, subscriptionName, subscriptionId, Prop
 "@
 
-$Description = "Number of subscriptions per management group"
-$Category    = "Configuration"
+$Description = "Storage Account security"
+$Category    = "Security"
 $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
@@ -35,8 +39,8 @@ Else
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUJIu4SWGijziv9LdIqYcGUAz+
-# lW+ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUjKICllRmPeWkh5/EPktJtZrI
+# v92ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -115,16 +119,16 @@ Else
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# xPKaHEzw9roNZyDzO4DuqEQJf5AwDQYJKoZIhvcNAQEBBQAEggIAeCE4uhyzNj3z
-# kjQ6CEVcoPiwx+gC5owGIU9zDif7FJ7K/MmRCqZGwcxc4myX1fp920e/5FILm/j3
-# cOZHcMUC2FmLKP0jQa8MnfhL6INd+QyxD28zBaCXtKSzRNRD04YtB+psZ7OUXTOw
-# 0pTjlMwt4dVca5eVZFTc2ekThaTfd5Q4MwiPnpVJFpLGNswD1aFatfz5zCiyE2mg
-# ipdaEvns5GMI4rGWutbFUxiywbBkWZB9fQYktSgOylr9lSQsJ6iXB0IEkQDrn0Sa
-# kLWbZkGRyOHS5yxTKHOwwh5EPD+un/bSn4HWQ1lEoYpkRuRanXQ94tv7XYY0gTHA
-# WeK3NxDJ151kElMU+Tgvf11IghHo5HxSZDmfJEit9hhHg9xDY4PrXSJFUN4yYzOh
-# 39VdKtqhtni0ZrKuweWuLS7jkCnrKapZwTNHcZ31q8AKT8GSNX7/vVzQ25A7c1Jd
-# 8zgbAXnqieRTVHTBdXoRfEFEP1Qv2noiWkE3RnuwKyem13WSWMFzs1tno/rdjLfA
-# 069UXHwjIoGm2gcCt+03lSjU0O3KMqNWoMbP81cNauxN+uULotEzSfbvHj/DG2ur
-# C4QnlgQ8hFNB2bB0Vf0IgYrBzGNZDQuldKjguLxo72BxfunVDK3cdnXaTwZCvwRd
-# nDaWt2whQhhhfjK1i8j44KthDHj72Wk=
+# oVDP9NTini4vq/5es3zvLPLH2sUwDQYJKoZIhvcNAQEBBQAEggIAEwKTEsATFwl7
+# 9KLO+5ANZccg287Fhs2Xpnpffov6vfU8DGZvOF5NApCEr8DaLVBnaLwC84i2TQgP
+# evvvlntkewypKWQJ26pfjOkkzl6N8Sp1pDbSZh9Vj+X9VJQayNRxEfJPvzHDy1hC
+# SI93dhWc75LdTVMhPxioZ02PMrL603yohUesj5D3ApP/9qur+WBOFByeDdHLo6px
+# 8OLFmccNYY6pcfI4pWgaA5pezlxy9FdyBBnmSfHytI/LHbOymeTQW4p+apvlrkrR
+# 3oOLtqvoP6Wu8CqOWTsm2d9Esq1K/n39o0jVuFaA+o6EyJdUg/zbz1DSkiraTclu
+# qPzMzscoEsITXuf3yOAW2yW+D6q4eVq77XJq6t/XXFga3Nszqa6II8EnoBpuRX4Z
+# qKRRuZfTr9eIBP/IyDjbW5MOaM+R6Msoa+fRG0jgHoPOw6yCADCVp1msnIKtn1/+
+# HC2hIX3QZcqr5uVZdZvIsflcvj/irwBYlNeVmoQoKgO2jA/Bn2Lj7xiMUGGS+3D1
+# DA4fUnb2o4ps/ft3R4Yr2BYziYoJESFFtcnsrlJZ4zlxLUgDXHMUFyohprCKzbLT
+# Nr29pavh2V3/TJWJA0WObAsVjGKkMx0Uz6CTBk2W87cJbbx4kvQ5pHO09to9D8U3
+# j4cLWzjA7m0SLbbPMJ8ZkdlBTe6ziTI=
 # SIG # End signature block

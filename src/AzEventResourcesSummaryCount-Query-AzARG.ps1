@@ -1,28 +1,49 @@
 Function AzEventResourcesSummaryCount-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type has 'microsoft.servicebus'
-               or type has 'microsoft.eventhub'
-               or type has 'microsoft.eventgrid'
-               or type has 'microsoft.relay'
-    | extend type = case(
-               type == 'microsoft.eventgrid/systemtopics', "EventGrid System Topics",
-               type =~ "microsoft.eventgrid/topics", "EventGrid Topics",
-               type =~ 'microsoft.eventhub/namespaces', "EventHub Namespaces",
-               type =~ 'microsoft.servicebus/namespaces', 'ServiceBus Namespaces',
-               type =~ 'microsoft.relay/namespaces', 'Relays',
-               strcat("Not Translated: ", type))
-    | where type !has "Not Translated"
-    | summarize count() by type
+resources
+| where type has 'microsoft.servicebus'
+            or type has 'microsoft.eventhub'
+            or type has 'microsoft.eventgrid'
+            or type has 'microsoft.relay'
+| extend type = case(
+            type == 'microsoft.eventgrid/systemtopics', "EventGrid System Topics",
+            type =~ "microsoft.eventgrid/topics", "EventGrid Topics",
+            type =~ 'microsoft.eventhub/namespaces', "EventHub Namespaces",
+            type =~ 'microsoft.servicebus/namespaces', 'ServiceBus Namespaces',
+            type =~ 'microsoft.relay/namespaces', 'Relays',
+            strcat("Not Translated: ", type))
+| where type !has "Not Translated"
+| summarize count() by type
 "@
-Return $Query
+
+$Description = "Count of Event services"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
+
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQULbXHf6wZX3gY1TtJMUXlHNwm
-# G5qggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUV3PdHybaBD7xBoYrnVPtsJdR
+# 1u6ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -101,16 +122,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# zS4K+Ljyf04w4j9qPLXL32P2GaswDQYJKoZIhvcNAQEBBQAEggIAh71IPnbakFXE
-# hi9kIpRFETQFcY303GFv6v5sO3Atd3NIJAFtoAymXBRVVOXNI0sFh6PZ3uyotuK3
-# 8hkePt/lRGsK/gN1QGcQS8RjIzeRGlr5ramZnjhosPMZAVICKuYOoESvGiA6m2IX
-# QzIUorUECTvgCWahfm5CvxGMf7V16/NvE0V1WzDEFupwfXdTQZly+/mji5ndjtxZ
-# /NRxQ9xoLF9JH9AouPaWh0ocsIxtNr4J3uLzjqYbs8lCPJX3MCz3VwvAkyQO5Yey
-# X9ybeeUgM/nCGmZxxe/EyNP6S1GDv3rjAwjBSI8N219Esfpfx4LJj+dY3zKnuvO7
-# k2xK+cyEQFPw2EaA30tiRVCUnuevaLbEUpZtQXoSy0TIFTXrroFQ4FoIIf2xx+Nv
-# Qx4+xEn2fDJHWxzcPR3wo/eNyEpQGklcDrp4fGqPkCfdFnPU39usu9yf0KGSlgG9
-# 0luwtO4fc1q0gxlCFQ6Yn1YfEDeZ1YwmZ2y7AcpQ20qzq/Ze9TR9z9YH3kkxxxqM
-# KW2VDz1liqkYosIKlrFzQ8SAGGHVOK/GaDqxkXHz5igPoRPMqqCcrw4TeqkVEev8
-# ybPtuq4rxzYLy1R2cGNgfVi6MhWSARQtvmPjO1eye3+NVG09pO9EBv1y5MwW0kkZ
-# MJZhqxhGUYQ+cKvYijqHT5dMKOqJ+Jg=
+# lFdQ7p+kUdNNnlUZx10z53Pw9WMwDQYJKoZIhvcNAQEBBQAEggIAEreaHegYk/xr
+# Yl3xx1MWogDgS+BcvP+BgurG8TsJemZHX1n6sHj3Um96pBs0/kYPHGdowK5+zCgC
+# mH4djaH1s2PMQ+7GOj891WlMmQxlM9brkW2fcKTLnuoXJkUNTQJc5eUlAz+WqDst
+# Vq3tNfw1BDWeKBOI3MdOJnmVE3AO8AdciNT8ulGp450Zpb8vs3CZqYFNpQWNcqVN
+# Sj6gEwmHG/184J12joh8HYfqOO/wryPqZPPPOi93duIqj8snjy3wH7YZSQXJ+lQh
+# luRsGO9TMk0QFVw8bjqs9yRSzmIv8GEDVtqvQ1Sb5/N4da/xKBuRO9z+p+XKiVwP
+# 2pxPlGOQBC/uFc+1fGCy/o890xdcR8gWxAnefLjNOw8mzT1yeH/rPs25el1wNXp6
+# qL2ViPgf/Q0bEXQZcG3Q5y7yDcRJHk+g3tnEZs9PMuYqz7K+SZWgJdxtErfjhmuk
+# cKtdZ2zFuOVPqQK5DO3A9aiyexx2ZwcY2ev+oBJ5dDyF7J9WsJQ13l+FGpxUEFN9
+# FCLZY+Pv6qGNqwJLX0xj1mz4cpfwjmbwTzCi58VG08x83yMhgWwVqAEZZtNKTu9z
+# azgDw8ZPtuG3tHzZ0UFV4Sb66OdvN9DT/EOO3mO/fYMZer80UCz2GyLUnIGcdlCp
+# +emLRPlqYJOmR4VopycCN/8VOm+a9lU=
 # SIG # End signature block

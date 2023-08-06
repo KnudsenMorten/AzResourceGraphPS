@@ -1,36 +1,56 @@
 Function AzNetworkResources-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type has "microsoft.network"
-    | extend type = case(
-                  type == 'microsoft.network/networkinterfaces', "NICs",
-                  type == 'microsoft.network/networksecuritygroups', "NSGs",
-                  type == "microsoft.network/publicipaddresses", "Public IPs",
-                  type == 'microsoft.network/virtualnetworks', "vNets",
-                  type == 'microsoft.network/networkwatchers/connectionmonitors', "Connection Monitors",
-                  type == 'microsoft.network/privatednszones', "Private DNS",
-                  type == 'microsoft.network/virtualnetworkgateways', @"vNet Gateways",
-                  type == 'microsoft.network/connections', "Connections",
-                  type == 'microsoft.network/networkwatchers', "Network Watchers",
-                  type == 'microsoft.network/privateendpoints', "Private Endpoints",
-                  type == 'microsoft.network/localnetworkgateways', "Local Network Gateways",
-                  type == 'microsoft.network/privatednszones/virtualnetworklinks', "vNet Links",
-                  type == 'microsoft.network/dnszones', 'DNS Zones',
-                  type == 'microsoft.network/networkwatchers/flowlogs', 'Flow Logs',
-                  type == 'microsoft.network/routetables', 'Route Tables',
-                  type == 'microsoft.network/loadbalancers', 'Load Balancers',
-                  strcat("Not Translated: ", type))
-    | summarize count() by type
-    | where type !has "Not Translated"
+resources
+| where type has "microsoft.network"
+| extend type = case(
+                type == 'microsoft.network/networkinterfaces', "NICs",
+                type == 'microsoft.network/networksecuritygroups', "NSGs",
+                type == "microsoft.network/publicipaddresses", "Public IPs",
+                type == 'microsoft.network/virtualnetworks', "vNets",
+                type == 'microsoft.network/networkwatchers/connectionmonitors', "Connection Monitors",
+                type == 'microsoft.network/privatednszones', "Private DNS",
+                type == 'microsoft.network/virtualnetworkgateways', @"vNet Gateways",
+                type == 'microsoft.network/connections', "Connections",
+                type == 'microsoft.network/networkwatchers', "Network Watchers",
+                type == 'microsoft.network/privateendpoints', "Private Endpoints",
+                type == 'microsoft.network/localnetworkgateways', "Local Network Gateways",
+                type == 'microsoft.network/privatednszones/virtualnetworklinks', "vNet Links",
+                type == 'microsoft.network/dnszones', 'DNS Zones',
+                type == 'microsoft.network/networkwatchers/flowlogs', 'Flow Logs',
+                type == 'microsoft.network/routetables', 'Route Tables',
+                type == 'microsoft.network/loadbalancers', 'Load Balancers',
+                strcat("Not Translated: ", type))
+| summarize count() by type
+| where type !has "Not Translated"
 "@
-Return $Query
+
+$Description = "Network resources"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUqXdVTITAvTH5EMYMqdrWVNM6
-# j3Sggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUa5A4bxCzg9ZbT4dZ5jPKFE+5
+# ovyggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -109,16 +129,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# DphuuE3hh2X3Rzs9Mcqhkc8RgqYwDQYJKoZIhvcNAQEBBQAEggIAegjDjujP79o6
-# Pw0hImE3SGpttwRXdIu6X0vZQ9fATd7aD97/uz1M/y7CopnhSaVXJ3tRk4/Laco2
-# 1ErQW+Ydg/hAfoVWWPnAhkSAwZXfDPSP6sUy2iSfieNDOD1Pg5LlNjv3C+9kNHO6
-# t806bLPPJGEf62j5EfbGoPx6vz9hbyrOG1Qi1xBnIVKKcmn4MtuipPC6AYvEd64n
-# 1tpd9s35TNlLZCKqRAfOukys/VuZuvdSqTGs1N8iLnZd8Pnm1S62tn4w0AvbC/jz
-# KntatkIIwItyTq6UYNX791skaw7Qa5lMCsdJZ1R9PozkWPguxN2pFvI1J5JyGEzY
-# TR/MwQugy3J3qv9C4DqG47DnR1E2eK48XAT+FuDGLB0/+E+izW3MqKQbYL+utRKg
-# PiZan8jKmkiscNNi25f0P8eutj5wrEESbel0nz34Txs1k7cplakTRnHDcHv/CwOk
-# 9WAczpOj6z/+OYlgRR/C4qstxvzj9CBTrMNHX64EO6vDME3MwZd/KYKVLjdluIyJ
-# apYfGaWwWfokLa/yFbN1hM55IuR+Zfvfg12HPds6ujvCw7mPEba4doYT1S7yyRw5
-# h9uhjLMIRj3B40GATcAgaAUj1Ea2hq6mXGu5PQysCbq1O4PeEJ0xvCfKf9/gVEYP
-# YhDj8YBszB7sC4NIeouimIc1AYezcCs=
+# 4/IQ0JpSVAF9MOIWDqi47tEaY0wwDQYJKoZIhvcNAQEBBQAEggIAOurkV1kIAgMv
+# my7jHIQdi5iP+C3ggSO+w8CpDYhdCc50KJl9oDsTs1KPhthExNeS/kNDU2Pp0Ar4
+# GIdJwmHOxH+NbsMoDMyIOzFbDDJYyNMMEVyS6dxVuwYGEIPIalM2/uXQyH4Jcioi
+# QIbbKx9hNf8t3pMCzAoOe+dEX92KOys79JcJsBZ/+IfW6vnB2V29DBX8YYXAWOfu
+# VHgOKff3aje1a7sw3mLG6d1gaC+Lnt8uXM3IRlIqrxp0rUVpgaj0K5upXGLZb1Bz
+# 002BFM/rgJL7K0zXNfWeN+5uFfYkzKypOaJuhtAdXrJZz61+H96livhqzu/5KGL2
+# /9IQs2RPKFXCRs2f3sicws0Z+/+OWtRo2ube4GhM4xaAjAfXno4B+k7KWkclgXSD
+# WxVngBoEda+HEVWQBZ3yzm9TRTdztTPS6ylVPO48tKr2ZNMnkgukhjvX21+Scs0k
+# RpPUkg1sezG4/ZgQ50kLAnPbrK2H/OCrkl4CXFuWpykNpU6cuKfVjj05hWsOzw8u
+# Cepp4/NYntI7WNmI87WnZpesuGb7NLJ1hkU6jU4DSbINf+mieB+u5F/Y1Xrzb4oQ
+# CNnUgRJwoizhCDwMucLvyMdqxkRJCtSq07ujo4OYjKOLxSVeUb5R2tHWjNFscbi+
+# JI2HaRCr39hpFFT2l9cSq9r2yXsfLEM=
 # SIG # End signature block

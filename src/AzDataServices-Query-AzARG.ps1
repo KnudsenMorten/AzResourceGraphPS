@@ -1,4 +1,4 @@
-Function AzSubscriptionsCountByMG-Query-AzARG
+Function AzDataServices-Query-AzARG
 {
   [CmdletBinding()]
   param(
@@ -8,18 +8,44 @@ Function AzSubscriptionsCountByMG-Query-AzARG
        )
 
 $Query = @"
-resourcecontainers
-| where type == 'microsoft.resources/subscriptions'
-| project subscriptionName = name, managementgroup = (properties.managementGroupAncestorsChain)
-| mv-expand managementgroup
-| extend mgName=tostring(managementgroup.displayName)
-| summarize total = count() by mgName
-| order by total desc
+resources
+| where type =~ 'microsoft.documentdb/databaseaccounts'
+            or type =~ 'microsoft.sql/servers/databases'
+            or type =~ 'microsoft.dbformysql/servers'
+            or type =~ 'microsoft.sql/servers'
+| extend type = case(
+                type =~ 'microsoft.documentdb/databaseaccounts', 'CosmosDB',
+                type =~ 'microsoft.sql/servers/databases', 'SQL DBs',
+                type =~ 'microsoft.dbformysql/servers', 'MySQL',
+                type =~ 'microsoft.sql/servers', 'SQL Servers',
+                strcat("Not Translated: ", type))
+| extend Sku = case(
+                type =~ 'CosmosDB', properties.databaseAccountOfferType,
+                type =~ 'SQL DBs', sku.name,
+                type =~ 'MySQL', sku.name,
+                ' ')
+| extend Status = case(
+                type =~ 'CosmosDB', properties.provisioningState,
+                type =~ 'SQL DBs', properties.status,
+                type =~ 'MySQL', properties.userVisibleState,
+                ' ')
+| extend Endpoint = case(
+                type =~ 'MySQL', properties.fullyQualifiedDomainName,
+                type =~ 'SQL Servers', properties.fullyQualifiedDomainName,
+                type =~ 'CosmosDB', properties.documentEndpoint,
+                ' ')
+| extend maxSizeGB = todouble(case(
+                type =~ 'SQL DBs', properties.maxSizeBytes,
+                type =~ 'MySQL', properties.storageProfile.storageMB,
+                ' '))
+| extend maxSizeGB = iif(type has 'SQL DBs', maxSizeGB /1000 /1000, maxSizeGB)
+| extend Details = pack_all()
+| project Resource=id, resourceGroup, subscriptionId, type, Sku, Status, Endpoint, maxSizeGB, Details
 "@
 
-$Description = "Number of subscriptions per management group"
+$Description = "Count of data services"
 $Category    = "Configuration"
-$Credit      = "Morten Knudsen (@knudsenmortendk)"
+$Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
@@ -35,8 +61,8 @@ Else
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUJIu4SWGijziv9LdIqYcGUAz+
-# lW+ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUdqEY8GZvXLCj3xwjPxjaCeJ8
+# kySggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -115,16 +141,16 @@ Else
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# xPKaHEzw9roNZyDzO4DuqEQJf5AwDQYJKoZIhvcNAQEBBQAEggIAeCE4uhyzNj3z
-# kjQ6CEVcoPiwx+gC5owGIU9zDif7FJ7K/MmRCqZGwcxc4myX1fp920e/5FILm/j3
-# cOZHcMUC2FmLKP0jQa8MnfhL6INd+QyxD28zBaCXtKSzRNRD04YtB+psZ7OUXTOw
-# 0pTjlMwt4dVca5eVZFTc2ekThaTfd5Q4MwiPnpVJFpLGNswD1aFatfz5zCiyE2mg
-# ipdaEvns5GMI4rGWutbFUxiywbBkWZB9fQYktSgOylr9lSQsJ6iXB0IEkQDrn0Sa
-# kLWbZkGRyOHS5yxTKHOwwh5EPD+un/bSn4HWQ1lEoYpkRuRanXQ94tv7XYY0gTHA
-# WeK3NxDJ151kElMU+Tgvf11IghHo5HxSZDmfJEit9hhHg9xDY4PrXSJFUN4yYzOh
-# 39VdKtqhtni0ZrKuweWuLS7jkCnrKapZwTNHcZ31q8AKT8GSNX7/vVzQ25A7c1Jd
-# 8zgbAXnqieRTVHTBdXoRfEFEP1Qv2noiWkE3RnuwKyem13WSWMFzs1tno/rdjLfA
-# 069UXHwjIoGm2gcCt+03lSjU0O3KMqNWoMbP81cNauxN+uULotEzSfbvHj/DG2ur
-# C4QnlgQ8hFNB2bB0Vf0IgYrBzGNZDQuldKjguLxo72BxfunVDK3cdnXaTwZCvwRd
-# nDaWt2whQhhhfjK1i8j44KthDHj72Wk=
+# i1L8Uk4SX0TqCre/7FImOHhfbqAwDQYJKoZIhvcNAQEBBQAEggIAl1OIU9PQZaka
+# /qoJShXUNxktMCgmfsnpChppZz02kTOeuajPjESnNewYKRSNj78P+gGPsfT8UniP
+# Yg3BEBMuOHUNrzX1Oa/cVs+eZc7Be2tMvsn8Mph6bvhi8mvHtPEnd1EhYo3eT6e3
+# I1LpAOuPnCvP6FkdVcM7txc+Heuqit5Q7hg+ubV7eqIZ5ncP/VKE/AYyen65Kvaf
+# q3c3hT7l5HvxojEFJTh2VTdPgVusiem4dBn13qU7oJnB2h5848mBkyKOLWsl0HzN
+# CxJiTwplL0zXjPGNn5aR+LK4PnKOizyQ9TmC6TbNGQcC/D+V6FUoM4b5nAwzNep3
+# eEbvR/e8HURFo89Ume8tJR9BwSwUucj3Un2onp73It/w6P4eVBin7g4DrUb4d1en
+# Au2lvsQNUwWWmzYb+OpCbrvYXsSRt/J5arIpAwtnICj3Hz/rUUoCe42OIxkERVfT
+# wUnaIvsTiEXggTD2+zGrZ0VyzEWhFaegaY5TQ0ENJ2+9rzK6zSxT8MGPaxpJpZJC
+# RsqFiL5Tg0uLgatf0a8+tw1piIfXG+H5GVOlaBH7+TT5r865gtPXj9d83Gdtp4bf
+# yMAdvZiXv7OvoKlQwoyth9ziMNwA2DpziBDMwlSC5kGlFt4KgD3b9aqBEgvBPm/i
+# KFonOyGyivzqbmVrI/77jPZV/Am+fn8=
 # SIG # End signature block

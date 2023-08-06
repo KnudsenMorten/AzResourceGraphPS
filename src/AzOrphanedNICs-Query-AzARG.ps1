@@ -1,24 +1,44 @@
 Function AzOrphanedNICs-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type =~ "microsoft.network/networkinterfaces"
-    | join kind=leftouter (resources
-    | where type =~ 'microsoft.network/privateendpoints'
-    | extend nic = todynamic(properties.networkInterfaces)
-    | mv-expand nic
-    | project id=tostring(nic.id) ) on id
-    | where isempty(id1)
-    | where properties !has 'virtualmachine'
-    | project id, resourceGroup, location, subscriptionId
+resources
+| where type =~ "microsoft.network/networkinterfaces"
+| join kind=leftouter (resources
+| where type =~ 'microsoft.network/privateendpoints'
+| extend nic = todynamic(properties.networkInterfaces)
+| mv-expand nic
+| project id=tostring(nic.id) ) on id
+| where isempty(id1)
+| where properties !has 'virtualmachine'
+| project id, resourceGroup, location, subscriptionId
 "@
-Return $Query
+
+$Description = "Orphaned NICs"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUBz6AKCBPb5xp+5mysm5zdylo
-# hC6ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUaiWFr3i2BZrueaWUuTrMR33u
+# u6iggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -97,16 +117,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# Vsx5Z7rLXwF2uT2vYe95u82f7RwwDQYJKoZIhvcNAQEBBQAEggIAv7sCL77ebyoI
-# nXDQusp4f/D9WqXzrqKSeCNAqy2GXWSwRKzM9KWin2htgLv9wRi26hy8iZm1XmQx
-# 3Qs2nN7B6OdiURziKYH4n+iMR9dE7XE8arsaFgntArbsiun+V3ER5utN8kldbJR0
-# /EwY3HcZ0psZ6OC5WRuo19BonQfUxxVqUAhDsK2lofzEOvbc5yV96s1byCv7t4O+
-# 1NOOTG6mhydgpLMbws803DO+KJsDU+zKiNFzG3+NWIEXOnGlzc15gzZd/YjIqqtd
-# UFrBY+0C6OFGL5I6Idj4Yn7D6Xv2bUgWouPolPIjjSEb6wr13FCEfsP01aTPT/1x
-# 7JjUTGOKRkTl7OlKKjk29w3+WTqwuc+AYnrNZLXdamr1luAregcQRywsEDwqZYUD
-# jNrPW6dp/xmaVJPvyyYBG/A+X+eLJiCDkGNXtcWhtmIsPWDdbFucokRxBJ4jeaOr
-# SJ9kilsGWrPYzI4GX7kBHC2SQKc/VV2JmBAYUHUad6yZPTzyAmJbWcME574zoPr6
-# Bfwvpa8aBRcEH4cU/BdoSNJ+LvHJ9oTZJ7/k37wpL7TWuSmp8eXF8o4n0z4dGjLQ
-# hOEFNHDfr9LusfA84P7rdnOuqHMT0npzgYSEKifpn7y0pIfc5Bk1Vt+ln0F2fVAa
-# nW9SWJYifCaxVM0TPELWZYUV4XTSvdc=
+# w/xqtQ7hD5R+e3G1m1XqMwwHZeswDQYJKoZIhvcNAQEBBQAEggIADFkBOOX6bOwW
+# U4fAQmYnMKLViu04kXR63myy+x+UzEMF9f1NDREOUq22BOanfP+2FuGi3jYfRNLx
+# +Ev34UgYjolKDaHOtsQ/HLB3a6FsfqB+txznTroTTJj3VGxANW2RIB4c9d+yCdlG
+# FbaXwyEYZNeC+m2kRh5lwpNA5T8q1iKdJVI7E79XeTbNWnOKh2TKLJCGd1u6gMtt
+# BULxm1cjEHrC96mzHkz2cskBIUUAaDw8yJqH6cb5tpHk+e85u9lb7Mh/VMW6/MNH
+# 5Sc5GXX5IYWRqwCEfpCEN8hF36iAFC+emeThrzheJBJI3Nrx4iQvX2ON/4NiY8kI
+# Zqm5MfAL3wRkML4Ou7Eovn8L1mn8Y9tCBBs4k/LbEUzmmahIiB0anii9OdGgTphf
+# TmAxWPemN69blT3j8Vh/F+4sXeblFHlrEAnluz9wZgTfWjv4CjRHbb4cQ5euvuS6
+# QWbUP+fUczSqCis+20aYgcs+x10auVOh/ym1a2oRPtpRFiMqbiUo2E/kc0VFP/i0
+# aiuLgOPbEusGeCoId4KZSfMUBHxXS43hON96bykil2SVj+k5Z1lANt1WQjzZP1F/
+# kfCYjhQuiNJD8ek1W5VcqI51iaiDg/ytonJoe1muitXb6ziGK1xQTDIPGYysdFKD
+# aRAreQVxTGYA9X7OkMm/LCkMB1L0yPg=
 # SIG # End signature block

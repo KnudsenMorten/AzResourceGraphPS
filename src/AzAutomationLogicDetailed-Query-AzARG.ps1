@@ -1,52 +1,72 @@
 Function AzAutomationLogicDetailed-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type has 'microsoft.automation'
-               or type has 'microsoft.logic'
-               or type has 'microsoft.web/customapis'
-    | extend type = case(
-               type =~ 'microsoft.automation/automationaccounts', 'Automation Accounts',
-               type =~ 'microsoft.web/connections', 'LogicApp Connectors',
-               type =~ 'microsoft.web/customapis','LogicApp API Connectors',
-               type =~ 'microsoft.logic/workflows','LogicApps',
-               type =~ 'microsoft.automation/automationaccounts/runbooks', 'Automation Runbooks',
-               type =~ 'microsoft.automation/automationaccounts/configurations', 'Automation Configurations',
-               strcat("Not Translated: ", type))
-    | extend RunbookType = tostring(properties.runbookType)
-    | extend LogicAppTrigger = properties.definition.triggers
-    | extend LogicAppTrigger = iif(type =~ 'LogicApps', case(
-               LogicAppTrigger has 'manual', tostring(LogicAppTrigger.manual.type),
-               LogicAppTrigger has 'Recurrence', tostring(LogicAppTrigger.Recurrence.type),
-               strcat("Unknown Trigger type", LogicAppTrigger)), LogicAppTrigger)
-    | extend State = case(
-               type =~ 'Automation Runbooks', properties.state,
-               type =~ 'LogicApps', properties.state,
-               type =~ 'Automation Accounts', properties.state,
-               type =~ 'Automation Configurations', properties.state,
-               ' ')
-    | extend CreatedDate = case(
-               type =~ 'Automation Runbooks', properties.creationTime,
-               type =~ 'LogicApps', properties.createdTime,
-               type =~ 'Automation Accounts', properties.creationTime,
-               type =~ 'Automation Configurations', properties.creationTime,
-               ' ')
-    | extend LastModified = case(
-               type =~ 'Automation Runbooks', properties.lastModifiedTime,
-               type =~ 'LogicApps', properties.changedTime,
-               type =~ 'Automation Accounts', properties.lastModifiedTime,
-               type =~ 'Automation Configurations', properties.lastModifiedTime,
-               ' ')
-    | extend Details = pack_all()
-    | project Resource=id, subscriptionId, type, resourceGroup, RunbookType, LogicAppTrigger, State, Details
+resources
+| where type has 'microsoft.automation'
+            or type has 'microsoft.logic'
+            or type has 'microsoft.web/customapis'
+| extend type = case(
+            type =~ 'microsoft.automation/automationaccounts', 'Automation Accounts',
+            type =~ 'microsoft.web/connections', 'LogicApp Connectors',
+            type =~ 'microsoft.web/customapis','LogicApp API Connectors',
+            type =~ 'microsoft.logic/workflows','LogicApps',
+            type =~ 'microsoft.automation/automationaccounts/runbooks', 'Automation Runbooks',
+            type =~ 'microsoft.automation/automationaccounts/configurations', 'Automation Configurations',
+            strcat("Not Translated: ", type))
+| extend RunbookType = tostring(properties.runbookType)
+| extend LogicAppTrigger = properties.definition.triggers
+| extend LogicAppTrigger = iif(type =~ 'LogicApps', case(
+            LogicAppTrigger has 'manual', tostring(LogicAppTrigger.manual.type),
+            LogicAppTrigger has 'Recurrence', tostring(LogicAppTrigger.Recurrence.type),
+            strcat("Unknown Trigger type", LogicAppTrigger)), LogicAppTrigger)
+| extend State = case(
+            type =~ 'Automation Runbooks', properties.state,
+            type =~ 'LogicApps', properties.state,
+            type =~ 'Automation Accounts', properties.state,
+            type =~ 'Automation Configurations', properties.state,
+            ' ')
+| extend CreatedDate = case(
+            type =~ 'Automation Runbooks', properties.creationTime,
+            type =~ 'LogicApps', properties.createdTime,
+            type =~ 'Automation Accounts', properties.creationTime,
+            type =~ 'Automation Configurations', properties.creationTime,
+            ' ')
+| extend LastModified = case(
+            type =~ 'Automation Runbooks', properties.lastModifiedTime,
+            type =~ 'LogicApps', properties.changedTime,
+            type =~ 'Automation Accounts', properties.lastModifiedTime,
+            type =~ 'Automation Configurations', properties.lastModifiedTime,
+            ' ')
+| extend Details = pack_all()
+| project Resource=id, subscriptionId, type, resourceGroup, RunbookType, LogicAppTrigger, State, Details
 "@
-Return $Query
+
+$Description = "Detailed view of Automation resources"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUhjWwtzer7+BBrHkxRMPI4b8c
-# 0QKggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUkAkUtsH3xgWPE/hc2EZsULMg
+# lWOggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -125,16 +145,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# ZUemznTiZ88csMrpE71O3h1UjI8wDQYJKoZIhvcNAQEBBQAEggIAv9TEXuv6ng3q
-# ngfBMygUhPG7YOg919WrO4dP/pDUjJuToBxmLH2vPQ6QHDzRoq/KWvASkWEQ47Dk
-# a1X8sO2DTyT8yFCkOi16ZSCHKiBNQ5gTaCpS6ZZbuR1/6417yFvsO8OJo4vCb5tq
-# ZSciQGYliNcr1qEuiC5Bj1L/8vc3mwydI+nIEHutfaE9HQaSAR2TYntJAT9JGACM
-# mio3xHxv+g/9wxRCs5+um3jw5oV1MaKNOl4LHhmJhjUAwWrGlZVEgpHyROWG6k8Z
-# 87IldryeLfTR5k8WXRBXMIA0AGT6ADDcjybOGSgS6yTZH5XK05k5ylUOYMIG2cLF
-# v5aPftYWIP9BJupda+IcGNZfeNlKw6Mz9+o7Z02U5+ib5f+6h6Zfw3+pmpVAgJ5P
-# uwwvnPpeHLiPhrois5giTsI3baNuOQzUD2PvDuqFiBOw+v7b+HGsDhyfuP2VDJhu
-# SeM+P+d7MK2gk2j1+kqOxjAIdPhCR2shQca25wVjWNojUvchRlBumTDTFDNxw2AJ
-# WAmVFsDxXo/Dsi0DFJrvGT9N57bQPBCPlw2Y1sx9GNgbHsXqfyLM/T1mdyrntaUa
-# 3R8h4zkUTJeNtQxrHsXD4EieqP0wVOgb8QUv+sqFB+lsGHsoSbeiMmXLQJwOJM3a
-# dmcYIp4Duy0E/Qzhvep8+BK06O41zP4=
+# n5Han0UBLL+GnjV0xVrN2OcZTMIwDQYJKoZIhvcNAQEBBQAEggIAJa31SW9eYEZt
+# OjyHdUrR2UUzpXiUmhWy6f+Jkdoag0B8nYY4NvnfJ0e8tvzqdUKvJ8PLBUC5n3W6
+# 3WRDgFNqzlYtPzD1LzMKSa7boW/BZjs2SXNzVth3+lXrm3yHvmonl9QuOQ9YAWZl
+# KtWMVtHt/ZT3UYtOBn39Zd1j5n17WJEUVV+bSMglCX6kxRSFqDTmmG9HqOLBJFBZ
+# VR8NZtuAnQILwDZjMenKSQQ7rkt8id+QAa6g+vF01cl+PyRkj0TxYKSnB9WHLw9z
+# fqyNfTBvWSwkUQk8xoPnWKuXhR+92SqPiBZX1m3hZLgG/pNO9D4x/QDFvDEHQcKa
+# hcl1FpOpV7Cuht3oEkGvLRN1uwB/Y0+XoPHz7dTpk91jt8Xwc+/JkKGg0UIGac4s
+# jFOrrV0jDvvdT9AkS1nNm5UJBsiiObg1mHAmpNs74HwvYse9CZuOdPInUn3uYRvq
+# LVWmBF3KYZUCFN3wOlw7ZIQnpXgULBGlhFgRS37w+y1BhI3+W1XFl9pwUXnovodT
+# IkVDov6/4HH9QRrIsyXsTbR8yZkywCJbOPE+He6otdfZ63/3R1hLZ/6iIX8Gkb7R
+# p+p8uW1PaaH1QJEHZpc1sUAGp/4Ua50GihhX2ujnQndHs20IldbGeaOZU0FDUrcs
+# mf3PT63UoUTHJBtEF0WWa4AFENfXEoY=
 # SIG # End signature block

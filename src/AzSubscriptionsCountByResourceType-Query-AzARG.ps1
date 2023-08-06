@@ -1,21 +1,41 @@
 Function AzSubscriptionsCountByResourceType-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | join kind=leftouter 
-        (resourcecontainers
-        | where type == 'microsoft.resources/subscriptions'
-        | project subscriptionName=name, subscriptionId) on subscriptionId
-    | where subscriptionName  != ""
-    | summarize count() by type, subscriptionName
+resources
+| join kind=leftouter 
+    (resourcecontainers
+    | where type == 'microsoft.resources/subscriptions'
+    | project subscriptionName=name, subscriptionId) on subscriptionId
+| where subscriptionName  != ""
+| summarize total=count() by type, subscriptionName
 "@
-Return $Query
+
+$Description = "Count of resource types per subscriptions"
+$Category    = "Configuration"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUuo4v9DnuJJIcAi4dOdtEas1T
-# 3v2ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUH60fh96AU/eMTifI+b4LmAZ2
+# ChKggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -94,16 +114,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# 8B6nX4rtG8JyX5Yj5W4z9dWMtq8wDQYJKoZIhvcNAQEBBQAEggIAr+HLwZDYRp3C
-# Wjjyik+cRLbi62YIOfQSQhNorx3RwBFSn+h2UkymCGSTJwRaODKsg2fyOrK0zOq9
-# Ggday0CHgrBJNkqBv5+wlS7fLg45FJBjf03BKWJn73zNnOCmJ1NAHHMhinj58pxE
-# 44zvfccclKFHQUzteLRPwBXAgBEZAq6fD1krhKVuBJe/hrg1L8cgJw/gbhRPZZJW
-# +dZe57SmtSe9RO9wqC/45P1oq2nJgNHakudTKgQ/D08vytcJqJ3Llp1I/NYiWAID
-# 1sNN2ZATaEG3QElkCm848OTXsbvtz+uaVKQqFyO5jHFOZ8aTNl5thUPd32PIaYSP
-# 0NjQCHnEO93NPgbYq3yGo6MeG5rcIkoYdNW/sToTXKanjj7lUP9ONwS7RnzzztqY
-# xI/X7N+V07U7/2y6alDUeS9t4TypK9OZK8uS4Q37o9q6ZPeBE/hKRIT0zEBO8qtl
-# RO3qB2oLDFT9mOLtqd6SuwHhDCFrBdQX83OPqZcQ4jkYOnt6BLigwnU0PNFhQBU8
-# l9Y9VNnN9F5YJkaMfSfVKdu+vrfusqU8UR/HFf441tBwK6x3kRSTSl69LKVqDs5Y
-# Si8hGLKJ5OJ5aB/GIBnevksTXqXOxwI0BE0XPpFJOkB0Qp3PAuGVPMBEeIQKhEuz
-# dr2wIIyiAJk5hTFar6R56ryqvx7aJYc=
+# WLKg9Hw7c+l0E1M78e0dv6zTtlYwDQYJKoZIhvcNAQEBBQAEggIAccI4DEujQgnI
+# COJN37H4xP7r7deCb/5HePh5J+nLtL7eR5qWCxJ/klrZXXdor4PblBa6NRnpKTLK
+# Sz66Y4FyoRcIh6oxdreb1NOi44R7+xNiH0IZE+qbv6MxpE0BPdHgNoW1p0cYpqpu
+# EIFGUI9C/4LVpy5bNIz7jzVzc6OV42ex5le2ZXUnaDtIsLBtJkHXowPa1tAV1s4W
+# VTG+fELUP7nDEs1EGVg9YRTz3G1U5dMX518CuUFg3S9KlA1c/5WGTI3/hP6Slad8
+# 0DVuCMqVCCl0pDqwQUocshJmDtO3Exs+jNT72hmUYafY73yaHr58UYeXW4D2aBug
+# EEnfgVAJ70NU6wBd4sEBoym6ogJzgEcFo3AAA+kO9gBuHD5zPtxQCaQmwXe8yjg4
+# DJa1HHRDbclbxP5KVYttqJVP4JvoIdywVqUK/TbxHVoYdZl8lEgz/GLy5+Y6DPQ8
+# VwLdXMKuRARy57l//SGlaT+h4NFT8q4AztSneEzwTuGLJnO4kNeCFIcFCC3zi4BS
+# NZufrN3ASpFOm5pnRWBd8wE8pjA8oPnmJ0otMkBjIqNdQcKT2JHgAcrW9ae9m3v9
+# qqQMAYdJO60v1xLg1ZgdW7e1nGpNS1kjzFjlrWZMtKn7nqysQaoNU/K0Kc4etD19
+# okmnCLJdBgwKWugc1Ra+pF8uUyt4s1A=
 # SIG # End signature block

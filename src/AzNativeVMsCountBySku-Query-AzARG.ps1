@@ -1,47 +1,39 @@
-Function AzSQLDetailed-Query-AzARG
+Function AzNativeVMsCountBySku-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type =~ 'microsoft.documentdb/databaseaccounts'
-             or type =~ 'microsoft.sql/servers/databases'
-             or type =~ 'microsoft.dbformysql/servers'
-             or type =~ 'microsoft.sql/servers'
-    | extend type = case(
-                 type =~ 'microsoft.documentdb/databaseaccounts', 'CosmosDB',
-                 type =~ 'microsoft.sql/servers/databases', 'SQL DBs',
-                 type =~ 'microsoft.dbformysql/servers', 'MySQL',
-                 type =~ 'microsoft.sql/servers', 'SQL Servers',
-                 strcat("Not Translated: ", type))
-    | extend Sku = case(
-                 type =~ 'CosmosDB', properties.databaseAccountOfferType,
-                 type =~ 'SQL DBs', sku.name,
-                 type =~ 'MySQL', sku.name,
-                 ' ')
-    | extend Status = case(
-                 type =~ 'CosmosDB', properties.provisioningState,
-                 type =~ 'SQL DBs', properties.status,
-                 type =~ 'MySQL', properties.userVisibleState,
-                 ' ')
-    | extend Endpoint = case(
-                 type =~ 'MySQL', properties.fullyQualifiedDomainName,
-                 type =~ 'SQL Servers', properties.fullyQualifiedDomainName,
-                 type =~ 'CosmosDB', properties.documentEndpoint,
-                 ' ')
-    | extend maxSizeGB = todouble(case(
-                 type =~ 'SQL DBs', properties.maxSizeBytes,
-                 type =~ 'MySQL', properties.storageProfile.storageMB,
-                 ' '))
-    | extend maxSizeGB = iif(type has 'SQL DBs', maxSizeGB /1000 /1000, maxSizeGB)
-    | extend Details = pack_all()
-    | project Resource=id, resourceGroup, subscriptionId, type, Sku, Status, Endpoint, maxSizeGB, Details
+resources
+| where type =~ 'Microsoft.Compute/virtualmachines' 
+| extend sku = properties.storageProfile.imageReference.sku
+| summarize total = count() by tostring(sku) 
+| project sku, total
 "@
-Return $Query
+
+$Description = "Count of Native VMs by sku & location"
+$Category    = "Configuration"
+$Credit      = "Morten Knusen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQURAngP09Bxdsn2nYZiPw6K4Ab
-# oP2ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUM391cXIcA9XNLp2RoA+AoImS
+# royggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -120,16 +112,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# zl/ys/vjkcrJxt4Zj+Olw4PTd5gwDQYJKoZIhvcNAQEBBQAEggIAI+BX0e2QpO66
-# zuwPxTUdvIcq3L+clmHfZM4kHvv5LUtJbjbhnf2Gh8zszWtjyr7d/H9yvmEyJMlj
-# W37VyXtyrmiINNse5X9DMtNF4gfzQMan8aPP7CP7zfo6IEMjo4g416at7nSmgf53
-# yeQAlxrHLODfelZ+e6PyXyZs6LoNwku14vA68rcK8q+NVlf+WycNrvNjHVrfKvpF
-# 3we63+F29ebuiwdBaPiedzbS3cgYoOdN6I+WnZfJDKEjBDSGXEwOdeihk4630x4P
-# AT5qJARcOtxEpYuldeojvv/7SsvYBzeLqXtudZmpeG5vDB0dTxHcS7uDg6RvESf5
-# U0wZAmlHIW3RogfJ9PI9u7uX4auMsoGXMw73v79N0+qQBYEdk5UGX05E9kdEL4RB
-# LeENqbZudQQnpzGncqOodwzPLpQyK4ZYZ3+YrSJJc2hSxVVnWkWGDqgK6QljyTiw
-# K3PFxIl6+G1LVqVyWtGV2/11zDwitUI8cKEgO7Raf19vN0nGUeiAvJKuCzanMwK5
-# gdLvIOxMUJ3Gueqf4c3/e5MYw0qBUYHyqmPaDWFlUxtg8dR2u26FiGyExtvK6WLh
-# 2NenSDIJOa/Q58gVXc0rRH+c5QFAB2VaXXdpyAXct3wlvbcCqPGGkncggiEFigeU
-# aGmjyT9ZdHZy42WzvQ2ccd+LroeUHOo=
+# z8b5IDtDScTp7y0AYf1VROl+Ul8wDQYJKoZIhvcNAQEBBQAEggIAIR1jxzp48BIL
+# 9tEi942w0iINJmB3O4g2FF1+qysYa0n5Gsur1xIKbDERqH4IOV76ZZ9f6YCHTdDH
+# zICKOBgFS/h7lLE3Qwzs5nOf/bWwkRipKppg5Vsfvf32UT7ubUyJcEHDhA165Yfx
+# EzqyArVhoBfoVIYDUFhsfxrA8V8C/rYqyNbcYFfsocrPnv0Ir9RNVgmK1c48qRyt
+# dkJwx2x5d71MV1hFbjY0xsUP+UJ0inLpm2LO1bhLHhQk/nJXvxXu/AlNyUWLsYnm
+# IpiSVJ8gDwpvSy+K7I3QOf4vzDFp7YZqvnX919YYH6onjP5AJ3AKB0MbxXg6+2rf
+# 9Sz/D2/60foEnWYPoNDS0zTSUzOmyHD3aJJr5Q8sn7TWGPM8kUjEwCC7HG9+SCIR
+# UjvbFAq17OIR+9oAsyJ3aBLlu/sHCOciXlMC/73QgyWECDdI9LxEhn+sQ/Z9Fk2R
+# 3/5/qsJNAKcAfyzYMb7ql2iD+ud4OW77SKiTOizjkH76jwAxCapMTI5yvkxlv1Q6
+# Pfg2gY7AEcfjBw6phQMrrooMv0/7mNbo6XKEksikoag7rkhh0qMez/s/EyoTg4CV
+# LnJUxv1vq3v2jSefqWUQk7xFVWPA9Hq8HljCp9Sr29ICukIBTCtMU81VRenu8/kb
+# E7PuFbNCocDK1hf4jDJ+1o7SqCrrg34=
 # SIG # End signature block

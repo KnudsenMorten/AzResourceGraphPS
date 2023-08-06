@@ -1,22 +1,42 @@
 Function AzNetworkSubnetsWithServiceEndpoints-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type == "microsoft.network/virtualnetworks"
-    | project vnetName = name, subnets = (properties.subnets)
-    | mvexpand subnets
-    | extend subnetName = (subnets.name)
-    | extend hasServiceEndpoints = isnotnull(subnets.properties.serviceEndpoints) and array_length(subnets.properties.serviceEndpoints) != 0
-    | where hasServiceEndpoints == 1
-    | project vnetName, subnetName
+resources
+| where type == "microsoft.network/virtualnetworks"
+| project vnetName = name, subnets = (properties.subnets)
+| mvexpand subnets
+| extend subnetName = (subnets.name)
+| extend hasServiceEndpoints = isnotnull(subnets.properties.serviceEndpoints) and array_length(subnets.properties.serviceEndpoints) != 0
+| where hasServiceEndpoints == 1
+| project vnetName, subnetName
 "@
-Return $Query
+
+$Description = "Subnets with Service Endpoints"
+$Category    = "Configuration"
+$Credit      = "Wilfried Woivre (@wilfriedwoivre)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUOBpJMP2KQSZGiFvrYal5BX21
-# tBGggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUA7GIk2TGMfFgEd2VYH437dVb
+# Z9uggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -95,16 +115,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# /anITP1ovFBYMzWQLZCW3pcTgiIwDQYJKoZIhvcNAQEBBQAEggIAFh3Ai/FlPO6+
-# 1G70hyxHZXYvKv9bHTlk7w6hALbbcC7V2JhQ2tZLjj5HCpufsRUtU+qgzxkon3ah
-# JzTGQFPwLQXuBXfiQ1mizxVP6avceia5CzlFbfjYBAwdxTpfQMaX0s7a6+7v3j8C
-# 4F4syx53QXKH2OVFU38iExsO2a3iDu6sFYY6KY1dYp+I49F5GvE5/VTKu54Gk/S7
-# aMuYqU5K+h/1We9T+vaRGayAdVoXdYmdCKnUt516NPnKMwvgkUacYeI+2EuAo5k6
-# zBLSSJ+YilkdXuOZ7l+UmQOzctvbfLZl++iRKpvYVdn2axXoXm7ZNpafsRX9h5jZ
-# xTYRBF500TSdT4WsRQfm0691sK2+fUaTc5bujSJP99PoBAwZDEnt0egXIsjje009
-# QSOZWO9cfZHgT/PSvliF/lmLcS4uCeDjgwDw1JsYdtGit5Yeu2B8umArQirKQuX/
-# ZgSi4528JMl/TZt0Tups8gXuUdROc1L6MFMWpVduDQ7s6/IRXscA1yjFMJsiI39z
-# TCsdtFTQGSPe5WfRa7rH8zWAHuRz5EXf1zkdkLSu45MlPiepLw5hMN5ROqyEpU9/
-# f7YeQ6qRiqbTl+Sqo6u13utHC9pcUcJ7mb32eJBERjdckcX9NoUmMX21pTLnUqfC
-# 8jl8SJ1r9PyIbzQ7U2WEo1v3pUmxcKg=
+# u7+bUN2IY8kCVIfIu9ckRX4wShkwDQYJKoZIhvcNAQEBBQAEggIAxsRmfdiuIkSx
+# 2TLNhq1Fq0z3clYUp9v12Ov+X5jGm+8othhYUu0GVA8bZO2OGKtV6EUznb786qIz
+# xx2R2AY1VQ2L5bet07NgdC4ozUIR+fVeeqSSEUu/+L6OrE4OJ+EK6z/m6V7rlW60
+# YYBj+XwQ9Z5xb+vt6bowL6b9m3759BE1zcwrdZSue0iY5mZLk5OPVOtUUIUN774G
+# p/xc0fQcVOT4fL8kwmJBD+iDKXwlmytPH91Yyce+VptYVQJmf0oZWv0xTWG98ZNe
+# /DvYLvvJxbH9T7Thlo3WGIBVf7ZYHnn0iPdWcX+tBFsWh9ILA/PNGO0cglNJxEVI
+# 1T2pyJkxLzstdDt2wVOXF0bpiGKCa2WHMAX3DGm1fXZj6QZKg825YJ6fkXc6WV/w
+# B5SRpjVZvltX+feM0fkQYnf8GSkTOV/J9FgquYblp7RsIL9eU7c1TOOKHqsOPSpa
+# 5L0784ypMcNfa2moWcTy5EHHnYF0/ipmlXuGxai751i0tuFzl67QbLSRJoi0Ql6f
+# PTBWytw3fWhEgiZyyEaEJrBE7WlY+G5M4PoB2SP7JjMQ+NMSnhCLC1ZqEPDFdmXt
+# Hn7S2H+toBS5cqg38+ZtVm9mja4U1f0eSnPgV7LTW7GIthCiDyontHGUIdwNEMq0
+# e3t8+ZVpzU2qy9n3eYl+mAXfFfkvePQ=
 # SIG # End signature block

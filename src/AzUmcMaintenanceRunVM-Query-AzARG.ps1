@@ -1,18 +1,37 @@
 Function AzUmcMaintenanceRunVM-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    maintenanceresources 
-    | where ['id'] contains "/subscriptions/<subscription-id>/resourcegroups/<resource-group>/providers/microsoft.compute/virtualmachines/<vm-name>" //VM Id here
-    | where ['type'] == "microsoft.maintenance/applyupdates" 
-    | where properties.maintenanceScope == "InGuestPatch"
+maintenanceresources 
+| where ['type'] == "microsoft.maintenance/applyupdates" 
+| where properties.maintenanceScope == "InGuestPatch"
 "@
-Return $Query
+
+$Description = "Maintenance configurations (AzUMC)"
+$Category    = "Security"
+$Credit      = "Microsoft"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUKNef33a0ueX924iOj/lJSDF0
-# wHSggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU1LyhbIldS4gyG3dE7eOAV1UN
+# PiOggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -91,16 +110,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# e2WO5A9j0M2fzLXC9TR+A6wHGoAwDQYJKoZIhvcNAQEBBQAEggIAXUgM4Llv/KdH
-# cvf47f+YIABtXTc3kSi9nK0YoWEyJIDFvoFjFiGpKsUBUqCnhIG49vkaQMS6vKIf
-# Meu0bg2WhFYzMwYTWehJFEYo0DfT+Dyrc7poat8anvNyREyR9HeUgTkFI3fslMVB
-# 42sP0EdWrlHD0/Jy1kUITBK8DN1wGxjd2pPN/LLhWoLFkgOpy4bo9e7EgIHsc8Gt
-# u/8sjYYgsg6ZeHTAaRbXWQFXzujr7cuoqJA5eg3jtiisU/rn9NX/hJRJfskntzJk
-# 2p+VIAnXO1jgX/dqYJfBG7ZKEWWBmezioPjBxc6h7e9tx5aoppLCKkPbXw1VFsiI
-# djggByjXQgZkOg3anZsqakQgHCxR5V87b0y8q5sCm5F1kKqCr7DRLgejjWR1mZB+
-# xSfgdu74lESI01KR7Tt4l0iRGFvZPVpW2I/cCZ7Uqkzw3EqJqfpBa6tRHM4wiVvq
-# FVM5IyJZTcqqQgJha87tGfL13Erve6tvkkVAPtz2R3Vq5kqcHt6GcnmRroPkJcPg
-# gStyFJkmjhTRFnO9nNm9lo4PyRXJlh5T3vBrk5Jl0R2wulxmzmkwuh1u0KRW9UMx
-# 05vs6K/+kzNQOykE+wRVhJ26RlK01/A57I47YmKkTiZtAO8A4Cu0kvuVKdADAnBB
-# S2x/b5bImKZUTlupYjO8K/IyTo52VIo=
+# lBuNU4gF7aRYOmYz94LrbAVcIeMwDQYJKoZIhvcNAQEBBQAEggIALNkSz//1rDQa
+# MAGWNuwU73zBfEQq5DAV88+7VihU32imXKOKRDasv9InYkuhn6Yhr93qUxY4bzkC
+# xOMUaBrLpI5hW76zyr1Heyk/ShPAnJuUxzQsRVqal2NBlqYCYJQvYUf0VZMBRGw1
+# PgmiZZptFqeMjSQAocZnxdOyQBeprhYryyF/vOMftZepTI1RNZ9RPQNCvSoN9TW7
+# BR5xo2IhC09zmJXWJ+i2mtaJzNASVYY5xWvJ7TAAHRvwfFaixeLXk88m3Bf5QeZW
+# C2DZJ6HrNCA2TNXGJsz12b5hvJiEweGt3R08YTImsZbrZ8Pl0oIuZP9E2pcOKJS6
+# tu/3lWY2HmO75vkUPICJIEYX6NLTZvoEAk1Lt98/Sm6yzHZLX/zNchgV0Clq8naV
+# +UjLx8Z+oRCxASzXHYUfrmmfwtq+fyPcVOx74OgUCyCt39V8rhrLVQ0zUACuOoy7
+# Jj488Hl13yqlQfvB2UFxIfBlvXDuHK2P0TikKuPh1YjhHSxDfpuEnRIXupFyKQnE
+# cc+b6Neb6tLuHpMU2S/73IzWk0l0gUZ1WEby1gTCuUfxd6+YxK7tYCgXtoSg5/xB
+# ify03iyHfZthliu9+k+fuCcnSUcHxiJNX4nX9JS+EuEafG+wdb88hmOvUGI63cLR
+# 1V5w1gw03WaiDJfrM/SIFqsgflwJACs=
 # SIG # End signature block

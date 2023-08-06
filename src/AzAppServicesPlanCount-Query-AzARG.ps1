@@ -1,18 +1,39 @@
 Function AzAppServicesPlanCount-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    extend sku = aliases['Microsoft.Web/serverfarms/sku.name'] 
-    | where type=~'Microsoft.Web/serverfarms' 
-    | summarize count() by tostring(sku) 
-    | project sku, total=count_
+resources
+| where type=~'Microsoft.Web/serverfarms'
+| extend skuName = sku.name
+| summarize total = count() by tostring(skuName) 
+| project skuName, total
 "@
-Return $Query
+
+$Description = "Count of App services Plans"
+$Category    = "Configuration"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUDUEfqFRZx9mepKw1+K8jZNc4
-# q8Kggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUIVPPhF1VCQQuSXHwoPIN89Kw
+# Vxeggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -91,16 +112,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# ybkUEjcRdKxjIM0w/Z/GZ4YDFZ8wDQYJKoZIhvcNAQEBBQAEggIAuQAQDR4Fb+M4
-# fLPxLAYT78zHSsnZSrt8Fhg8Dqn14MP81upaLl+JANeKK5CKS+KF4S0tgHvzimJZ
-# qwA5H8B+AQI+rAj2CngA7l4F3hxSopgIB6OnqbPSD0F/ZYQthd3Hjiz8wVIO5wpK
-# E7tFrU4kSZpiBkXLi9UDRTNkL8I5VJkorrUeUI7IlX+zyKmSWGnHCH2Ox0i20XaO
-# BIa+to8xUq7zg83hAXfeBJ8QbOXi3FIx8SKLLonQ8nMSJH8vmPE/mRXtYgMSZuSV
-# dPufUy/1tBKvJvzINI6HDXBkcGYwGhyctX9b3JE7JWugf6Tka41JWu7R8+n0rfZ3
-# l0yuW+VmwH7M5Suck+kqbPmwGGeg848SjscxEOfWq2cNKCU333O3E5+wxY0wBCQ3
-# XYXjnoWz2pvm6kKKdLL6fffT8ik1iC8+kh7xCvX1BUxKYqhZFfcGCEW1t0LW42Aq
-# Bb2RFjLikmcP01kBRHhO50r0pfhQZoFx/cVIZcdnp5bcEKF6Skf6Je+ipGmp/Vds
-# omYuh5T13vqIEADytIzySoZolFrlww8MSIUABXKKSUteHtCIXj60E0GkoWN+PLwd
-# vRx+SyMlZHf2JAdRLa/zvSxg+IDGvXJJZXtQzc9Shy0hN0mhTA2p7KThE/zBeNnp
-# KIulBf90+OySCS1mLvxttje0JXBn6Uo=
+# dTlds44Ua+LXkKVARxLPmAMtToMwDQYJKoZIhvcNAQEBBQAEggIAmJz6bM/x5nmQ
+# ugO1ja9t03Y0mWjWoVXqd/CJ63B0DurEuqiBJvqQdnbsLxDgsSABFxhShpv4eC0y
+# pAlQ1VBkUayVznlzwS/ZyC0zmWlLiRhk9AoXSbHS6zlvRgHq70D5lKpcTAVVCQ9r
+# YznyaSVpC8xOhaFWZj/VDoyYW21o5IkPHvTDQ5ELEgVq5Ld5+v8p6X2kEgXLRd/i
+# qm1YxXi6Q66u/cnFgPAwc0utUVc6RNclmoAvC8gXh3T6mPEunZ9SuoKiAZY/eviC
+# HUlZwsk3W4/YX4n13n3uG9utI4EhO/AEIgLU17rGpJVDhLPL+1QpOKFqlddPJlvV
+# H6+VZUzg0ghRcigyutS/zTfqErhBY/wQTxHQ7IOCYcwV0DlKqBh2taazkZ4iz9GU
+# qNZWcLbzg3K5qsMna6EXvWecgaSXhHkwR6yk6K2IkN13WboSubzr3YXc51nUnJF0
+# +yNUd7kNyCKmgXybHRK0wjdvnn51NWSSIx6iDVO/kmQqPvE3zKVlA6blSku8sIl6
+# eBp1DAHpHM43bYcGKh6RVTOBrmwMOBTMhTtryZ4D6tN6L1vNGYvRkBWT1EMZu8eE
+# S5DSo51ZkohXiXqIuyNSlQaHM6iszt9X8ajfDWwOatxjktMh0EZZE46cPqxldOq8
+# bEoHwxBw9t9ejS5Qwc+xwfVLL44sE5o=
 # SIG # End signature block

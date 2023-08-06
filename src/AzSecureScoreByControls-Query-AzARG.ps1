@@ -1,18 +1,42 @@
 Function AzSecureScoreByControls-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    SecurityResources
-    | where type == 'microsoft.security/securescores/securescorecontrols'
-    | extend SecureControl = properties.displayName, unhealthy = properties.unhealthyResourceCount, currentscore = properties.score.current, maxscore = properties.score.max, subscriptionId
-    | project SecureControl , unhealthy, currentscore, maxscore, subscriptionId
+securityresources
+| where type == 'microsoft.security/securescores/securescorecontrols'
+| extend SecureControl = properties.displayName, unhealthy = properties.unhealthyResourceCount, currentscore = properties.score.current, maxscore = properties.score.max, subscriptionId
+| join kind=inner (resourcecontainers
+        | where type == "microsoft.resources/subscriptions"
+        | project subscriptionId, subscriptionName=name )
+    on $left.subscriptionId == $right.subscriptionId
+| project SecureControl , unhealthy, currentscore, maxscore, subscriptionName,subscriptionId
 "@
-Return $Query
+
+$Description = "Secure Score by controls"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU7l2ALj9MsDN6qAyiPCQ84vec
-# 8Qyggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU86jT7+C8KHKEYQ+oM0Xn1Zof
+# u/qggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -91,16 +115,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# NnmhHWULSCf/LysEBc0RfaK/7L8wDQYJKoZIhvcNAQEBBQAEggIAbdu5ABDMHIMo
-# DNY+hN6DAzmkVa74EvNxGepkRMBUaNmrVUZiJ7usDJX/NWgPaamXvihaxLY7ptE3
-# Qgp7oRgXbiBCVgZ4wAV74MgXS2mJT95US5JnKcFbZJJQB5WGiL8jNy0phSb1xnTf
-# F5TfPXrXfACAMgHc4I1MAhqUP7vKdWP5rjG9OE+ECMt6cJTZ99XaIOT/sJEtPTW6
-# b9/zlREG3qXBcHd60kHTwcfKmsd0Xyf7hFoAHXPl6FyyHtFm+fEOQNEoibd07csY
-# EzL1yfIafx9x5hb+xtMZSqxS9zv2WwnFajWIEapiszXwJwBoJlRdeP1ZY+ryyL+r
-# T1Elve+Ncn7u5uWNqNYEW11NpR3qpquga/uzYiUwO4MjgXLqxx3miivKjMdJofxO
-# WBHBX0ZprFnB+TSMbQixhZY1rtb4kdDVKXZnatNNLAbzFXbSeOV26sc6rSifKaES
-# i0GNwJHWft/t3kHIcrGIgeFGOf6Kgk4sDlrJVCNOEsGxCmHyOx2OO1sNVu9Q9M1M
-# SmQ89fYzyoPbLvrLPzR2BD/Hx6k3+DHgdbKFgEBFTfWYWNYdXbwIjLyawkhDFSJn
-# V0G96/WvsTIQ+5HO3BnWQpALZYwpbBI1HmJb+kU/Fc8seHgvLi+6i3959W5w6qOR
-# kbTgNgvTLg3NO/LDXXP9MCGLT/bgoNw=
+# m3H7kiwnCdiQdXzRiz2bi2plTXswDQYJKoZIhvcNAQEBBQAEggIAmujU14jIDlz7
+# Rqh2FK0XNIKm334F2z+pyx80LBq1hFWeOVqlO0mBVL+WgMP/rN7BNsvRV39ne2kP
+# 3zG7ZfoK3fYWVB51hfMPd4uaFAYjeNrYrBq4mheVYZ2MPh5VF5e/JoAOpNVgAk42
+# JwuJKoXeZCNLUziivISOeBiQiyaV5XjL9xSrO71M+v8gJXzIAl7dvXv9hmhhjeDJ
+# hJenQL6Wg0fQztzdGk8Mrhsj2qQEOZS++qdiHlLDiXeAIZnKZUCOQRP3QjdRWSQL
+# 2Sf+og6lADcoxX1g1CcwY4LtoPgI5GMsk5tk2YZhQC8Y0uFEHtR+9pZn8WNGS1qw
+# TTSWcRfm53Wu+/9O/1UVFZ2AjufpS4lvit8/Z8WInvHVxmld7P828CBXdkJ7Aiux
+# B8V/yEzi51hP6L+picyNTo9lGBAoq6darHbg5L3yLe+usXK3KoetRZpFwMmbBznV
+# VjNoCmawVcSg6UYTNp9I1oPWs4RBSWqC09o5dx0fpTGqihs/AsM8DStNAYyqwa2a
+# oCb0uXRbYylDlmYlQxE6Fty8/bVtwsA80zsl4fE5scSb4KhXsUMGCzg2YL8I6a+B
+# tNKed4nRpSss7g0/z7j8Tv4oWl/p/k8DrSfAF2wUjRhdSgwhIrkKtkqMP/qdZ5U+
+# 1lTtuMUoXBw3T78M8hc1dxjudlA5uX4=
 # SIG # End signature block

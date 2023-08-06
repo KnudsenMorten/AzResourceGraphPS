@@ -1,63 +1,83 @@
 Function AzAppServiceDetailed-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type has 'microsoft.web'
-               or type =~ 'microsoft.apimanagement/service'
-               or type =~ 'microsoft.network/frontdoors'
-               or type =~ 'microsoft.network/applicationgateways'
-               or type =~ 'microsoft.appconfiguration/configurationstores'
-    | extend type = case(
-               type == 'microsoft.web/serverfarms', "App Service Plans",
-               kind == 'functionapp', "Azure Functions",
-               kind == "api", "API Apps",
-               type == 'microsoft.web/sites', "App Services",
-               type =~ 'microsoft.network/applicationgateways', 'App Gateways',
-               type =~ 'microsoft.network/frontdoors', 'Front Door',
-               type =~ 'microsoft.apimanagement/service', 'API Management',
-               type =~ 'microsoft.web/certificates', 'App Certificates',
-               type =~ 'microsoft.appconfiguration/configurationstores', 'App Config Stores',
-               strcat("Not Translated: ", type))
-    | where type !has "Not Translated"
-    | extend Sku = case(
-               type =~ 'App Gateways', properties.sku.name,
-               type =~ 'Azure Functions', properties.sku,
-               type =~ 'API Management', sku.name,
-               type =~ 'App Service Plans', sku.name,
-               type =~ 'App Services', properties.sku,
-               type =~ 'App Config Stores', sku.name,
-               ' ')
-    | extend State = case(
-               type =~ 'App Config Stores', properties.provisioningState,
-               type =~ 'App Service Plans', properties.status,
-               type =~ 'Azure Functions', properties.enabled,
-               type =~ 'App Services', properties.state,
-               type =~ 'API Management', properties.provisioningState,
-               type =~ 'App Gateways', properties.provisioningState,
-               type =~ 'Front Door', properties.provisioningState,
-               ' ')
-    | mv-expand publicIpId=properties.frontendIPConfigurations
-    | mv-expand publicIpId = publicIpId.properties.publicIPAddress.id
-    | extend publicIpId = tostring(publicIpId)
-               | join kind=leftouter(
-                   Resources
-                   | where type =~ 'microsoft.network/publicipaddresses'
-                   | project publicIpId = id, publicIpAddress = tostring(properties.ipAddress))
-                   on publicIpId
-    | extend PublicIP = case(
-               type =~ 'API Management', properties.publicIPAddresses,
-               type =~ 'App Gateways', publicIpAddress,
-               ' ')
-    | extend Details = pack_all()
-    | project Resource=id, type, subscriptionId, Sku, State, PublicIP, Details
+resources
+| where type has 'microsoft.web'
+            or type =~ 'microsoft.apimanagement/service'
+            or type =~ 'microsoft.network/frontdoors'
+            or type =~ 'microsoft.network/applicationgateways'
+            or type =~ 'microsoft.appconfiguration/configurationstores'
+| extend type = case(
+            type == 'microsoft.web/serverfarms', "App Service Plans",
+            kind == 'functionapp', "Azure Functions",
+            kind == "api", "API Apps",
+            type == 'microsoft.web/sites', "App Services",
+            type =~ 'microsoft.network/applicationgateways', 'App Gateways',
+            type =~ 'microsoft.network/frontdoors', 'Front Door',
+            type =~ 'microsoft.apimanagement/service', 'API Management',
+            type =~ 'microsoft.web/certificates', 'App Certificates',
+            type =~ 'microsoft.appconfiguration/configurationstores', 'App Config Stores',
+            strcat("Not Translated: ", type))
+| where type !has "Not Translated"
+| extend Sku = case(
+            type =~ 'App Gateways', properties.sku.name,
+            type =~ 'Azure Functions', properties.sku,
+            type =~ 'API Management', sku.name,
+            type =~ 'App Service Plans', sku.name,
+            type =~ 'App Services', properties.sku,
+            type =~ 'App Config Stores', sku.name,
+            ' ')
+| extend State = case(
+            type =~ 'App Config Stores', properties.provisioningState,
+            type =~ 'App Service Plans', properties.status,
+            type =~ 'Azure Functions', properties.enabled,
+            type =~ 'App Services', properties.state,
+            type =~ 'API Management', properties.provisioningState,
+            type =~ 'App Gateways', properties.provisioningState,
+            type =~ 'Front Door', properties.provisioningState,
+            ' ')
+| mv-expand publicIpId=properties.frontendIPConfigurations
+| mv-expand publicIpId = publicIpId.properties.publicIPAddress.id
+| extend publicIpId = tostring(publicIpId)
+            | join kind=leftouter(
+                Resources
+                | where type =~ 'microsoft.network/publicipaddresses'
+                | project publicIpId = id, publicIpAddress = tostring(properties.ipAddress))
+                on publicIpId
+| extend PublicIP = case(
+            type =~ 'API Management', properties.publicIPAddresses,
+            type =~ 'App Gateways', publicIpAddress,
+            ' ')
+| extend Details = pack_all()
+| project Resource=id, type, subscriptionId, Sku, State, PublicIP, Details
 "@
-Return $Query
+
+$Description = "App service detailed"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUKqLh9YCQUHGGbIKdb2x/HyBO
-# I3Oggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/SsEWb5BYPDwusxRcOqukN47
+# X4uggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -136,16 +156,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# LV8AvnqOJT0h9sdHKrvJpeMP6j8wDQYJKoZIhvcNAQEBBQAEggIAXCv28MCTfh+q
-# HIB5EDVPYEZ5+LOcHofhEV+hVUS161GiPe6i9TX5miURWVznZVsjiI/jUREkiDf1
-# 2a0GzkIG7E4cj337Fq9hCOyVu7cSfIbPhYro89JzMabsJ9vZ4oylifftZUIj/r1L
-# cTLXwphPBWIY9OPAqyAuDKR3f7u8a2VVjzMDFbt+BHKeTqXt46RsIqBrFNxAkF2q
-# wj/jQOzzAS43oQJKfqw2/TJVpsOKtXKDkUcc/L58TVopJhe5Hr/Th1sMmXn2xL23
-# emuO5TLiCDqcdtl6weUFJ9smDuOsNFG5wTznsyGYdrfgThzJ9Iw50IhsAVuOG+QF
-# BPU1AT8d1BhZMFeXHw59o/33VI8k3PQrVUCVHEUpmHmAAtcjo9r3QgTasuCsUm2V
-# mucAN0c/I5apC3eQW7egfacFcX13tK6eQGX9YWcq/KURffY76pr8EST5UYY36SK2
-# Z0Wz1AXuH4rhLd0hu5jmkLKTDI+meiOzcfTe+BW7U2okTjr0Lb0QYZTanKx0wNhP
-# PSdXrnLixy1At2wEF7oxAvceaXw/jjkKTbfXZtHFBDdUKFI4dsWvqoDD5ll6T8I0
-# lCYU5GYziNvHVrYUzRs3kW5RqxHV3l6c8JEa25e0RQ/I9CupRgqHSXDd/MTMUxBW
-# sh8weLpxHv8UkNac/LjnYPzFRvsF9eU=
+# i0MGjcD1+spIk595QiiqFB/aalowDQYJKoZIhvcNAQEBBQAEggIAJrybEI37+dzx
+# RoIQ+KP/Sr80hZQml/UpBLzCPDHBxi39ykqdonR+AXwFw47JxFQRuOoQjQ2ku8rH
+# r0atL8Z/DaB6ffhLHqqAJDN/v5D9lmSy6uFFlCCuk9XcwUV9JVlWrfFP1bkTvesN
+# FLFABINk3PjtDwsjwjlhmTmuY8fuREsUaU1wGOH2PAjC+oXohjlpdgUciaW1JssJ
+# uT0fKSefN9Lkt7pBlGmI6xhYtLCxjnfptvRX/ly2fgZF00qyV2vP1frXFBFRbJDm
+# 5ai2QeCXxcOVc1qb/uu7wcM9kMQeWeeVHDVICKjmxYnhGKI0owdlREeewH4ndxWL
+# k5D0CHqcOIoV/bXIw8DqRMGjCZkifIlV8BA2AnvEOzt6TcwxwfT5GJcxoGDTZe9l
+# qQkRHAz96pbPv5URIUVZaNV8jLE++1ZjyrorK7InJF2YFvior/iHxKhgyS9ASkmM
+# iTtLv5uBLgoWu3cNBdThFpouX2lDWSAqf0tsOt2WNAGj1n2iuSTbk8yamCkaqMAU
+# 9yFmexylQgTvuCRBicHJLJzI+ycxM8feOMyOHsJfRLdpGtkhi5uJ3v48tuGwV/Hn
+# cjOHOVTDb+E2F5Vs+nQl/7OmAR2X+EVrKd6lgEJbYiYhsHc9L8I0kPtoMZ7cH8fv
+# WppctqGfemurDzQ+fV0CgKKuhbT5/cI=
 # SIG # End signature block

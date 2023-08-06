@@ -1,19 +1,39 @@
 Function AzPolicyAssignmentCountByScope-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    policyresources
-    | where type == "microsoft.authorization/policyassignments"
-    | extend scope = tostring(properties.scope)
-    | summarize count() by scope
-    | order by count_ desc 
+policyresources
+| where type == "microsoft.authorization/policyassignments"
+| extend scope = tostring(properties.scope)
+| summarize count() by scope
+| order by count_ desc 
 "@
-Return $Query
+
+$Description = "Count of Policy Assignments by Scope"
+$Category    = "Governance"
+$Credit      = "Wilfried Woivre (@wilfriedwoivre)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUTJsEHS8c9muJrL24j20QU+I5
-# VPCggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUMithFaEi/iwMImXQTVDdwp6L
+# 732ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -92,16 +112,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# Ir7fJPtzDv5rHtWb0F1EyKfpHIowDQYJKoZIhvcNAQEBBQAEggIAkwHoQOvAWDMX
-# u+oJcujDag4VyKc7p2qBiYKHZNLKPMzUbsS7yP8JcmaD/lCg96LvMgrWLCkXbrph
-# 090PLwXCr1VYZ8sInR4gKEwTwXEZmB5BRcNhvlU5VerlH28w2JUhFrC131OW82Hd
-# vruM6SS+nNnPE994Xz6BofOBeuiOycluoDFh1kztGJhj5CgLfO9d45bhX+G1Q8Wo
-# +kO9PJ3PT3mPKb/mDy9a8/GQqn7uxbD9SxqUO6ymBAcZ69W8q55fj6fZg2g2N6ap
-# sgquKjbAfBFP1PuScS9dPajNtWyO+M4+ExKi0jH1iBPiMfNH2WZw5SGPl1cJB8Xi
-# wj2CVcNK/hUdXZzFrD9Qw2PT8aWk5LUgitgIj12S6D3nxiCQOkN2qyVCi5vY8uJT
-# chcEXvIxJrI9g/VYr9gQNc/6Ehmx3avcrqVU0Dg1mzn9p8vecDzoo/oTwOCqPgvE
-# s35nQC0rC4jeqxe9ThXu1VfOlBZeIXPQhzCsjNXr703f20BzFz2JbOfbIOT631Ga
-# rQ3pAZnCN9Cu7nso5d1svNF2Dw+r8Ex34+M2NfiEvNue2+GSBEkBl3DYxvFkrHUX
-# yKWsXPPtJTdx5rLeIYdsRn24aW2oi4neJdG+3VgbvrbSjHLAAlJZ59xMupkw54jC
-# V3Kk8pt6xj1f4KlnlTw81E9pSDeEb98=
+# dJPpBN1UDxe9Lp+ic7AYih2t6sowDQYJKoZIhvcNAQEBBQAEggIAthfq/KzsmDxD
+# kLd/cVKo2G0HpYE+VT5T0cCxQArkt/qWOnlRDn3QBN2dGbcjWajYJaegZcofXfoo
+# /5j54pZ5raUAWotjKx7yZTqpR8LhA4evME7ihfGudOSh0UtxqMogbySf4eEnd7X2
+# 0Q1Z0prP4M3hZdgQpwInCQDqiL1nuae8ari9h/7PO6vC0uFOE0v4tnFpMG6oETQh
+# zxjbF3p+Lz3Q3ABwGrFUZkV2B9g/RH6MP11xlz9FfE4CMgCEbeeOnkTmuauythHe
+# Xy570T6KAj21plc8Dw4zUJ+N239yWi79ZbwWpkz6vs63OAj/NHsZxcxdVCxVqv21
+# Qt2VzdKz1UZ11tFzNDGBYmyeHlNT6cAAF/j4Xq7kjOowCsBQqYb1hvcjWSL/C6VQ
+# Qd6iKCfNWfucEAHzdjczAoYAwG0WEEtWuP0bw9+CwdL9ivFJOollSe1srs6EiMUr
+# SZzMIQ7VyTmMrquEm+7hB/tPhnal5BIZVy1j7xSD6S4sAIghRTHiM+ThuMQ+O4iG
+# iIW5CS4rTup9UOsd++nxHdSd67ItbR/X0UN2K23nBUBxREMNWQvKUqqnipDKwk85
+# lbMJedZcSZv0q7VFQ4EdRZz9vJXjtiZtJPZuuq6J8HV6aIjz74XYn1B6CEz+hPk8
+# bw1KxI70cJUGU1N23b7XuMgqXBxu5QY=
 # SIG # End signature block

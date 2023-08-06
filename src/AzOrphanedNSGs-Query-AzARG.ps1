@@ -1,17 +1,37 @@
 Function AzOrphanedNSGs-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    Resources
-    | where type =~ 'microsoft.network/networksecuritygroups' and isnull(properties.networkInterfaces) and isnull(properties.subnets)
-    | project Resource=id, resourceGroup, subscriptionId, location
+Resources
+| where type =~ 'microsoft.network/networksecuritygroups' and isnull(properties.networkInterfaces) and isnull(properties.subnets)
+| project Resource=id, resourceGroup, subscriptionId, location
 "@
-Return $Query
+
+$Description = "Orphaned NSGs"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUHJd3i2CRfJkEdtETQeul0F9t
-# EpOggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUTHDHUxfT3eWq+vRU1lDcnvdn
+# MZWggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -90,16 +110,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# F1ZTiVnNbwZQNt8hb+iP4GG7VYswDQYJKoZIhvcNAQEBBQAEggIAPOd8hXhtz+Yj
-# Fl/eSy13B4mRg7xNnSr/4dsnakiVD+UiwznpN/Yil8Ggo7yDXqliHMbFKP1O2aM9
-# te8X7gwI0sWkVxWeGRSoU1jFshmf1DDiih31htc90CiYkqJaAXWMopmXXIBlgWPX
-# l6C2FWWuiAJBkJTmFqmDpJpY+16AjlYjsCtOjormL8KIapZb+fPC/BAmTGZK27sQ
-# wY46ba2M6xddtR9gI1ijByE75PNxQ8DWxaXhyU6to7J8fDhE+g5SGvbmrRDPZ4/S
-# 0hJ0TwQEnwYYXOwet5uMapV/ygXotf77g/HqV+uEcHFfcnL41auLbMuquflMSnsg
-# hOqMvQ70XhoM9VLC6MoUNDOKqPwZ1YZ/rY0AmjC+6iwyiv1al141rBfycGKpKmY9
-# CeuDJjNhZ2hFOPrwzvYmJ/QqbuCzdCu3r1+8B7FerOC/xiRyJJ+qSJRox5JvvIDh
-# XtMwVIBCXw+LIoUKUp+m91AA8A5zVuvZgH6uS9DrHU4by7AxUw0xdLAHeDSVD39a
-# A9h/SSBMr53Ha9s/E1Dwlhm0sm73ZNiKM6MU8z0dTkywFuX7+8AOesCmSSLBY89u
-# 4RZGesWFhT6WLj1Y/X2r4dTyKKNKvVs2n4v9Gsn9S97V0kEd8iOvQNfzkCLddM+L
-# vFYYzlZVRcJsh1V4VqStZHI5C51kh5c=
+# XkCrPwnbfL3q/yDdSDPukzT22fAwDQYJKoZIhvcNAQEBBQAEggIAB9OsRCvOO92S
+# mo4ba1TDmTOt3iFA47zkcd1QoI7np1+XjaOE8FZvt+aybVWxpVAJVTH6S/eh6/Tv
+# sZRjonQQKoLy6tAS0KR0wRmktuE1QewS3F+v6RX6U9XKdzRiAkVJ2J/ZfIPIpRNv
+# sM1I8zPWu2KpjjkF2m14+5AbJfRSLByFajeanL46XcieHcmzRyvNR+yt3ySnttAY
+# fQF5f9MENGYbPNv8DSi2CsnKai6ate2KKrE0j5+PMzNBG2hBqn5XDrkaByjbng7h
+# cqSwDC7O1SwFvFcQdUzXS+Fn1EUodo8zFE7gjnYlgfuz5EbtxMnrf84BlwFEZSR2
+# T7npVchR3/FRygx591FITxh9OgK0QDV7Ob2EjXI9S3E7o7znEzwyQIrCgGvHy8om
+# 0vzjVLajFY951vxwMuaiZpghJWDomqSsC3mba577F+TQtCRkehxO1H7smSCNMYk3
+# /SxE3yA7LHwnKxpgRUVYGz3yO7Zb1UR4nBAfjrgEix/XuQ5us3Vtx7aFNuz8/F1v
+# MkrV9XSg+prb3pnEOonvJeF891H18M6bpCf8ulV4P5ELzMzcOdJt+7brgq/tHVt6
+# uywImyDyKxdyx5ZMvTMw4U7GalXVvcrTSRh7I1q4fcvkbiUmbLL5NkgDOUbxco8h
+# +LlqTtn2/LeRp/o86CeUrg6TdFrKSRI=
 # SIG # End signature block

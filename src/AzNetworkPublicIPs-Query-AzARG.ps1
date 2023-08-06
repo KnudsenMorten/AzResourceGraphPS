@@ -1,17 +1,37 @@
 Function AzNetworkPublicIPs-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    Resources
-    | where type == "microsoft.network/publicipaddresses"
-    | summarize PIPs=count() by IPType=tostring(properties.publicIPAddressVersion)
+Resources
+| where type == "microsoft.network/publicipaddresses"
+| summarize PIPs=count() by IPType=tostring(properties.publicIPAddressVersion)
 "@
-Return $Query
+
+$Description = "Public IPs"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUUYpeoJiPsHDuWeqQt/DmMQZL
-# K4eggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUYblS0vMnLyi4tBdXrjnguUqG
+# w/uggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -90,16 +110,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# yMlKHne5DmaU75W+cHqFWFmVYgUwDQYJKoZIhvcNAQEBBQAEggIAtwP9qr2xJVLh
-# o7QAWo/L6tnIx1s7/Di/8jrRXudfvHhWWYh0m94StUnD+O1JD+Tbib0lj2bTWpY0
-# 5DyEdW4dJm4431eeRZpLh25QRXFZ/ED+uF2y71uN+Sww53xT9sDb1wtdEzv4xfDX
-# Rw3IYpKl3wTqoAhzPciz89mr17mGGGsp/3eIqtgPwloiwYd3ZG/ycvpNoyeYGwrY
-# dE0P1Hd5R/OjKw6lKJS+hc1YvMs/ak2Dh97/Rc4mIt8+uEl2eeQj1egbvxaETP/S
-# 3lzYNW6DuJU/y680Zb9CmGTbOolz7q1F30crzuctdLChV2BDJES9CPPMQxdU0xeC
-# cTPVqVsAZLO1GlvUhKtdvRxneO6fFnxoP7S4JqsKsA15EqUeHHxBggOqtpzQGCFt
-# xAUjRz1cmKTjeF7UaF8aYpcv46wbNBOf7AsrEuF6RPIqGXRBms4EubetiJbSwD9Q
-# n1ycm67smRrYtip/M/XVPsamV/kv910fL5YRjSVswNjItLGFBw92/R3nW6eXvDYK
-# 0jJa8ow//hzFbLL2g9+A4coiOcI4yowQB2VPWzpg3ztYYFXCCU9f5lpL1BBcTfrf
-# Luw0BUR+g3Np2menkFw9z5DaP6qQnGZ+J4VzAca9qAsYeUoFcLH6cOe3o8G6veGw
-# 6TZbOqYWjTvKzM6HagJjyoz2bZpwFlo=
+# LebxgscBA/m1LGuXqtAp4O48ZHwwDQYJKoZIhvcNAQEBBQAEggIAA/2nDSRtuInP
+# 7O9gLEqHfeOoi0dkFa8r9p55rBjFJivY8Khl3V8vhwaZ2Pevrek8nSlBJzJiOWq9
+# 1V3XwkTBzwvul9Z2GpgyX85NUFhFcFGznkpoxdTGbpBsI0rNUswSxC+fch/v/ISU
+# DpB/D/s2xCDPB4Fm8STPxNlhCjCKZGSxfriVga+8LG/avmOkal3M4KAMIL+8bF0I
+# JVwupBWGe1qcf5g/EtiU2y+PQ95nxNRbv2nWslDfYTOEu5OnChBZIhUVs9dNoDj+
+# h7Z2Cdgfu/BVnVbGs4sR+Gg++4zrLi8AKo7rnuoc4PUmkov38wcF4VXzKQLAZBVd
+# k6u+cFMwPHfrgVL8GfC5uO89560JyY92suyPrO/2hPY/awjz8YRvnMRgRvq9YNKz
+# UoSZPyy1uI3Dp46+KpvdorG/k4JddHovha1nZ6aN8WkCRdEZrsanPYS3gkpIMQVE
+# cy+T37eizE3JhaGKMgNzXw2Ua++WDz/y4VTcMVCGqs2qO1h/trMB7W7VeMEYfChq
+# SVzGnH37DOIlCMSRTHMEzLggHdRS7eZMgkwVnoEhlzF5Trt/qcSnsGYhTyxRPdQQ
+# 5kl6qh5h0+YjhGw+esPYKKQdKl7f5j8rVdqEaMdK3HIc29PDrur40PTpkge4fqBz
+# r6cMdsRz4fKArNTOYW0J2iRz8L0oieU=
 # SIG # End signature block

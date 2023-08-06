@@ -1,33 +1,54 @@
 Function AzAppServiceSummaryCount-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+
 $Query = @"
-    resources
-    | where type has 'microsoft.web'
-               or type =~ 'microsoft.apimanagement/service'
-               or type =~ 'microsoft.network/frontdoors'
-               or type =~ 'microsoft.network/applicationgateways'
-               or type =~ 'microsoft.appconfiguration/configurationstores'
-    | extend type = case(
-               type == 'microsoft.web/serverfarms', "App Service Plans",
-               kind == 'functionapp', "Azure Functions",
-               kind == "api", "API Apps",
-               type == 'microsoft.web/sites', "App Services",
-               type =~ 'microsoft.network/applicationgateways', 'App Gateways',
-    type =~ 'microsoft.network/frontdoors', 'Front Door',
-               type =~ 'microsoft.apimanagement/service', 'API Management',
-               type =~ 'microsoft.web/certificates', 'App Certificates',
-               type =~ 'microsoft.appconfiguration/configurationstores', 'App Config Stores',
-               strcat("Not Translated: ", type))
-    | where type !has "Not Translated"
-    | summarize count() by type
+resources
+| where type has 'microsoft.web'
+            or type =~ 'microsoft.apimanagement/service'
+            or type =~ 'microsoft.network/frontdoors'
+            or type =~ 'microsoft.network/applicationgateways'
+            or type =~ 'microsoft.appconfiguration/configurationstores'
+| extend type = case(
+            type == 'microsoft.web/serverfarms', "App Service Plans",
+            kind == 'functionapp', "Azure Functions",
+            kind == "api", "API Apps",
+            type == 'microsoft.web/sites', "App Services",
+            type =~ 'microsoft.network/applicationgateways', 'App Gateways',
+type =~ 'microsoft.network/frontdoors', 'Front Door',
+            type =~ 'microsoft.apimanagement/service', 'API Management',
+            type =~ 'microsoft.web/certificates', 'App Certificates',
+            type =~ 'microsoft.appconfiguration/configurationstores', 'App Config Stores',
+            strcat("Not Translated: ", type))
+| where type !has "Not Translated"
+| summarize count() by type
 "@
-Return $Query
+
+$Description = "Summary Count by type of App Service"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUPYrTKKGfXbn47UeCiNM6fXof
-# 0aqggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/DHE5u1RaqLYZi7Nban0HV6V
+# sb2ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -106,16 +127,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# d538Qv6HRgFdphVvXmM+ThggdhowDQYJKoZIhvcNAQEBBQAEggIAwHALSg5H3/9T
-# Yl/fV52Xp3/eXfIXnjQli9447Drnsh86pHxjqMS5/S90fqQPpXP4kqR6CgjZvdy3
-# KzQr0xgvjV5AvVgYiovMElyfCPqHcKUgD9ZhYaD1Vsb6sATbtqd3xyuytuXqBf/L
-# zaGSiofhjbfUSwyQSP71G0OQzL2qf3n5QHMiOL+S/RF7leJVW3Sx/CG3Fia9FaN4
-# 9EhlHyUNJo1LrJR+IYjqALe3+Y4Bz9OKzSypJmNRpcdqIzTfmT7JFtjy6sWHoT0U
-# SSJpVJj0xE3vHZPtiO1K0CKrMbCTQERHZisIXokzjdjhnFhcJEz02WLSurOO/7Je
-# /YBy1X83haUsii5kfOLo7bY8kzwxwNtcn6PwSiynZvbZEYwa7OvjC8JCA2A7yG0L
-# vOCRrL/y43uTRncrMV6dkpjW2n1P9Hqkr1qyNy0PcJMTKrJ220FhgBUPO28Y0TCV
-# S64HGGMuzCcdqffwGk+x0JexSxc7lfPYzytLNMguEiwfutsvXMzYQ19Tzd92aGQ5
-# bsFeIIsL6RfI176JD7zj76bbOafCfq2BOPdONQr3I/b+c8Rvv78hkDuxUgbAYtxs
-# C9f1c4TqlcOg5nnp0M+4KhNzGoRRDLY62UPEgVyfl81g3I/u+r4zGZlNVzHGZSKl
-# AyQMuWc5Dpvv38VfUWUxWRevjg/uQ/4=
+# J9wLDeCnItmHZVXRR85fccsp8VIwDQYJKoZIhvcNAQEBBQAEggIAOmrlriEahTxi
+# ZCcRTNRvUE4P7BQIHC4831yt+WEjNGJ1A+CB3890whMNH7UtTJEQU8Rq/FUWziOY
+# QptwJ934u4YXnH8u/BbeXo6S6QuGu5n3ktlCvaX4CKCYFQmMPajYMzT0/6moYM0J
+# ktOIGrZBdP/OlXVgKaGFHM+Mkd3dGAgMyrGTZXCrPrQNQGCBRAL4ivJ84l4PNqna
+# 02mUlS/S6+nXpfq3qVMFRcMUdyuFCX/Yubm+UREIrtFsZBzeBl75evaYtDMhct+K
+# 3OTqHZT+X6AljTQ2d5peF5uqVL7QgB8jCzrPtCNg9GBSWdS5dtIYDS47qkw6dRLH
+# ZrKcQFr3jUaIhcT26KV/rNGqLKLZ+/DksnUUFJe64p8lxFjaxt14TT5QfWlOH2O6
+# XlZumHH7dI6JH848Ax+QrR7hafN1EUs1+OzgaPPDz4bJEiPBTVL3A78/NZWNLGYn
+# WwUc6nNVSfpr3vZ9IeMaKW1NJCSU8OvzkspBfmnyKKyC247Yw/KQRSKCPD4qI3YF
+# pUAOHSVqstdHDGy/s1IyLh5UvteSNSubXOBL+jxWfx4ViV56P8xC1Q+CjfmO4Hy5
+# TtaFTPNaczDx7ffC2Cv8E70kc5cslWA1zX1Lwt3dVQr6taSrV5he64cjVrciqPL3
+# JV6yM0Kq2p1A2bAJ7+vBw42wo7l47vc=
 # SIG # End signature block

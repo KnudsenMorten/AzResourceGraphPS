@@ -1,47 +1,67 @@
 Function AzNetworkSubnetsAddressSpace-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type == "microsoft.network/virtualnetworks"
-    | project vnetName = name, subnets = (properties.subnets)
-    | mvexpand subnets
-    | extend subnetName = (subnets.name)
-    | extend mask = split(subnets.properties.addressPrefix, '/', 1)[0]
-    | extend usedIp = array_length(subnets.properties.ipConfigurations)
-    | extend totalIp = case(mask == 29, 3,
-						    mask == 28, 11,
-						    mask == 27, 27,
-						    mask == 26, 59,
-						    mask == 25, 123,
-						    mask == 24, 251,
-						    mask == 23, 507,
-						    mask == 22, 1019,
-						    mask == 21, 2043,
-						    mask == 20, 4091,
-						    mask == 19, 8187,
-						    mask == 18, 16379,
-						    mask == 17, 32763,
-						    mask == 16, 65531,
-						    mask == 15, 131067,
-						    mask == 14, 262139,
-						    mask == 13, 524283,
-						    mask == 12, 1048571,
-						    mask == 11, 2097147,
-						    mask == 10, 4194299,
-						    mask == 9, 8388603,
-						    mask == 8, 16777211,
-						    -1)
-    | extend availableIp = totalIp - usedIp
-    | project vnetName, subnetName, mask, usedIp, totalIp, availableIp, subnets
-    | order by toint(mask) desc
+resources
+| where type == "microsoft.network/virtualnetworks"
+| project vnetName = name, subnets = (properties.subnets)
+| mvexpand subnets
+| extend subnetName = (subnets.name)
+| extend mask = split(subnets.properties.addressPrefix, '/', 1)[0]
+| extend usedIp = array_length(subnets.properties.ipConfigurations)
+| extend totalIp = case(mask == 29, 3,
+						mask == 28, 11,
+						mask == 27, 27,
+						mask == 26, 59,
+						mask == 25, 123,
+						mask == 24, 251,
+						mask == 23, 507,
+						mask == 22, 1019,
+						mask == 21, 2043,
+						mask == 20, 4091,
+						mask == 19, 8187,
+						mask == 18, 16379,
+						mask == 17, 32763,
+						mask == 16, 65531,
+						mask == 15, 131067,
+						mask == 14, 262139,
+						mask == 13, 524283,
+						mask == 12, 1048571,
+						mask == 11, 2097147,
+						mask == 10, 4194299,
+						mask == 9, 8388603,
+						mask == 8, 16777211,
+						-1)
+| extend availableIp = totalIp - usedIp
+| project vnetName, subnetName, mask, usedIp, totalIp, availableIp, subnets
+| order by toint(mask) desc
 "@
-Return $Query
+
+$Description = "Subnets with address space info"
+$Category    = "Configuration"
+$Credit      = "Wilfried Woivre (@wilfriedwoivre)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUBiEEpm7fAVfig0kDmsIht29O
-# 0h6ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUrjx0t4N4cfv5TvIVoZxcL8/H
+# NiOggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -120,16 +140,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# qX11EVXSs4uGbVI7ZtCDrMqgkFcwDQYJKoZIhvcNAQEBBQAEggIAxBksA3HNyHFd
-# 56Vv28Cwef3bzsAmTVFiZ+gZxP6n8pCzE8ox6MaNrfs+XR2SMh81Wa6Itt4JAgxU
-# 83oA4iwgg4E222L8sfferK+20ENEqovrjwX/ZPS9VTC4hXiQpeIoIWd1TIOXvx3t
-# RwVtTkTcHearLKS2UEhPGLP0LZNXIV7kPkcvGvugekHYxPalCsMhBw8HNfEdamAM
-# LHPwDxoXi6Gs+ZeDvw+r2fYNhPmAFgwMSV1rMytABtugkJglfWhS5eohFmh43Bfg
-# bgcwO7WaSXQuTJeUiITeHAOswUeD3QUn7bRpsyoVe0anquYn6s5gol4v3PlJ7gNO
-# vMP6/lIFFevwPxpInhe0p8uwfIz0ZvEP5kdH+foWoRJMzHHo3PDnsBFz7WF1INyM
-# KGoNfAKK07iSt48JhGdxr41weIXO8Ros9jrGGrsYVBOSDsuCcX0R6YQTNBb/S7CN
-# T9dIk8igx+wt1k5oniBBfpQyAvXPgBjnNNbWtP4U1bYnUzzsTSH/C0+pRNkBqyeq
-# MWx/ym1W7mXy1FmsCxQh0LNiLPvQ6Yi+k6+STqzr82dNQnNJd/LjvWia47M/9Q2q
-# eVX0ExivJFP2CwKgCFppFNfHoPbh5LJWoLFNaw8YfFgPaoHTjWnOZB9Yw6K5fijK
-# iY4YG4p26RcZokjdjauBcHP+weUEKlA=
+# LjI9W8hIQ0VWqDD9w1k3F0WMt2UwDQYJKoZIhvcNAQEBBQAEggIATiJzEM/BY3l1
+# OSvvw/4tH7SeGGbOh8n5P8az7OrdaYkctBD+4Ej5wqVBrvisOJAyedKiDvjDKC4g
+# UlJZNH3bAHH9EvUcH4IStRtHvy4JnwyCPDcw3I5VeWVauE3O9tNmaiG4ghhXfEnI
+# y4+yXxkf3/Pdlfv4+8fhvw6a5cwmz7Uj3ZboerGLcUuhv1wKIYSB+RLCrNwvxH2s
+# HwH1wPanNIjNij6WXOBk0+aK6/58c0olJAbqiprl/TQkpzT27HIeg+DCpNuL6Xmw
+# J/b279SNiXVG0ze+0TkbROXLOzsbc1E9LfJUkdpujayThp5DNhxaPvDC0Rxu7+/O
+# Z1qn7nsCILaEJRP6Ab7ldykpO5E+vZXWcdjfXAsHR2rNdZ72I/q1xWBtBDFSoR4A
+# pai1o2suKcjwMMn0wOcP79wWBf8lV7hc3KaSpTG9tp15dX4C8xfe9c4ILoRyh/iT
+# sztRuuu1L+Qt22UnGMpZaeMhEn6qeb+FaMRgwYZkZ7mwuFZKO1/ScqfbqlmEp+At
+# evndaQXAYznj5yBarfxYZ9OMlN8wXtKKkLzmaQ5f+KGU5RDgf1tlZEqAmGJGgNXK
+# S5r8yfsWkrW6ghnMTGEpW3bpR9QHYdk6SwebZXdtHofY81WgqiaQalK9MkcZKEKR
+# WJFaigQUslHpWAY9x6VkG/JRdyeLDVs=
 # SIG # End signature block

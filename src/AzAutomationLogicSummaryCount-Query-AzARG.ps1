@@ -1,32 +1,52 @@
 Function AzAutomationLogicSummaryCount-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type has 'microsoft.automation'
-               or type has 'microsoft.logic'
-               or type has 'microsoft.web/customapis'
-    | extend type = case(
-               type =~ 'microsoft.automation/automationaccounts', 'Automation Accounts',
-               type == 'microsoft.web/serverfarms', "App Service Plans",
-               kind == 'functionapp', "Azure Functions",
-               kind == "api", "API Apps",
-               type == 'microsoft.web/sites', "App Services",
-               type =~ 'microsoft.web/connections', 'LogicApp Connectors',
-               type =~ 'microsoft.web/customapis','LogicApp API Connectors',
-               type =~ 'microsoft.logic/workflows','LogicApps',
-               type =~ 'microsoft.automation/automationaccounts/runbooks', 'Automation Runbooks',
-               type =~ 'microsoft.automation/automationaccounts/configurations', 'Automation Configurations',
-               strcat("Not Translated: ", type))
-    | summarize count() by type
-    | where type !has "Not Translated"
+resources
+| where type has 'microsoft.automation'
+            or type has 'microsoft.logic'
+            or type has 'microsoft.web/customapis'
+| extend type = case(
+            type =~ 'microsoft.automation/automationaccounts', 'Automation Accounts',
+            type == 'microsoft.web/serverfarms', "App Service Plans",
+            kind == 'functionapp', "Azure Functions",
+            kind == "api", "API Apps",
+            type == 'microsoft.web/sites', "App Services",
+            type =~ 'microsoft.web/connections', 'LogicApp Connectors',
+            type =~ 'microsoft.web/customapis','LogicApp API Connectors',
+            type =~ 'microsoft.logic/workflows','LogicApps',
+            type =~ 'microsoft.automation/automationaccounts/runbooks', 'Automation Runbooks',
+            type =~ 'microsoft.automation/automationaccounts/configurations', 'Automation Configurations',
+            strcat("Not Translated: ", type))
+| summarize count() by type
+| where type !has "Not Translated"
 "@
-Return $Query
+
+$Description = "Summary count of Resources"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUhGBXr8YyxQWkMAgCds7CFes1
-# 99mggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUDQ1TDXAfr+w2RWpEb9jF2Ifl
+# Dliggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -105,16 +125,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# dc4E0kPfaa+p2czT5WHZC4u5Y0QwDQYJKoZIhvcNAQEBBQAEggIANfpmsGoJ3ErH
-# zgMnslGt3MyMt1eBWIkTAKODiv2sM9XQCS5z3BPH9cfQJEJvN4883H0Oh1txIHAM
-# xbMdNjQEzrwZLHFYDccOkrjhdL1S0+qlvGdr6C9FFd2di4t5HbUvp4T2lQLOUbQj
-# 2BoGN5s++wfQMhl/3qcvwGUUib9d+rEhXY+5Lp0qhKg0aAqh3z9kkOen9tIPAh+G
-# VWQ1pwVn0keoww9+AzMZOnxbBlosdQNaeT8P28PHS2xSX+U3TjaRpYxJFmbYo45w
-# mHfeeS7pqCVga0vAzHanY/dQ6c0w8061FJdZf/VbMn9GERFoNg11v09NalC+oUiC
-# oGpUESGCJ7rU88+9d8Id63Ai4J7Azn1MHaIPMCCSApJNuaElVmZfIei1kI3t9lEs
-# kNL037dVVkrpTrOSh1fHjwCMish5xUq4jvtSFJa8Yhuptmn9FTuKtE1LPFF84HqW
-# Z9VFeCHPMqGDDRbon2flX93VRIL0Pdhdetv8w8m/r1NcnASjcSYGbp/LG+ZbAWI7
-# Kf5gGmOpiXkeJLIpTfXdcTdPcY07qQMSKIX+YTlBMl9eOEEXBEyxMjZAveOKXWMa
-# /j0zpK2zRKtaWPwfMY/9ryDLl8GY7FA7kWEyA2EH4eEUm7ALFD5U3Y+vwkSGnvYD
-# HZ5gVzJcaarbBArWZMZML8zVBn0Mtwg=
+# /9EZaG5sd8rg5qU2AOfzN+g4mAwwDQYJKoZIhvcNAQEBBQAEggIAMAUJCmZF84NE
+# 52YTUH6/78jGiRD9T5IvN8DM7w5Pbmn987ZRglgL68zmR+tt/iUyKrcSfk7SDMbK
+# CGmc4Gah9KKE2M/nmJQdDfhbVnq7tx6AgwAEVpeXh0ERhm1TnVRLLf7VUoH0G6kn
+# 2cKedly/jLdSS3U9mwjLEgZlOyl0FaU2wwov3IeSK6G8b7kVVAuy0KR7pkR4kFv6
+# xBMG9VOTPUBkPZzY3v3MVLy2UPhdjwLQ6PY4d7fy8sm/MHzo5egJWbnI775Um3Jv
+# B9hyYRCQvZMKW+Sls+xQ5VlJj4avlmjzdwSO4pId1yWiZLQRqrtFXf7cgddlSs5H
+# lRvoYVw4Hh/D4aAXIaI3efogSr9R8s1kXUzKFebxjxM2GkKBgbmyle79Q6ppcKFP
+# DMbqDkdCRyzPQYtxgwond2wZvpertwq6IyQPyoUHjDFsh1TlTXTjYc9AAQp4jjpb
+# 8CVUboDINZnbGIjJqo3/1k5cxccRga89j89LDck7McNf4SaPp/Xzzw1CbVOxaU2e
+# SIsIyuVPawkotP5+LwwPhrqYTQUKDfsjJCcis7wwM+OnafLfH7AdaK7lbnHDXrMJ
+# Bcn/dRapp12J1gFZu6rgxqpQ0/vO0e/7kA/8RABuyHbacxyeZg/0zdbborluPPb/
+# ivjZI82X17vixB1ogWYOvlLIJuLmzFk=
 # SIG # End signature block

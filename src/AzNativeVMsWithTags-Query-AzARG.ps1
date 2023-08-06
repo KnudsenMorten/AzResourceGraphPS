@@ -1,21 +1,44 @@
 Function AzNativeVMsWithTags-Query-AzARG
 {
-$Query = @"
-    resources
-    | where type == 'microsoft.compute/virtualmachines'
-    | project id,name,type,location,resourceGroup,subscriptionId,tags
-    | mvexpand tags
-    | extend tagKey = tostring(bag_keys(tags)[0])
-    | extend tagValue = tostring(tags[tagKey])
-"@
-Return $Query
-}
+  [CmdletBinding()]
+  param(
 
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+resources
+| where type == 'microsoft.compute/virtualmachines'
+| mvexpand tags
+| extend tagKey = tostring(bag_keys(tags)[0])
+| extend tagValue = tostring(tags[tagKey])
+| join kind=inner (resourcecontainers
+        | where type == "microsoft.resources/subscriptions"
+        | project subscriptionId, subscriptionName=name )
+    on $left.subscriptionId == $right.subscriptionId
+| project id,name,type,location,resourceGroup,subscriptionName, subscriptionId,tagKey, tagValue
+"@
+
+$Description = "Native VMs with tagKey and tagValue"
+$Category    = "Governance"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUNKwXjNqXaLKogxCiPCUzNOw6
-# jmiggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUkPzfHGavDEr1IBFnoUQbnq2V
+# p6qggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -94,16 +117,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# utFX0baDED6+nmMQ7tPm3hwYqnYwDQYJKoZIhvcNAQEBBQAEggIASTzQd8EIXVzo
-# AGg+b5eRmn0xV/8YX52Sghc2Yk6GAEluvgtvSOklUoplw4wjyj1xbzSq1MdQrLXO
-# Le/otDxRh7khL2DWTQCmSqYTgwzIgESK9IdDH6OGRoqG9RGOl4d2Fhu2UPfymNtS
-# 3fC3HLjDze24Efx1KEgFmhO+YKtS3lei/GwTeS/aez8A15YZN5odBc+Zk55UryA4
-# 8e3HpP/tC+K+BJeflzq6Vpwuy22uO6Wm80UXUY/5Sfpb3KEJRQ2euQqmQ8R8/hhn
-# QyJOZKV6+J8XyelLzmgp2uZXshUG2AuBKjKIiIe5HuWfPKl5KAZRNerupbnNwV6C
-# AeJYhD7sPgnVCwKm5fwP2wbhOm5eSnZoAkpSR/KS8gNtpwgBNr7cjvzZCz900yOQ
-# OOEV2FW245MSHA+WWoFzd5iqq7L0c8i6gSbJoklIoiGbNyBPhcGtveqjAbsR2dZh
-# lrr7zO2G+UvnoWsScok/JmXzV08fZgcxdN//W3i9MKqEh/7z7u/gCHS13bLdc6ug
-# xV0Oop3kUVHhuzYQH/jZZltEQMddNlGxCxWNjUHE4GCcNlj03ks3/WLWUiwEbS7A
-# NRgM9Pi1hu9GqhjsWdjzGZffzeK/40HOEviurf1o0L5K02WBaCxf5HZCXGiFPgUK
-# bVrze0KYA+IhTyX3GPHe+nv6wZM0Be8=
+# xsgDv67D9us/P5UqukRjMDxM95gwDQYJKoZIhvcNAQEBBQAEggIAavlI0ZCiuj7Z
+# Xahgr7SRt43EU5TIdy4IZd4iNXv6cr7pvuLQD9+iEonCe36eL3wD2A43GqgvR5rq
+# Abycm+vbCzAxY++wXVWhA/5SVtE4LeS7zXhzaWBJxH44nkU1fZikv5NKVFsyIP61
+# +fnwWSP/2x1ZKEmrcppXZF2BQosL1o76kKkptzA1JU8vI1vlLXnrjGjNn9SdhBD4
+# taoRL6nBfgquraRhW+b7xNEMjntlLu4rbXfRiJs/rsVdR/wBW+38gD0Hbk2JWUtX
+# NJUBmGDQFOU419L3iTQMpwaGrUHqj8VLs3OGJhOAFmVmipM3jLFsYF0Acd8rEurs
+# JZssYwm1NaMgKT9M4kg7Nl9VzvDBhlc8CGXm0VPxWWjxoT9IaKEK6imvFjAG1rud
+# /P+FZoZfXJpmHYvJ4/2JKyeMgCkbtIBJajhU3SvKj7mUHTe+zmvIa0zH6SSNY3VK
+# Xy4rxXEHQ41jR2XHdVxai4WTMEhaI43VfdWI0LdTd57dDTOkPpaOqkdE2oW9YTbp
+# w8qIljNgzyGOIRiAYq7VA4JIfID+U3e4TxaHvBSjKLT3RdTx6mZ8JUv1KcTmuH57
+# nTCzUUZRETVh80SQC5/mGhHXNmeuMJHNTwomyalWwzfdrvPmxLS0jsYQHP5pCWEw
+# vOAFrQUulrHamkP5u/zF+1V4pO7b7gI=
 # SIG # End signature block

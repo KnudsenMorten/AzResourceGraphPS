@@ -1,30 +1,51 @@
 Function AzNetworkRouteTables-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type =~ 'microsoft.network/routetables'
-    | project id, routes = parse_json(parse_json(properties).routes), routeTableName = name, subscriptionId, resourceGroup, location
-    | mvexpand route = routes
-    | project id,
-        location,
-        addressPrefix=route.properties.addressPrefix,
-        nextHopType=route.properties.nextHopType,
-        nextHopIpAddress=route.properties.nextHopIpAddress,
-        hasBgpOverride=route.properties.hasBgpOverride,
-        routeTableName,
-        routeName = tostring(route.name),
-        subscriptionId,
-        resourceGroup
-    | extend Details = pack_all()
-    | project id, routeTableName, location, addressPrefix, nextHopType, nextHopIpAddress, subscriptionId, resourceGroup, Details
+resources
+| where type =~ 'microsoft.network/routetables'
+| project id, routes = parse_json(parse_json(properties).routes), routeTableName = name, subscriptionId, resourceGroup, location
+| mvexpand route = routes
+| project id,
+    location,
+    addressPrefix=route.properties.addressPrefix,
+    nextHopType=route.properties.nextHopType,
+    nextHopIpAddress=route.properties.nextHopIpAddress,
+    hasBgpOverride=route.properties.hasBgpOverride,
+    routeTableName,
+    routeName = tostring(route.name),
+    subscriptionId,
+    resourceGroup
+| extend Details = pack_all()
+| project id, routeTableName, location, addressPrefix, nextHopType, nextHopIpAddress, subscriptionId, resourceGroup, Details
 "@
-Return $Query
+
+$Description = "Route tables info"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
+
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUPKyzh8fgnDYo3R1Ms6LsH92B
-# fQuggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU6o6ftrnYoinKrQpl8MU+AlLk
+# PJOggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -103,16 +124,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# 1Mw/XcnOQg1aXTOovS8RYALhaNYwDQYJKoZIhvcNAQEBBQAEggIAk1wUaAwf7V8e
-# z5dV822E30tNCTHS9tQEFcnfZyjX8kpR7rOiEV2LYZzI2ZkggFZbg47JWQ6Ehvaz
-# swPCqldMKST1GqEso/+4pjzPQZMQM9JPZN/7wONcQLCig0IEeUOMBV5IxEVMCsg/
-# pjACAb0SZf4K6dTtugGTzZlFEAStUw02nJjKLI6F3qTtabvJV5w1hfL+bX47zGih
-# dxt11qL2NaoATKOt05p4qFCwOqvzZpdV6NpY3DG7URUxuhowJ7ghb69S4Fv4uzkh
-# W6/++s1EVEvOPhFUFXnIy2gq6xQQp/MiQAi14D/6fdBaBzx0zSStAHlp8oh8vEJ1
-# 5zqQ284RR0U56Dcx5+cRV49FrjU6ejwjPMNpP4np2OUAxWP+0xQpXb6/D3PXWXGT
-# gtwegBReVNNOGnsg2I/St8tPYNdXKqGVqSQX52Uefiuok6KHaBfcBZ9H5uc7MM79
-# 6nlg54yZ7DjKJeXDG7kXUdn7ImIw/0uGhuz3l/V5p8gRmeWnyS80QXPAN+vuSgnI
-# Lnus1g0fI7yGS1ZgxyrD/88yh3djTKA5rq0ugkKxfkF7D/p0IogwJzwjBjQesheL
-# CAQU/ljxRMV6DgFWA46XmVtYnG02un96kn30mv1SxEtk63YXnaP5tGOav26+pkgg
-# M6p9m9dKLX5Sd6dY2/65VU08nFI8spw=
+# tWSvIXEeegqCpcs4VUlNAn3sRM0wDQYJKoZIhvcNAQEBBQAEggIAcYswL6P5dFxb
+# mBp7EWyaC7zNRKnFbn9jyMqyHBJXe9oxTIpAiEf4KS1Toa3Kn6uOFzF986wgW01a
+# YKwSDV9Uaacip6o+bv3XM6HqhF0kQW0D2SMUTJI1XJITd0kpZg5YEd2YqB+l6w+B
+# MkzQWshPhJj5pnJ3sAHY2l1DWrUXUsNyXyPGX/JBgugKwTCyXwAzpVKfxXA7TO6H
+# YfZx8xCwyTM3vCaAFOAyfKg0/2NlStwnf2WAvxgzSIghJspGohFsSla0+iig3Dpl
+# lfGi/lhS3Tg1vyyfumMb7qcFTv0FnYkOY7cSGv8J17DtwzODjEB9fNXspQeT7W+7
+# lYzWrYbdHi/wgY9oBh9Q4klNsW8fLd/zPVWEuInkY43N6yrg7fJE9yHewyaSrQtT
+# mBEi1RqHVlhuq+gPJYRJnhxBh+9PbODFwDmNfwzZWqEbXtkIFePtBg5XMRyP1LsG
+# QRfuHeMQ5oaNtVyXzJ6+3sYX52bEULy4AwDy4GyZYm/yvr4aPOov+//+sYp9+KPW
+# i8KU71qwKOeqwXKsZJydZVrTarMazG4hYSBBpMv6iXZLWSCStklKAWrEzdoKeVbd
+# 3xSWyXUo0yTJaYHflzjfb+PK1WHLnLwsbwbXSC1lDanHY9WOyzmXRNFqnib1X5Sz
+# Gm7wFNSCo0jmzUC6HkipY5FJuKkFC/w=
 # SIG # End signature block

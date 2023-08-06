@@ -1,31 +1,50 @@
 Function AzIPAddressAzNativeVMs-Query-AzARG
 {
-$Query = @"
-    Resources
-    | where type =~ 'microsoft.compute/virtualmachines'
-    | project id, vmId = tolower(tostring(id)), vmName = name
-    | join (Resources
-        | where type =~ 'microsoft.network/networkinterfaces'
-        | mv-expand ipconfig=properties.ipConfigurations
-        | project vmId = tolower(tostring(properties.virtualMachine.id)), privateIp = ipconfig.properties.privateIPAddress, publicIpId = tostring(ipconfig.properties.publicIPAddress.id)
-        | join kind=leftouter (Resources
-            | where type =~ 'microsoft.network/publicipaddresses'
-            | project publicIpId = id, publicIp = properties.ipAddress
-        ) on publicIpId
-        | project-away publicIpId, publicIpId1
-        | summarize privateIps = make_list(privateIp), publicIps = make_list(publicIp) by vmId
-    ) on vmId
-    | project-away vmId, vmId1
-    | sort by vmName asc
-"@
-Return $Query
-}
+  [CmdletBinding()]
+  param(
 
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+Resources
+| where type =~ 'microsoft.compute/virtualmachines'
+| project id, vmId = tolower(tostring(id)), vmName = name
+| join (Resources
+    | where type =~ 'microsoft.network/networkinterfaces'
+    | mv-expand ipconfig=properties.ipConfigurations
+    | project vmId = tolower(tostring(properties.virtualMachine.id)), privateIp = ipconfig.properties.privateIPAddress, publicIpId = tostring(ipconfig.properties.publicIPAddress.id)
+    | join kind=leftouter (Resources
+        | where type =~ 'microsoft.network/publicipaddresses'
+        | project publicIpId = id, publicIp = properties.ipAddress
+    ) on publicIpId
+    | project-away publicIpId, publicIpId1
+    | summarize privateIps = make_list(privateIp), publicIps = make_list(publicIp) by vmId
+) on vmId
+| project-away vmId, vmId1
+| sort by vmName asc
+"@
+
+$Description = "IP addresses in native VMs"
+$Category    = "Configuration"
+$Credit      = "Microsoft"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUkGQXTD6nzDDURrm37RD0cjeM
-# GoCggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUQQHoFQ801Umq1XNz6c/kwZex
+# fniggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -104,16 +123,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# tT6JYjFWYwHoxM8hRtdpEhmHZxQwDQYJKoZIhvcNAQEBBQAEggIAf2WISw7WFhqh
-# DBUL9qoZTE7gKAv12Hj49lpSiN5z88P0XQA2rMDCDmss/dL8nkGeoctemBpfTsyT
-# ZpMesCqxlp/qyXciWuxhnsnSsTW4/IuKPGl73JqxWLd/JMRM7OLKz6dOcW8vEb/h
-# itUjdLCbKFYVlNpJDLivu4nIdqtmj0AqLoJjjYe0dNAIjlPjuvJFI1HeFnOuLW5e
-# f+abFMXcg22lW1ItR3OUeuTvWx77uhz3774u7wdfnLmUuGo59XJR60/3hLGtR/gs
-# 6Ipnk8agNg1fIvxb/iAkT318Bdkk4eTkT3cfa5lT2B2W92muVuVS7vDRYawAkIR4
-# 7Z4+dNqyZcPJARodKFTAjMVgpjXWUA2oAlITBX8BE3w+U5v6ZDms1+ns2XetW3rJ
-# GXTF6U0Se/Qr3mmodWhFH5utXO6h9Mc/mnPhx2WjSUVbOY82nEiDhkdAKjOBnjs2
-# GSDUbqaahBqgmuuP3+ZNrkTVlY40zbte0b5v5mbkSxP050gzxx90sTjbVTiCrbzk
-# pF8uQTQLJR2LwBOZNehZZbRidMS+U9H8htvxUc4/0O3lmBTOpUBF5wyOzAY16v9e
-# LN+zQ/cM+WLj4VU7/gGlRwPP7kmNL7sYUzVUt7lLgWK+S0mIWJDN4P3yngtcIiJW
-# r+rQn7eveWHRomXYCBEeH8r8Ynmilrc=
+# CSlAl6H7gdnJMCpMVxpuO7lde7YwDQYJKoZIhvcNAQEBBQAEggIATXJ+jEbUZMb+
+# CUo8LxuPvFdXLHNLFTbnD0kH3idpHMDYn5bXdCkJbzJ7A/5nLrjR0poL2EQAAbnR
+# WdPwXrMT7IIDxombvTAnJrMyFopwLQ9jkF9XWr8iT5JkbloiEJO/bCntsWHJjyVY
+# 89Z1nbNuTUyt8ojwYRLgAFXJ9ekQq+xP2ca0qh9Fdlm6YLHAGPs8a5xG699zLtzA
+# DeJ8Qfftl8RtiU7noIVYpumbvIkxeHXt0lN58xw/0xG7pj8erUbCPL7VBIeM5bSG
+# WjUono97tx2oeyqND/3YkYN0KnFkma0YUc1mgGHOIW9FsRF48bZpXhcq1KFhMTw7
+# EME63eqrHGcD0CeHthdN3gwIYt5pV6K4cbfIPPDQzYw7k13ou41RQSIISmF1rAQp
+# 5jOMLuRu2RaNjEl2H+gd1R0nbsZgWVvgwFw220Esya+lhoUmomjU0H+xp0ZPX3Fj
+# qIwz8HCv43Hk887txD9FtxfgeyPEVzfQdKOWZWeUKdKXiyR3cRRUoobE3y1c1mOl
+# oS5blWUYn/vbfSxQX7PoSqy/iaAG6jOwrKfjJSJV2ySxgE4FAdqayYC11vPDacES
+# WJyNFid//a+ATCXlB9Yz9v0GjO1LXgnTvL00L2GoFeEr8x6kBa3820dcCZGZ0X7/
+# yOpPyKmlajUoDXKD6GtZGdOPFPQuxDU=
 # SIG # End signature block

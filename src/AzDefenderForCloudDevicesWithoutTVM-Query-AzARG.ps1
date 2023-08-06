@@ -1,17 +1,38 @@
 Function AzDefenderForCloudDevicesWithoutTVM-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    securityresources
-    | where type == 'microsoft.security/assessments'
-    | where name contains 'ffff0522-1e88-47fc-8382-2a80ba848f5d'
+securityresources
+| where type == 'microsoft.security/assessments'
+| where name contains 'ffff0522-1e88-47fc-8382-2a80ba848f5d'
 "@
-Return $Query
+
+$Description = "Defender for Cloud - Devices without TVM"
+$Category    = "Security"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
+
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUc+C78hsrBJgV+V/9abGzWnIV
-# Ha6ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUlL30I/zy59xcXAjWjRdub1rL
+# pLiggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -90,16 +111,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# irhqtohFaFWfWxa6kLVRFFWm60wwDQYJKoZIhvcNAQEBBQAEggIAbOAQbZOpJLEd
-# YBlPi/3/fDnfbCphPWwbGBaPW40RZbcpImEyjhufJqn2sMtycyX9miEyC5BBFdgh
-# uXq2sNTStM8BG0hkXwCs/ojWnLo8futIrLzQybjn2a2BL9xo5d72aDCfuVTHOH3o
-# LMghcyvV4r3DQREq7cFkwdbqvf9RTWo57a2Q6Fn6qFtm/hovqimUV/+hFQoCvxWa
-# AFM4jUBx0220cWDnhEVsCcsggmmv7hIxlFbQscS3QRQyQ7XL7BOSXWFYcR5fh2TS
-# QArScSiFb5WWwnvQEUQyVEKxPPF0kuMlmNjPo8J0zQmj5CFHm8meC2HuMyvn79HD
-# MmuFmQyUJPt8I3/hQy3CujdA+lLbqY2X1172BifTUacYhHyyzaPAM5cBUFc/eHPm
-# 4BCVP0PW50k1ESAyCfH5xs4mifNzpdZSFEyEdBY92ApBUnMWEfoWiHPaPRfEm8ck
-# TA4tO0KC18t80W8JynW6LnkpOeZpxm7ES8JiQhKTs6MxKVnBlpsLLTSAieOwy8Gp
-# cx0d/kqeVlJriSs/buVlOtZsalqEGjT8dDL1YbEDnHeA4skpEzoMm1HMxh1cUjF8
-# wNnFfTsn9BG57L7kiKMIGCk/6TucpH7CmGWnwfDbYhre/OVTcHgMVxRf85GtS2G4
-# sG/0XQv4QbNdXV6pWNqdVr+dU5Hpsvs=
+# u9UwCDA2q2oywuEJDCsg8rkPIsAwDQYJKoZIhvcNAQEBBQAEggIAwE2Myiu4DWrB
+# lxeoFNzMJYB4E15gVu4mcLV4sobvhlKY7VciH3IJkXUDKJj0weRxpIDsatEds70W
+# PjkGG65uPOSBZyemQKeviOyqb8YiFLxIttaPTo9+ztmNgbXvycya7i37HTVwrhOx
+# kU48yf7RNV1g123bvfI+2yVAtnVdXkSW+7sIOiFHTOQ77Lwt3j1A7ftJmvlVblr4
+# BNx6RWMWLVsC2Df7d9W905r/eHFQF1fFbdL1gmo9koXvePaxX0SVMHjBKMmR9kwt
+# q+BfA2bv3KRLA8JTo3cQMAHMNCK1HOlp6jJi+GLPC3XXeXX5OCsOozToRmXWW/n9
+# wrx7vMgzLOAegZ9RZOW/ozH6MJ6KmipzDMDJLTU1bHK+5Ie/SZ4yfOYD3a275zI7
+# OpPMUIOi9Q/1HxIAcHr0UKVUIjvhcYeepe1KwyXb+OWCzGM+L5B6zpcojacX3DBK
+# LP2pV2ockeWGJcXrdDjiGc7hBUoowfrkQUtWJDWY8Ad+ESqnFKl6cEVvKaICVGWX
+# IhbGQ5o/L/xN+4PBmmfAGfPTrkh6cF65iSzyuyH8utqQdDyaCut1NedtqDfRk/J9
+# Hbn23O/nDpbgoZvvS87fL7gjayYOG51DBIyl+zQXLVLQioz+7rCT/1Y545AsGOY8
+# /qMFm8l1ocpy3Zm6lU4d5RphSY48HgM=
 # SIG # End signature block

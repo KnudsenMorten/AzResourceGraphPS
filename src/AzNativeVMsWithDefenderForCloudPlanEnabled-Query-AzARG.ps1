@@ -1,27 +1,47 @@
 Function AzNativeVMsWithDefenderForCloudPlanEnabled-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    securityresources
-    | where type == 'microsoft.security/pricings'
-    | extend tier = properties.pricingTier
-    | where ( (name == 'VirtualMachines') and (properties.pricingTier == 'Standard') )
-    | project DefenderPlan=name,subscriptionId,Pricing=properties.pricingTier
-    | join kind=leftouter (
-            resources
-            | where type in ('microsoft.compute/virtualmachines','microsoft.hybridcompute/machines')
-            | project name, type, subscriptionId, resourceGroup, location
-            ) on subscriptionId
-    | project DefenderPlan, Pricing, name, type, subscriptionId, resourceGroup, location
-    | where name != ""
+securityresources
+| where type == 'microsoft.security/pricings'
+| extend tier = properties.pricingTier
+| where ( (name == 'VirtualMachines') and (properties.pricingTier == 'Standard') )
+| project DefenderPlan=name,subscriptionId,Pricing=properties.pricingTier
+| join kind=leftouter (
+        resources
+        | where type in ('microsoft.compute/virtualmachines','microsoft.hybridcompute/machines')
+        | project name, type, subscriptionId, resourceGroup, location
+        ) on subscriptionId
+| project DefenderPlan, Pricing, name, type, subscriptionId, resourceGroup, location
+| where name != ""
 "@
-Return $Query
+
+$Description = "Defender for Cloud Plans (enabled)"
+$Category    = "Configuration"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU6LZaMhn7IgYjhWaDAskGjDAA
-# rhmggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU1jjGDO3++fH061f4TUT3bfN0
+# rEmggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -100,16 +120,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# kRjculaEyRq8p1Zk/9naEeNGOPwwDQYJKoZIhvcNAQEBBQAEggIATzU8PlMCBn+s
-# 2QvkBwDkx0jr5PdnhGkFmfpE2U/vheZeg/pP/NEyHXvrd3Eac7aG8yUNWzALwiPf
-# I/5JGT2apI/48YOkFB7jyyiwN3KR8hFw8Bifsr+40xVKsPow6ZgpjFtJjkqU1NAH
-# gyTGV/BvMhoWjno1XdqohXuz1SpqgjFl0JlYn5+8cKuY0HfrTxjgFSy2D0fdBeW5
-# lVTHKceru9uNZJGdqvq7gaxHiQ9/f1dnpkF+dKUTP4RPkL1YHcnGY/zLocySkZ7l
-# cY+Aj2CcWoP6ijkmu9HwhKgDzv63/MInbIb7bBtJuEgQXPSIh2e1Mb4dkLW+5A0l
-# F6DlwWitgy8KaZR1/vZPxBhEYHgLYHEQpt8NftwJCDzhvL5zwW2Ba1wOPbsunf3L
-# k4U/2+c2iyETdMT1+7W3EJ7oQuDzqFmvqbkuhaJFY49odr/ZRPVNodvfLjW5ppBs
-# GFlpnn0DmZzHSut0VkzrI+ThVGCCiXvtxv0T9mDcHdlRsz7Hfx0+gpRh4Pu6f6Vg
-# W3DyJ352vdSHb4dLKf7ZE3/hBwnuaGWrXfy+mw+2Gga2nERMr3PmlSqieQ+g7Sz+
-# uuUk8hkU3am+AXJ3DzIvX3/5LweNx8CLgkXJtrdIh3ehfm/fW8sJ8lmtSIjJvpS6
-# 5DATaJnoya6YFgwpRsGLB/3M0SeF+0E=
+# scRvUCe0jXOHvonuTdGBrzH1uGcwDQYJKoZIhvcNAQEBBQAEggIArumRBEbKLKAu
+# BvrOZsJwaFjOwYluJlICIedd7MaIv68AVaHL619xyPlv+V66erDROicbuyWRBMJ9
+# G0w8/QoINxyypAEyj+Uqbn8gz2JUEXD7D92Q3YrVyMXsgKRRfwr+RtN4Z5Pehu1N
+# sCjyLKUgerDptDlFDO13GeGSnOVn7ZKo0aKamFTcdUB18ZkQNGzyEPu/ICLzZ5Rp
+# yQA7okecnQHTAm2j2P9jYIVfEMTOhScfDr+FHT/XYBFRIlzY/6Bn/e1fJnpiQ783
+# ji8mZilaTWDsr0ndzwh4xEvGJHNscSJVEtPWM/34abBKlec3WysWfkVrJJ0Ej5bS
+# OeeDG+F1e0Z5ChWbtLtcoEhe6hRI81Hz5YajX2359HxBvGqJ0z04g9rgq0hZ31G6
+# gLOoxZOl08JS14RP41hljvjDvCoD00/YSHPBVXDa+MKyTdvtHve8+C9SOt9+p8Hv
+# i6TXx+vNpOpUEc+YTPY6Fk6jyP1RXab1KumDy+KBZH0dXkY2DvZnvfkV8VrVhA4I
+# ClA+Ovzd+OMIHnwNUnZUnKzCjEPUkBpSi48sYiYwahVqzhJ6BCoFPw3PilWvRB93
+# 0lQI3oF0EITcBiEe3yaEV/nC8UpO2xm3MTI8U8QN5sTtn7dl347MVR5o5jjmEQC0
+# sHUmr0vyVmNjwGFNENqitC4PKHdoA4U=
 # SIG # End signature block

@@ -16,7 +16,7 @@ Function Query-AzResourceGraph
     This parameter is the entire Query, which must be run against Azure Resource Graph
 
     .PARAMETER QueryScope
-    You can choose between MG, Tenant or Subscription (or Sub as alias). 
+    You can choose between MG, Tenant or Subscription 
     If you don't choose Scope, then tenant is default.
 
     .PARAMETER Target
@@ -28,7 +28,7 @@ Function Query-AzResourceGraph
     You will need to define -Target <subscription name or id> (Ex: -Target MySub)
 
     Syntax if you chose -QueryScope Tenant:
-    Search will automatically be done in the entire tenant
+    Search will automatically be done in entire tenant, part of context
 
     .PARAMETER First
     This parameter will take only the first x records
@@ -68,9 +68,6 @@ Function Query-AzResourceGraph
     https://github.com/KnudsenMorten/AzResourceGraphPS
 
     .EXAMPLE
-    # Install if missing + Update all modules to latest version + clean-up old modules if found
-        Query-AzResourceGraph -InstallAutoUpdateCleanupOldVersions -Scope AllUsers
-
     # Run pre-defined query against tenant - and output result to screen
         AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -QueryScope Tenant
 
@@ -229,7 +226,7 @@ Function Query-AzResourceGraph
                                 $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
 
                                 # Online version in PSGallery (online)
-                                $Online = Find-Module -Name $Module -Repository PSGallery
+                                $OnlineVersion = Find-Module -Name $Module -Repository PSGallery
 
                                 # Compare versions
                                 if ( ([version]$Online.Version) -gt ([version]$LatestVersion.Version) ) 
@@ -239,8 +236,7 @@ Function Query-AzResourceGraph
                                         Write-host ""
                                         Write-host "Updating to latest version $($Online.version) of $($Module) from PSGallery ... Please Wait !"
                             
-                                        remove-module $Module -Force
-                                        Update-module $Module -Force
+                                        Update-module Az.ResourceGraph -Force
                                     }
                                 Else
                                     {
@@ -320,7 +316,7 @@ Function Query-AzResourceGraph
                                 $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
 
                                 # Online version in PSGallery (online)
-                                $Online = Find-Module -Name $Module -Repository PSGallery
+                                $OnlineVersion = Find-Module -Name $Module -Repository PSGallery
 
                                 # Compare versions
                                 if ( ([version]$Online.Version) -gt ([version]$LatestVersion.Version) ) 
@@ -330,8 +326,7 @@ Function Query-AzResourceGraph
                                         Write-host ""
                                         Write-host "Updating to latest version $($Online.version) of $($Module) from PSGallery ... Please Wait !"
                             
-                                        remove-module $Module -Force
-                                        Update-module $Module -Force
+                                        Update-module Az.ResourceGraph -Force
                                     }
                                 Else
                                     {
@@ -433,14 +428,43 @@ Function Query-AzResourceGraph
     #--------------------------------------------------------------------------
         If ($SelectQuery)
             {
-                $SelectedQuery = Get-Command -Name "*-Query-AzARG" -ListImported | select Name | Out-GridView -Title 'Choose a predefined query' -PassThru
+
+                $QueryCmdlets = Get-Command -Name "*-Query-AzARG" -ListImported
+                $QueryCmdletsArray = @()
+                
+                ForEach ($QueryCmdlet in $QueryCmdlets)
+                    {
+                        # Run the function
+                        $QueryCmdletInfo = & $QueryCmdlet.Name -Details
+
+                        # load cmdlet properties into memory
+                        $QueryName       = $QueryCmdlet.Name
+                        $Query           = $QueryCmdletInfo[0]
+                        $Description     = $QueryCmdletInfo[1]
+                        $Category        = $QueryCmdletInfo[2]
+                        $Credit          = $QueryCmdletInfo[3]
+
+                        $Object = New-Object PSObject
+                        $Object | add-member Noteproperty -name QueryName -Value $QueryName
+                        $Object | add-member Noteproperty -name Query -Value $Query
+                        $Object | add-member Noteproperty -name QueryDescription -Value $Description
+                        $Object | add-member Noteproperty -name QueryCategory -Value $Category
+                        $Object | add-member Noteproperty -name QueryCredit -Value $Credit
+                        $QueryCmdletsArray += $Object
+                    }
+
+                $SelectedQuery = $QueryCmdletsArray | select QueryName,QueryDescription,QueryCategory,QueryCredit | Out-GridView -Title 'Choose a predefined query' -PassThru
+
                 Write-host ""
                 Write-host "Selected Query:"
                 Write-host "    $($SelectedQuery.Name)" -ForegroundColor Yellow
                 Write-host ""
+                Write-host "Query syntax:"
+                Write-host "    $($SelectedQuery.Name) | Query-AzResourceGraph -QueryScope Tenant|MG|Subscription [optional: -Target MG NAME|Subscription Name]" -ForegroundColor Yellow
+                Write-host ""
+                Write-host "    `$Result = $($SelectedQuery.Name) | Query-AzResourceGraph -QueryScope Tenant|MG|Subscription [optional: -Target MG NAME|Subscription Name]" -ForegroundColor Yellow
+                Write-host ""
 
-                # Run the function
-                $Query = & $SelectedQuery.Name
             }
 
     #--------------------------------------------------------------------------
@@ -501,7 +525,7 @@ Function Query-AzResourceGraph
                                     First = $pageSize
                                  }
 
-                If ($QueryScope -eq "MG") # Management group(s) to run query against
+                If ( ($QueryScope -eq "MG") -and ($Target) ) # Management group(s) to run query against
                     {
                         do
                             {
@@ -512,7 +536,7 @@ Function Query-AzResourceGraph
                             } 
                         while ($pageResults.Count -eq $pageSize)
                     }
-                ElseIf ($QueryScope -eq "Subscription") # Subscription(s) to run query against
+                ElseIf ( ($QueryScope -eq "Subscription") -and ($Target) ) # Subscription(s) to run query against
                     {
                         do 
                             {
@@ -556,8 +580,8 @@ Function Query-AzResourceGraph
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUP0jHNkXCVXX8huePYfXe32Ua
-# QS+ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU6No8vkgD9650uyJoBoNHB8TL
+# JGyggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -636,16 +660,16 @@ Function Query-AzResourceGraph
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# 3CIvLFfszxWztkXLe5qupx8CZFYwDQYJKoZIhvcNAQEBBQAEggIAgx0ns0yWkotG
-# saj57ndc/+MzJzuHFR5WyD9cDHc+uhE9Pp43wlKosBypyWWlFRKo3O330gIkj9Lv
-# xIhasu3klfLnzov+XQpbhNkU62iplTr40rQmZzkGa0RZeEz5b7uEcjV5Yc5L2N/l
-# ZLpUKHfrqwG/5gisfw1OjA5HwHcO/I6ufnsYN48Lb3TEUfUX3d3S3UL8mtUNd1fj
-# DP8kS1hCxShVYoWiCmDjlPlLTPVOBipzj6kSZVkwLatlYvvLv+e3RX2ufD4EFxRn
-# 15ojQfvcGaUgFe7OxMBr4sD6JZ8Vpfmxm+5shHuvQcntSJUecnZjgvSVGTmGL9rK
-# A5MlrbxBRcYLlMEI2ClkxVZ48Ir8T4siq8u4BT1UobtIsUKJzFU/Hu6s7ejI3F/j
-# 082ne3C1UzS9fl8X41h41cg1TkzX4nkJp4Y4zh1bk8A6gm/CK/MjtA7ek9v4Qe4r
-# ry/junC8bjUGKkjRL3zimwgF9lFqgFWCIKGGgRWaykeOq8byYJY0Q87x38f4fmAw
-# l0E+9Hpes4P2IxkcMzRsPieBRP55QXvNoLlBJO5ugqI/zGv04DYTqzrcGzknGhKZ
-# LNui5iy+ZMHa+u+kGIVQVtPhkioUJIeWTznQWXQteCr8/UxRtQu3k9TMO41J/nyI
-# +yhGyxJwqMIjIxJaN1apS0t2/AFG3BM=
+# UhedFBknPu/OnxKqhf7zf5g5Lb4wDQYJKoZIhvcNAQEBBQAEggIAVGa8bX6nluXM
+# 5s6kFdYYWWxFXwnkgbj6am++D6SbvrMR2+yo58i+mCgtcq3N6eqVMZizToJ0nZ3z
+# VUlDiGiJJPNWMAPXaYqgpQK1icbMr4phgT3QAW0wiEkKWvcueNaPKTUsAdDbTbyi
+# Mh8OxYwPSYoo3HTuxg6fuapBBjeXCu5EXWowaIMIFmQlf9Rc3XZ+g+ksSkIm5CMX
+# l3dRxENuQ5YMPqqvXVa4sLSWiaqacaCi3pgkYYL+L5VKsvTL9cvm4P6lWz7f+sJ6
+# QsMi6ugPh2T6GsCNzlxIIkXJaxzzR6bWc/fHMyrlIa2mCK7ZSm9X++au/F+QrMrW
+# lKamJt/bBAHRuy7Ee9BFOgUp6uEvXJ7WGbCvFqSG1Ucja146TTpOySkhaneL935k
+# Q4oSCCJUqlSKuLwFrh0/wRNqCVIEYHd7++J+wyTaAC+7GcA8fb4FMYFV9t0y2szj
+# 0hepP1Ocm/vORdT5M221T9KArVdF+Rm0xguZLWD69ORLWlCKINts2AdX0fMaisB6
+# +CRK7Fx531/Jez47TdaaHzmWbik1VAcYa+BXkiA5sKuLfVv8c2Jh0r3YAG826C6s
+# pT8sqVnFftViScvNMRPByBvA5zjdiGdqoMtJxs1wQBBwriFXXW6kvGfKaZBjIDtw
+# xOLPhoCizD+F6fUig0UQuC5K0V4FC2U=
 # SIG # End signature block

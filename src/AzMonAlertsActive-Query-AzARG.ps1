@@ -1,23 +1,43 @@
-Function AzMonResources-Query-AzARG
+Function AzMonAlertsActive-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    AlertsManagementResources
-    | extend AlertStatus = properties.essentials.monitorCondition
-    | extend AlertState = properties.essentials.alertState
-    | extend AlertTime = properties.essentials.startDateTime
-    | extend AlertSuppressed = properties.essentials.actionStatus.isSuppressed
-    | extend Severity = properties.essentials.severity
-    | where AlertStatus == 'Fired'
-    | extend Details = pack_all()
-    | project id, name, subscriptionId, resourceGroup, AlertStatus, AlertState, AlertTime, AlertSuppressed, Severity, Details
+AlertsManagementResources
+| extend AlertStatus = properties.essentials.monitorCondition
+| extend AlertState = properties.essentials.alertState
+| extend AlertTime = properties.essentials.startDateTime
+| extend AlertSuppressed = properties.essentials.actionStatus.isSuppressed
+| extend Severity = properties.essentials.severity
+| where AlertStatus == 'Fired'
+| extend Details = pack_all()
+| project id, name, subscriptionId, resourceGroup, AlertStatus, AlertState, AlertTime, AlertSuppressed, Severity, Details
 "@
-Return $Query
+
+$Description = "Active alerts in Azure Monitor"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUo/u/p8hjPQiPsSMYoqtd9FZ6
-# frCggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUIzv/5GUJ6Rg4FMkGqkzIXfwM
+# ePKggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -96,16 +116,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# P6Pms5ardh4V6JyJMWzS+QoyacQwDQYJKoZIhvcNAQEBBQAEggIAmsybfOq20qbV
-# 9NxRZ8krGFmXBV6EBGsE/prRY/C7UcKtU+0vNCwvmJBf+n3OuoBEB0Z0A8u1tmzv
-# cy+fxW86WWDhTenMNiBNcsHL9UOFAh6+pJYQUuBn0VlFpc0ac9HcGdTKvxq8kuHG
-# g5T1LoPIkC938DUL9mnPpUQ+Z7WFW6Vq+NRiWYRKjuF1slSboFOZAkSPb1ElG0RH
-# XxvIaWMcsyMzcEPDEDWUJfN8b2KJHXtTbTrJZVA9FS3o9bLHJheaGQ6dLL8mDGnV
-# bssaznGo3pGmbXLJ9/pamkSFCZOYDveE8zW/mPmZTwB4vErmBnAIsnOPdUS46M4C
-# y43/Fj6hHcZ4ME09FyDNQEE5BJgvCSE0k887cV9uVOIXw1vPj3uYOxc6U0BWHNKa
-# 5d0lv0qEsGG/jw0TSIyEFkzbBuRR87MN8RowqZmZdn5/dnihmAtTag/hu+zrGjok
-# 7gpobG7Gz5GBU10kLXBvbpUSeSlgzEf9rp0ceW7boNe6MczMT76th1/X0FSk3Ny/
-# /js9sBjHEi03kXs0Y/Qr0encAPq8TH6boIQ7HYWkqUcWW+WvYaSlZj4Juu0LkzLC
-# oePW6QEAPtwXSMGXhqB0xm8Y81UoCZBj+opDg+/Rigw5CNwQ3j2M7xq9qaC5qg2b
-# PPlGhhT/daiaeefzg3WKCbAm3lOpJ7A=
+# LpnKqcHILlNHxS2Bu718ClZYIhYwDQYJKoZIhvcNAQEBBQAEggIAWz74AKBfOh1W
+# CzCU+gXKNi13M7b+pXN/HoABXOolGqusHAyqcyeKX+TlrC8Xrt4vsRH0axGN/X9n
+# G1DtqWGXpXNCqmTHAvpP2FjgYnCo0tqPPwuBUZcNhXCEJn3LKLpvJG2cZzE9Sd0J
+# uIgWA3QfSMtzrv2R/+eBUBqXfFwAGYN6gomOUnYfFqkN1HHn+tQdLbU2NDbTeTlG
+# Geu+76F5DDbNb31dXAz8AxIB567fYer4UGte7SToMe7t/E3MUaEVX+imM1qkeUBj
+# ZV+4I39dstinPycS4yeWB1x/xk2y6eYNBz6VhKLOlVZW3OHiMu75vRV0VI3rLUki
+# 4dxy8k5NmbWozvK6wSOH/S5FPuko1RY9LJpGxVdXmsXWTgmeQWjkEMzn+D+2J0X0
+# 3ve5q4U3N8oS/mZ/tT1d+fjO7BiGv5021MLTaP2eL80xLx8hvj4mP4hGjOg+U+09
+# 9hexMqHgqkQJGjLrTO/l9bF+ajaab3MiqtBCiyJcTGOEBPt7PVmgCH28qeTCE5Q5
+# VC7Nobbvr+EKXH5zv0y0b6wX1trNtZKFdJRA90upZEOZDzjtn3ruUSbxcB+UhLp6
+# ebhkPqNt62Dnm1PfCYb+lqlhd9adpf2b4yScZ+G5CBPz3ovfaXVfD3e/KHAPMYIW
+# f++J4Zs9DkXbPjFPnp+tWjTAYDcahBo=
 # SIG # End signature block

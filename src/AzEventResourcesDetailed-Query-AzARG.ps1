@@ -1,48 +1,68 @@
 Function AzEventResourcesDetailed-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type has 'microsoft.servicebus'
-               or type has 'microsoft.eventhub'
-               or type has 'microsoft.eventgrid'
-               or type has 'microsoft.relay'
-    | extend type = case(
-               type == 'microsoft.eventgrid/systemtopics', "EventGrid System Topics",
-               type =~ "microsoft.eventgrid/topics", "EventGrid Topics",
-               type =~ 'microsoft.eventhub/namespaces', "EventHub Namespaces",
-               type =~ 'microsoft.servicebus/namespaces', 'ServiceBus Namespaces',
-               type =~ 'microsoft.relay/namespaces', 'Relays',
-               strcat("Not Translated: ", type))
-    | extend Sku = case(
-               type =~ 'Relays', sku.name,
-               type =~ 'EventGrid System Topics', properties.sku,
-               type =~ 'EventGrid Topics', sku.name,
-               type =~ 'EventHub Namespaces', sku.name,
-               type =~ 'ServiceBus Namespaces', sku.sku,
-               ' ')
-    | extend Endpoint = case(
-               type =~ 'Relays', properties.serviceBusEndpoint,
-               type =~ 'EventGrid Topics', properties.endpoint,
-               type =~ 'EventHub Namespaces', properties.serviceBusEndpoint,
-               type =~ 'ServiceBus Namespaces', properties.serviceBusEndpoint,
-               ' ')
-    | extend Status = case(
-               type =~ 'Relays', properties.provisioningState,
-               type =~ 'EventGrid System Topics', properties.provisioningState,
-               type =~ 'EventGrid Topics', properties.publicNetworkAccess,
-               type =~ 'EventHub Namespaces', properties.status,
-               type =~ 'ServiceBus Namespaces', properties.status,
-               ' ')
-    | extend Details = pack_all()
-    | project Resource=id, subscriptionId, resourceGroup, Sku, Status, Endpoint, Details
+resources
+| where type has 'microsoft.servicebus'
+            or type has 'microsoft.eventhub'
+            or type has 'microsoft.eventgrid'
+            or type has 'microsoft.relay'
+| extend type = case(
+            type == 'microsoft.eventgrid/systemtopics', "EventGrid System Topics",
+            type =~ "microsoft.eventgrid/topics", "EventGrid Topics",
+            type =~ 'microsoft.eventhub/namespaces', "EventHub Namespaces",
+            type =~ 'microsoft.servicebus/namespaces', 'ServiceBus Namespaces',
+            type =~ 'microsoft.relay/namespaces', 'Relays',
+            strcat("Not Translated: ", type))
+| extend Sku = case(
+            type =~ 'Relays', sku.name,
+            type =~ 'EventGrid System Topics', properties.sku,
+            type =~ 'EventGrid Topics', sku.name,
+            type =~ 'EventHub Namespaces', sku.name,
+            type =~ 'ServiceBus Namespaces', sku.sku,
+            ' ')
+| extend Endpoint = case(
+            type =~ 'Relays', properties.serviceBusEndpoint,
+            type =~ 'EventGrid Topics', properties.endpoint,
+            type =~ 'EventHub Namespaces', properties.serviceBusEndpoint,
+            type =~ 'ServiceBus Namespaces', properties.serviceBusEndpoint,
+            ' ')
+| extend Status = case(
+            type =~ 'Relays', properties.provisioningState,
+            type =~ 'EventGrid System Topics', properties.provisioningState,
+            type =~ 'EventGrid Topics', properties.publicNetworkAccess,
+            type =~ 'EventHub Namespaces', properties.status,
+            type =~ 'ServiceBus Namespaces', properties.status,
+            ' ')
+| extend Details = pack_all()
+| project Resource=id, subscriptionId, resourceGroup, Sku, Status, Endpoint, Details
 "@
-Return $Query
+
+$Description = "Event services (list)"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU4M1hsQxBeqDIsnHo0/vVo40T
-# d+Gggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUDeTq0LD7wMJO1i3H2TM0U28I
+# JBOggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -121,16 +141,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# AuHPW3C3kflDbusVOAHST/1vAcswDQYJKoZIhvcNAQEBBQAEggIARymvTaPqsJSq
-# ZEvEPIuzAxcvEdHSzYCh2oRXwmBvZh/0koh7a+XvkIb8l2FwB2wAnXROvtz05ma2
-# FrM0LCCvQWBIHVdTl905zgZpxj15WIDSx8125gcEoggnBOPqQzInvkSnNY0lumm3
-# PvtyXKuG0SQvbmkWxMB2ykKgQpLkjtFXksua14rtXlH9qT9bswZu/p/gfKVnd3OX
-# Qsqggxvk06R82+/1LONsN4wsjB7MoV/rweulb2tsMeaek6/qXfufw/u5cKDru6/+
-# dLndDa410IZrRQWY/0rhITBSQ9kQLde21nvv+TSVBqxK/glgDU8Ti0t0a4vk9rdb
-# zWEAQd9fmlO68dsV9OkWE4QL03UAGF2OqIhqr+RD5hDI9GdpYndEgAkbxRw4DjpW
-# 6XUC88jEbuj4vX2NR6bHd7L1TdvwuUVaavR5F0JTOs470Qlmh8hfF9iFiAs6M0ZV
-# n/ZMmxisId3umKT8//3c3odC/pPqhb1+2dEibfuGcxc/QaolNiDwgF0DuqlvBAsU
-# e+KkCNMwMe6QLeuKleAD1oPfSWomeCHCSSzHx86R6MP67l+rD0Zd84krXcBhivIO
-# tv5233eRFIxJprqoFu75mqAH233FQvM5ORsMlWy1M9mDMwVkJoFpk139/MYYK9HW
-# svZ/H4bYUAbUo79fV/FnMftT33oAk6E=
+# 1YVZH/2bQJ6hFa2OEHEv1ZoI8pUwDQYJKoZIhvcNAQEBBQAEggIAFPaCPaDBZ5nN
+# 1a3Lb69+nyAAWfDfOCJ+qXFnsD8IdhH1kdnT29DpFAJC7C3zF8AYhVYexSqlk4LE
+# MsvOW0oG4CBb0BfXmDabtM9ja3xmvG8Ngo1pwAkw0yADykBTFTCCyR8kd727K363
+# Zy5uGJhLDx8WZ7b9qJvHAHcAEeN3obZ5aP+d6nVeC+E0w+SHxKv6aaAPPXqBt3K5
+# 6vrnMHD2VM5AYxx6/peArmuQT9UFhXc9Ru01ZMIbC/DPF9aiksGpz4y7OYhPcc/Q
+# RoNU6fV0b2hiU4g+pFhXwimgQkKZxK3ti7lj8wJvTyQe20QrPdjSl6ITCCeT6OSz
+# SO82QNQ92A30Rm8lbQ5aYhmmcg6ftPFyJjxt6Du3v51JI8EfdR/vYE6iwPkd+lkL
+# 4dKomI+S1+ccaJpJudgkaJ5bSz+XyFPfqSv4oS8M725AJKlHQ55/puhhnF4H0M30
+# uO+quzZgyPalLiXPghNyiTfvHtBXDCKxOH+qC3bvF3WhIEuomidU8gtHfhFCd9xo
+# EGzht2PziGEu8ZNT9CGWCWIKWMYL2NKdNYgFns0HFYBnrOM2mFcUUXv+uyj4lIYz
+# gwKS/SLNQ8Xk/xsaabTaAlD2k4hkF7fVBuf7fXgwgK5Y0NvAAo6Ubyq4iV/Eg5uv
+# bPdUHN38+B0L+ShZML42Njx8ks599gI=
 # SIG # End signature block

@@ -1,18 +1,48 @@
-Function AzStorageAccountsHttpsOnlyCountBySubscription-Query-AzARG
+Function AzSQLServicesCount-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    extend HTTPSOnly = aliases['Microsoft.Storage/storageAccounts/supportsHttpsTrafficOnly'] 
-    | where type =~ 'microsoft.storage/storageaccounts' and HTTPSOnly =~ 'false' 
-    | summarize count() by subscriptionId 
-    | project subscriptionId, Total=count_
+resources
+| where type =~ 'microsoft.documentdb/databaseaccounts'
+        or type =~ 'microsoft.sql/servers/databases'
+        or type =~ 'microsoft.dbformysql/servers'
+        or type =~ 'microsoft.sql/servers'
+| extend type = case(
+              type =~ 'microsoft.documentdb/databaseaccounts', 'CosmosDB',
+              type =~ 'microsoft.sql/servers/databases', 'SQL DBs',
+              type =~ 'microsoft.dbformysql/servers', 'MySQL',
+              type =~ 'microsoft.sql/servers', 'SQL Servers',
+              strcat("Not Translated: ", type))
+| where type !has "Not Translated"
+| summarize count() by type
 "@
-Return $Query
+
+$Description = "Count of SQL services"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
+
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU1Vf5cr4ublP2EAX3x4seQv57
-# TfSggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUbKLwDasXCZ/t9KOlOsgTTZ3J
+# M2aggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -91,16 +121,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# yJsOiDokRFoHkhae5uybY5vHh/4wDQYJKoZIhvcNAQEBBQAEggIABHwDE547Gb6q
-# nvev8BkaA5362C514GpsPziabIWzu42d7MMX9kMllc6yNOYItgDkh/CjEASc3sM9
-# nq20M+h06w+d924qZ/EZvD3AenTB5jRH9sJfaOkYP41oUmlBTLOqy+ZvktEVZlEx
-# I3IdHpV77eexhkSfOEZN4T4dbHp5BmNl1k0ZYzOq2U3HsGBp1CbNcz1OXcWbtkLw
-# /RALGEuBnUQfncqFhqd+Q9tJ+woCnKFP0OKIKh9eUkDAkY4jb69hp0Nb5ule2/27
-# ue4SM7/+kRJfOMuk5aAlTI8SxfXEk5UTnb4ZVqNXyS4fxoIi4i4LLf5ozgwQnC3M
-# aeJHZD+a9EzT1RXnEEZnrDNFNDhQWLlZuRm9Cwm6ydQnvCTLhArXdOa+tgUfSC9Y
-# rks3Y/T3iFT5Eh3dSHggV3tkUAEOI0vgkc4p0O6cB6o+EZzwaQlQ8slQJVj6nGug
-# oPTHi9JINAyZSgyQz790daza0g6BjSJFmrBXKA1HatknVdtoF1iuB6J4NfB+3zcl
-# J2erHY/03W1sxRYOfbXpklQD5Wzyfy7hnSgDivrC11ZqhAtoWDixOWBLDEuWLoXo
-# oT3dIttkakieiy6Iohb/zLK+hXe1U70ZTMjdmhGyxkDBV8Ylptkm7gxE35mYDSwz
-# X8EwKVFS5UPnquXTM8Y65FnLsmuNzsA=
+# /6tBauo8311DlOByMBatBxRcG5UwDQYJKoZIhvcNAQEBBQAEggIAOcBCd4OcLwMw
+# 1TCqZkRNAv4rhJIKE2Mb6KsEDNKlf6KtBFT1Fooa4LNaRt8P27Fcm0g7ZrIN8KME
+# KsQizcg0lPjtW8lu0it5jhcEpSLBXI1upRYL5pp0nUjGF6+eHlkBNwZuW5/aSeEg
+# 5c+/GWY1rfcOQysWht9a/rCqVQCndqligXQuLpf57imf5tjhrqKHI1Zyt6mLR+DM
+# LNx31FJOLyn5AVO/iq83jb0kSx2wcMdFad8ROQ7HP7pK1q1W4LxYQlZx4Bn8pIgz
+# LJfPVj2fo4SWTDpDU66ny2dUhqeFE8ZuQOWLN95mob8gbC5w2NvqP0gfSQXB5Puz
+# feX/kFVmwLd2RFuecy81Y0CMQDvaBBcLrpA0LoUZiXr993h8HFKXw5lHt7O4AMrC
+# pCMCWcUwIFQY44/PuSKcojUFg+aVuCBXBQXOM9w2R4aREnstX9As83ng0qgS0b40
+# fJd6FDuyA3/UDMSxb7f7cqKkVjpYNKWqFoBgiNIWdtTIf73bAYeEWKF4fRFIBTz/
+# 8r0nG0sHPYpHdiceCU7DVvX7hjQ9cKKIMIhoOelJfqOPGf9TqfYEu5yXb+E8DGU5
+# 4MpAMDWEoYo1eVfku+dVCY3Yxb9SJ73vYLJxhYlk/FHqGVLRDSMfJ7cadEsd88Si
+# A3NxRjmdFDIzh7qaghtdCiF25nBgqNM=
 # SIG # End signature block

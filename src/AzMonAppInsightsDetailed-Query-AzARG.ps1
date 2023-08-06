@@ -1,20 +1,40 @@
 Function AzMonAppInsightsDetailed-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type =~ 'microsoft.insights/components'
-    | extend RetentionInDays = properties.RetentionInDays
-    | extend IngestionMode = properties.IngestionMode
-    | extend Details = pack_all()
-    | project Resource=id, location, resourceGroup, subscriptionId, IngestionMode, RetentionInDays, Details
+resources
+| where type =~ 'microsoft.insights/components'
+| extend RetentionInDays = properties.RetentionInDays
+| extend IngestionMode = properties.IngestionMode
+| extend Details = pack_all()
+| project Resource=id, location, resourceGroup, subscriptionId, IngestionMode, RetentionInDays, Details
 "@
-Return $Query
+
+$Description = "AppInsight detailed"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUIfnxGswMeIP+WjQjgx9mtQEz
-# 5RKggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU50feYwI0ktTMhhoGUPwcc/bv
+# bTaggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -93,16 +113,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# LFcpUA+Ksf6odrZb4gXh+GIvN0swDQYJKoZIhvcNAQEBBQAEggIAEGv2sDdiT5gA
-# vY9ayDpiz/rKQCBpubEc+BqgIk6h9Dlv1+GfjPgGWF8rFGehWkdbvu7H9EHj1NRE
-# znYhv5c/lBsxtIZKeY86GIEk+H020BFEkBG5A1HmjqJEyJSz+lWEStmCYQFTZHWa
-# Frwwnk1q/TRLu4DRqQmvLklr6r2e1Fu12YP47eZZqt2m/Kqpzthp3x+JQOF/Xax8
-# iXV4tVwxjA4tYba5biedovvMg66mADdnEXqTB7PpGuaHeHKzzgqFlR0wtWxOgtNW
-# X/G6sNhmvUKav8WbNfQBfsNPXLjsvuTcyI12AL+dwRguMrUHvW/F+TRHJuJdo4l7
-# d7oiNqX/Iu3JE4T31krfceuk+P8wMPmiViCASOj7HFR6fUa3bxyZTk+uu632a6Zd
-# YuO7LIkdM838mqE8i0Bshvqbgv//XE7L1I5juA/wA3IMnE2d7u/OSws3RsrtgqtV
-# BpwMFrF2/cjz1sgaFf/Cz2wH2DPyoaAVocAP/GDJow3vc1mMDDUBq9lIoj8D2bA/
-# D1GWr4vqDwUrbTasH+0KqX2cQqYGBFNBcU9O4uYv5UI1ONJ3aKZVrjVI7xWa3f8U
-# xGXKPuW+q+jaYV0NJX0M8EkkfSEhPaxlJ82RPKSrGy8pZn+4OlY6kLF03o7paOLT
-# cUZUYAzxTViAmDJaFslyu7PnRy+0cHA=
+# 92Ae2x0jy5JgX+kKka0pEE0gQOkwDQYJKoZIhvcNAQEBBQAEggIAQ3jlOEjNkMp3
+# jLsILvmyovkQJtz61IJhVc3eGKE7lT9kohyhD7v+NJr4fh5+KZrWuCLQLVoCQF3N
+# hr1lpxu6mm4U2mLVBUZ59xH+AgUIUtY+RP2abHQwCO1UuierKkn+hhAnaEv5zu8g
+# hJ+zSVOYrEaikfwDwjKfYpRLeW21JzFeQ5Z9hRxQQG5/zZLo5h3Vpu3StIOh2bBn
+# 4UVY1xxj2dTw9GREg3zrdobR9sNMAru+ZglbjK4lrHK7v8Jwj2roNHAv6nB9U8hk
+# 9SVRg95NZ2AftMZuUmRKjyytZnzVLp5Q0ku8J7zDZuIobOc/1ywtwY5VxUs0Xv1T
+# lJtBX0mjUZZ8V4ewkS/oLsRgkbYk7iGZrOoEplIiSl4MkS3Y8Q5JyQ5Q3WKDp5I1
+# mfMHna94Zyr3B1C69U3NqC5z4ZCtDOn1o1pde1UmSuTfHp9tVPeeUSLIhICFTpUi
+# VXz8DoTu0CsHofXxie9vamB9BHxVfU8PhhaHTCeEFQ7oF4xKAIwX32fFdNopvLdW
+# HiYpu8i7eBGjAv++Vg1CWL/WE0PYaeME3DDIkghUEAILYfTcqrWchuKPjSRqYKpe
+# 7CXf6ABLF0hwpcBHA0wKlK1SqxUTboTUUGlpBGWDQdCzg7RlrMB5f5HC8LzSJIkJ
+# tZD8IJTH5GWdZ6XFo7Ty7mx27AbXRvc=
 # SIG # End signature block
