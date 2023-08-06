@@ -25,7 +25,7 @@ $Credit      = "Ludovic Alarcon (@ludovicalarcon)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -102,7 +102,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -135,7 +135,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -168,7 +168,7 @@ $Credit      = "Wesley Haakman (@whaakman)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -201,7 +201,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -233,7 +233,7 @@ $Credit      = "Wesley Haakman (@whaakman)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -266,7 +266,7 @@ $Credit      = "Wesley Haakman (@whaakman)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -314,7 +314,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -380,7 +380,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -426,7 +426,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -456,7 +456,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -486,7 +486,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -516,7 +516,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -546,7 +546,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -579,7 +579,7 @@ $Credit      = "Microsoft"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -640,7 +640,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -671,7 +671,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -704,7 +704,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -737,7 +737,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -784,7 +784,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -845,7 +845,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -926,7 +926,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -969,7 +969,7 @@ $Credit      = "Wesley Haakman (@whaakman)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1031,7 +1031,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1073,7 +1073,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1118,7 +1118,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1152,7 +1152,7 @@ $Credit      = "Wilfried Woivre (@wilfriedwoivre)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1182,7 +1182,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1216,7 +1216,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1260,7 +1260,7 @@ $Credit      = "Microsoft"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1290,7 +1290,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1324,7 +1324,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1361,7 +1361,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1395,7 +1395,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1425,7 +1425,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1455,7 +1455,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1489,7 +1489,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1524,7 +1524,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1569,7 +1569,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1618,7 +1618,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1651,7 +1651,7 @@ $Credit      = "Wesley Haakman (@whaakman)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1684,7 +1684,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1715,7 +1715,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1748,7 +1748,7 @@ $Credit      = "Morten Knusen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1779,7 +1779,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1810,7 +1810,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1851,7 +1851,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1898,7 +1898,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1936,7 +1936,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -1948,6 +1948,13 @@ Else
 
 Function AzNativeVMsOsDetails-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
 Resources
 | where type == 'microsoft.compute/virtualmachines'
@@ -1970,7 +1977,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2002,7 +2009,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2035,7 +2042,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2082,7 +2089,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2117,7 +2124,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2157,7 +2164,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2207,7 +2214,7 @@ $Credit      = "Microsoft"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2246,7 +2253,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2291,7 +2298,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2322,7 +2329,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2353,7 +2360,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2403,7 +2410,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2447,7 +2454,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2481,7 +2488,7 @@ $Credit      = "Wilfried Woivre (@wilfriedwoivre)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2542,7 +2549,7 @@ $Credit      = "Wilfried Woivre (@wilfriedwoivre)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2578,7 +2585,7 @@ $Credit      = "Wilfried Woivre (@wilfriedwoivre)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2614,7 +2621,7 @@ $Credit      = "Wilfried Woivre (@wilfriedwoivre)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2650,7 +2657,7 @@ $Credit      = "Wilfried Woivre (@wilfriedwoivre)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2686,7 +2693,7 @@ $Credit      = "Wilfried Woivre (@wilfriedwoivre)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2718,7 +2725,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2752,7 +2759,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2790,7 +2797,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2821,7 +2828,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2856,7 +2863,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2898,7 +2905,7 @@ $Credit      = "Mohammed Barqawi (@Mohammed_Barqawi)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2932,7 +2939,7 @@ $Credit      = "Wilfried Woivre (@wilfriedwoivre)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -2968,7 +2975,7 @@ $Credit      = "Wilfried Woivre (@wilfriedwoivre)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3021,7 +3028,7 @@ $Credit      = "Wilfried Woivre (@wilfriedwoivre)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3050,7 +3057,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3087,7 +3094,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3117,7 +3124,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3152,7 +3159,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3190,7 +3197,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3244,7 +3251,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3280,7 +3287,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3318,7 +3325,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3354,7 +3361,7 @@ $Credit      = "Wesley Haakman (@whaakman)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3390,7 +3397,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3431,7 +3438,7 @@ $Credit      = "Billy York (@SCAutomation)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3462,7 +3469,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3492,7 +3499,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3531,7 +3538,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3571,7 +3578,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3604,7 +3611,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3639,7 +3646,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3674,7 +3681,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3709,7 +3716,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3743,7 +3750,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3779,7 +3786,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3815,7 +3822,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3851,7 +3858,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3885,7 +3892,7 @@ $Credit      = "Microsoft"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3932,7 +3939,7 @@ $Credit      = "Microsoft / Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3963,7 +3970,7 @@ $Credit      = "Microsoft"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -3999,7 +4006,7 @@ $Credit      = "Microsoft"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -4036,7 +4043,7 @@ $Credit      = "Microsoft"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -4128,13 +4135,13 @@ Function Query-AzResourceGraph
 
     # Run Custom Query and return result to $Result-variable
         $Query = @"
-            resourcecontainers 
-            | where type == 'microsoft.management/managementgroups' 
-            | extend mgParent = properties.details.managementGroupAncestorsChain 
-            | mv-expand with_itemindex=MGHierarchy mgParent 
-            | project id, name, properties.displayName, mgParent, MGHierarchy, mgParent.name 
-            | sort by MGHierarchy asc
-"@
+        resourcecontainers 
+        | where type == 'microsoft.management/managementgroups' 
+        | extend mgParent = properties.details.managementGroupAncestorsChain 
+        | mv-expand with_itemindex=MGHierarchy mgParent 
+        | project id, name, properties.displayName, mgParent, MGHierarchy, mgParent.name 
+        | sort by MGHierarchy asc
+        "@
 
         $Result = $Query | Query-AzResourceGraph -QueryScope "Tenant"
         $Result | fl
@@ -4144,6 +4151,10 @@ Function Query-AzResourceGraph
 
     # Select from list of pre-defined queries
         Query-AzResourceGraph -SelectQuery
+
+
+    # Select from list of pre-defined queries - output to $results
+        $result = Query-AzResourceGraph -SelectQuery
 
     # Run query using unattended login with AzApp & AzSecret
         # Variables
@@ -4177,7 +4188,7 @@ Function Query-AzResourceGraph
     [CmdletBinding()]
     param(
 
-            [Parameter(ValueFromPipeline)]
+            [Parameter(ValueFromPipeline = $true)]
                 [string]$Query,
             [Parameter()]
                 [ValidateSet("Tenant","MG","Subscription")]
@@ -4209,11 +4220,14 @@ Function Query-AzResourceGraph
     # Header
     #---------------------------------------------
     Write-host ""
-    Write-host "----------------------------------------------------------------------"
-    Write-Host "AzResourceGraphPS | Morten Knudsen, Microsoft MVP (@knudsenmortendk)" -ForegroundColor Green
+    Write-host "------------------------------------------------------------------------"
+    Write-Host "AzResourceGraphPS | Unleash the Power of Azure Resource Graph" -ForegroundColor Green
+    Write-host "Developed by Morten Knudsen, Microsoft MVP (@knudsenmortendk)"
     Write-Host ""
     Write-host "Github repository: https://github.com/KnudsenMorten/AzResourceGraphPS"
-    Write-host "----------------------------------------------------------------------"
+    Write-host "PS Gallery: https://www.powershellgallery.com/packages/AzResourceGraphPS"
+    Write-host "------------------------------------------------------------------------"
+    Write-host ""
 
 
     #--------------------------------------------------------------------------
@@ -4222,6 +4236,9 @@ Function Query-AzResourceGraph
 
         If ($InstallAutoUpdateCleanupOldVersions -eq $true)
             {
+
+                Write-host "Checking PS modules ... Please Wait !"
+                Write-host ""
 
                 #####################################################################
                 # Az.ResourceGraph
@@ -4284,7 +4301,8 @@ Function Query-AzResourceGraph
                                         Write-host ""
                                         Write-host "Updating to latest version $($Online.version) of $($Module) from PSGallery ... Please Wait !"
                             
-                                        Update-module Az.ResourceGraph -Force
+                                        Update-module $Module -Force
+                                        import-module -Name $Module -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
                                     }
                                 Else
                                     {
@@ -4374,7 +4392,8 @@ Function Query-AzResourceGraph
                                         Write-host ""
                                         Write-host "Updating to latest version $($Online.version) of $($Module) from PSGallery ... Please Wait !"
                             
-                                        Update-module Az.ResourceGraph -Force
+                                        Update-module $Module -Force
+                                        import-module -Name $Module -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
                                     }
                                 Else
                                     {
@@ -4418,21 +4437,17 @@ Function Query-AzResourceGraph
     # Checking Prereq for Query
     #--------------------------------------------------------------------------
 
-        If ( ([string]::IsNullOrWhitespace($Query)) -and ([string]::IsNullOrWhitespace($InstallAutoUpdateCleanupOldVersions)) )
-            {
-                get-help Query-AzResourceGraph -full
-                Break
-            }
-
         If ( ($QueryScope -eq "MG") -and (([string]::IsNullOrWhitespace($Target))) )
             {
-                Write-host "When -QueryScope is MG, you need to define target using -Target <MG Name>" -ForegroundColor Red
+                Write-host ""
+                Write-host "Syntax Error: When parameter QueryScope is [MG], you also need to define -Target <MG Name>" -ForegroundColor Red
                 Break
             }
 
         If ( ($QueryScope -eq "Subscription") -and (([string]::IsNullOrWhitespace($Target))) )
             {
-                Write-host "When -QueryScope is Subscription, you need to define target using -Target <Subscription Name/Id>"  -ForegroundColor Red
+                Write-host ""
+                Write-host "Syntax Error: When parameter QueryScope is [Subscription], you also need to define -Target <Subscription Name/Id>"  -ForegroundColor Red
                 Break
             }
 
@@ -4443,24 +4458,89 @@ Function Query-AzResourceGraph
         # Check current AzContext
         $AzContext = Get-AzContext
 
-        If ($AzContext -eq $null)  # empty
+        If ([string]::IsNullOrWhitespace($AzContext))
             {
                 If ($AzAppId)
                     {
                         $AzAppSecretSecure = $AzAppSecret | ConvertTo-SecureString -AsPlainText -Force
                         $SecureCreds = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $AzAppId, $AzAppSecretSecure
                         Connect-AzAccount -ServicePrincipal -Credential $SecureCreds -Tenant $TenantId -WarningAction SilentlyContinue
+                        $AzContext = Get-AzContext
                     }
                 Else
                     {
                         Connect-AzAccount -WarningAction SilentlyContinue
+                        $AzContext = Get-AzContext
                     }
             }
+
+
+    #--------------------------------------------------------------------------
+    # Select built-in queries using GUI
+    #--------------------------------------------------------------------------
+
+        If ( ($InstallAutoUpdateCleanupOldVersions -eq $false) -and ( ($SelectQuery) -or ([string]::IsNullOrWhitespace($Query)) -or ( ($ShowQueryOnly) -and ([string]::IsNullOrWhitespace($Query) ) ) ) )
+            {
+                $QueryCmdlets = Get-Command -Name "*-Query-AzARG" -ListImported | Sort-Object -Unique
+                $QueryCmdletsArray = @()
+                
+                ForEach ($QueryCmdlet in $QueryCmdlets)
+                    {
+                        # Run the function
+                        $QueryCmdletInfo = & $QueryCmdlet.Name -Details
+
+                        # load cmdlet properties into memory
+                        $QueryName       = $QueryCmdlet.Name
+
+                        $Object = New-Object PSObject
+                        $Object | add-member Noteproperty -name QueryName -Value $QueryName
+                        $Object | add-member Noteproperty -name Query -Value $QueryCmdletInfo[0]
+                        $Object | add-member Noteproperty -name QueryDescription -Value $QueryCmdletInfo[1]
+                        $Object | add-member Noteproperty -name QueryCategory -Value $QueryCmdletInfo[2]
+                        $Object | add-member Noteproperty -name QueryCredit -Value $QueryCmdletInfo[3]
+                        $QueryCmdletsArray += $Object
+                    }
+
+                $SelectedQuery = $QueryCmdletsArray | select QueryName,QueryDescription,QueryCategory,QueryCredit | Out-GridView -Title 'Choose a predefined query' -PassThru
+
+                If ($SelectedQuery)
+                    {
+                        Write-host "Selected Query:"
+                        Write-host "$($SelectedQuery.QueryName)" -ForegroundColor Yellow
+                        Write-host ""
+                        Write-host "Query syntax (pipe result to screen):"
+                        If ($Target)
+                            {
+                                Write-host "$($SelectedQuery.QueryName) | Query-AzResourceGraph -QueryScope $($QueryScope) -Target '$($Target)'" -ForegroundColor Yellow
+                            }
+                        Else
+                            {
+                                Write-host "$($SelectedQuery.QueryName) | Query-AzResourceGraph -QueryScope $($QueryScope)" -ForegroundColor Yellow
+                            }
+                        Write-host ""
+                        Write-host "  - or -"
+                        Write-host ""
+                        Write-host "Query syntax (pipe result to variable `$Result):"
+                        If ($Target)
+                            {
+                                Write-host "`$Result = $($SelectedQuery.QueryName) | Query-AzResourceGraph -QueryScope $($QueryScope) -Target '$($Target)'" -ForegroundColor Yellow
+                            }
+                        Else
+                            {
+                                Write-host "`$Result = $($SelectedQuery.QueryName) | Query-AzResourceGraph -QueryScope $($QueryScope)" -ForegroundColor Yellow
+                            }
+                        Write-host ""
+
+                        # Run selected function to load query
+                        $Query = & $SelectedQuery.QueryName
+                    }
+            }
+
 
     #--------------------------------------------------------------------------
     # Show Query Only
     #--------------------------------------------------------------------------
-        If ($ShowQueryOnly)
+        If ( ($ShowQueryOnly) -and ($Query) )
             {
                 Write-host "Query, which will be run against Azure Resource Graph: "
                 Write-host ""
@@ -4472,58 +4552,14 @@ Function Query-AzResourceGraph
             }
 
     #--------------------------------------------------------------------------
-    # Select built-in queries using GUI
-    #--------------------------------------------------------------------------
-        If ($SelectQuery)
-            {
-
-                $QueryCmdlets = Get-Command -Name "*-Query-AzARG" -ListImported
-                $QueryCmdletsArray = @()
-                
-                ForEach ($QueryCmdlet in $QueryCmdlets)
-                    {
-                        # Run the function
-                        $QueryCmdletInfo = & $QueryCmdlet.Name -Details
-
-                        # load cmdlet properties into memory
-                        $QueryName       = $QueryCmdlet.Name
-                        $Query           = $QueryCmdletInfo[0]
-                        $Description     = $QueryCmdletInfo[1]
-                        $Category        = $QueryCmdletInfo[2]
-                        $Credit          = $QueryCmdletInfo[3]
-
-                        $Object = New-Object PSObject
-                        $Object | add-member Noteproperty -name QueryName -Value $QueryName
-                        $Object | add-member Noteproperty -name Query -Value $Query
-                        $Object | add-member Noteproperty -name QueryDescription -Value $Description
-                        $Object | add-member Noteproperty -name QueryCategory -Value $Category
-                        $Object | add-member Noteproperty -name QueryCredit -Value $Credit
-                        $QueryCmdletsArray += $Object
-                    }
-
-                $SelectedQuery = $QueryCmdletsArray | select QueryName,QueryDescription,QueryCategory,QueryCredit | Out-GridView -Title 'Choose a predefined query' -PassThru
-
-                Write-host ""
-                Write-host "Selected Query:"
-                Write-host "    $($SelectedQuery.Name)" -ForegroundColor Yellow
-                Write-host ""
-                Write-host "Query syntax:"
-                Write-host "    $($SelectedQuery.Name) | Query-AzResourceGraph -QueryScope Tenant|MG|Subscription [optional: -Target MG NAME|Subscription Name]" -ForegroundColor Yellow
-                Write-host ""
-                Write-host "    `$Result = $($SelectedQuery.Name) | Query-AzResourceGraph -QueryScope Tenant|MG|Subscription [optional: -Target MG NAME|Subscription Name]" -ForegroundColor Yellow
-                Write-host ""
-
-            }
-
-    #--------------------------------------------------------------------------
     # First
     #--------------------------------------------------------------------------
 
-        If ($First)
+        If ( ($First) -and ($Query) )
             {
                 Write-host ""
                 Write-host "Scoping - Only First Number of Records:"
-                Write-host "    $($First)" -ForegroundColor Yellow
+                Write-host "$($First)" -ForegroundColor Yellow
                 Write-host ""
             }
 
@@ -4532,11 +4568,11 @@ Function Query-AzResourceGraph
     # Skip
     #--------------------------------------------------------------------------
 
-        If ($Skip)
+        If ( ($Skip) -and ($Query) )
             {
                 Write-host ""
                 Write-host "Scoping - Skip Number of Records:"
-                Write-host "    $($Skip)" -ForegroundColor Yellow
+                Write-host "$($Skip)" -ForegroundColor Yellow
                 Write-host ""
             }
 
@@ -4547,21 +4583,29 @@ Function Query-AzResourceGraph
         If (!([string]::IsNullOrWhitespace($Query)))
             {
                 Write-host "Query Scope:"
-                Write-host "    $($QueryScope)" -ForegroundColor Yellow
+                Write-host "$($QueryScope)" -ForegroundColor Yellow
                 Write-host ""
                 If ($Target)
                     {
                         Write-host "Target:"
-                        Write-host "    $($Target)" -ForegroundColor Yellow
+                        Write-host "$($Target)" -ForegroundColor Yellow
                         Write-host ""
                     }
+
+                Write-host "Context Account:"
+                Write-host "$($AzContext.Account)" -ForegroundColor Yellow
+                Write-host ""
+                Write-host "Context TenantId:"
+                Write-host "$($AzContext.Tenant)" -ForegroundColor Yellow
+                Write-host ""
+
                 Write-host "Query, which will be run against Azure Resource Graph: "
                 Write-host ""
                 Write-host "$($Query)" -ForegroundColor Yellow
                 Write-host ""
                 Write-host "---------------------------------------------------------------------"
                 Write-host ""
-                Write-host "Running Query against Azure Resource Group ..."
+                Write-host "Running Query against Azure Resource Graph ... Please Wait !"
 
                 $ReturnData   = @()
                 $pageSize     = 1000
@@ -4630,8 +4674,8 @@ Function Query-AzResourceGraph
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCpzVra+KbwTVMu
-# nmmZETj8SMsRNGe1ZLHMgQmOuBReIKCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCJtJqRAwKYkaqE
+# IrUUXYingq/uEYao1dMYOrV+z4WB9qCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -4739,17 +4783,17 @@ Function Query-AzResourceGraph
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEINoSWngYZEjSkKU3SKMIweOS
-# TW+gWwsk797iMjvOslJgMA0GCSqGSIb3DQEBAQUABIICAMmMuPMiuqD3tRCG3aRf
-# uzbtEzf3oNb7+2zxximMR7VkuMu/WuCh95NbPRrw2WvotdD6t9o8OrKj/WhdO7rO
-# UEYlXFBmzjZ9wfr9upPgoAVrSinb+h3fLwURA/q0xxu5DF9sCgFMQRGaI7lYXwcG
-# ovKEG6vnRhl0Wc1c5fnWL5qYwJV/XqaNZqNcNS+yVHoifh+2q3GxBM8k5bulpH3N
-# 6yX284VuKe+yheWyFNbXaJ3pbSL+TiI4gdK6Oo+X3Lv2YazCqMtoANXypPq0IFMe
-# zlQLucLiIEazQQO+wL+BbgXKmDVYay3xNo+JmUpU3GFkMSLTyDmwSHDxwxESp7zR
-# YZE4PAies0zm6M4TDPthRRAzMoYcU9M9ZR6D0BNcrsb9Oz2Gymv3+WbxyM1//LNo
-# aSRK4C6hXuLUWRsOttzyUq0W1wlQOrn5xFT43ehPYEXH0eLn8fLHdtgqOaypMCH8
-# KNte22AiSZiHLJugHozPDkPCekyz9mF56g2btNalgMvLKLya9NFqSYqdO0yyjGf2
-# 9Rly8mEP5vU4YPb3c4kdASFU4xi+D0uIrq4TEhFSllHodXHT9IhfCAKOphNhs+sm
-# /TfJpG9FHonTp9oBLmF3AXhCqQZWXBh6afvYbpB+Elwpj5bETpBKk8G5HHYusaI9
-# EHqns4uWhyL2usidCba6+IXO
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIBQnVCKxaemk2UzRIpppJ3RC
+# edhEJ9AXzv2aMkyUgDv+MA0GCSqGSIb3DQEBAQUABIICAKWu74GvX7V5rp6iL07v
+# mZvkIg+HeEYT6Jah4s6jg1MJOdZgobx8o4bpbx9s8EKA8cZacgPd5gS4rRknnDua
+# tofB1UIgEXU6hye5vQCr0biLcE2BRRaKYLMofxUDflKMJ48IM3Oxg6Ruei2UgQ6c
+# t2uRK4Bz+bI4oWRSRDk114BOfLmUNyu8Nw0Qj+Uhf+xjK7avwzTYtqarlNf5gF8l
+# NqrLkH3MLjDwPn5qFKSbockEm0B7deXIZnK16VVYlASuOkRgkYylKoSUr4lwSZHX
+# Bunegquhij7c7log9j0O+gLrhG3woe1VwD/2V1g4tfF0wlQF1Er6Jow064r3imib
+# oTINoF5TMx9f0tVpyEhFfVbv/9UStNdsrKlZFgisbxAFHCWKxRyH2op/ko40qc2w
+# fpz3+tUbVfSHm/lyG+icbg64ICQChn1hIXz7Y9tFceWt/CdTHFqxStw3MTu+bW/6
+# JSWpWLQs6BBAf/AG+hleGWBQDmM26pYw9AXFxyIgKG6yxok90WG7Jkeyv/RvXwff
+# NO9kk5KZi6txxP1Cwn8nShE3S52uQfL16EnqBx0BsW17DgeKD9dSZeRRYZgpF8pt
+# yHaPNXw5+j96IczTfTI2Ge3HqSjvOttiz9CAwW1AjmI0ngN9ZZng+opwwjeMLHpL
+# 7u/xt1e6iylTqB7hh4UrNY5O
 # SIG # End signature block

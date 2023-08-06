@@ -80,13 +80,13 @@ Function Query-AzResourceGraph
 
     # Run Custom Query and return result to $Result-variable
         $Query = @"
-            resourcecontainers 
-            | where type == 'microsoft.management/managementgroups' 
-            | extend mgParent = properties.details.managementGroupAncestorsChain 
-            | mv-expand with_itemindex=MGHierarchy mgParent 
-            | project id, name, properties.displayName, mgParent, MGHierarchy, mgParent.name 
-            | sort by MGHierarchy asc
-"@
+        resourcecontainers 
+        | where type == 'microsoft.management/managementgroups' 
+        | extend mgParent = properties.details.managementGroupAncestorsChain 
+        | mv-expand with_itemindex=MGHierarchy mgParent 
+        | project id, name, properties.displayName, mgParent, MGHierarchy, mgParent.name 
+        | sort by MGHierarchy asc
+        "@
 
         $Result = $Query | Query-AzResourceGraph -QueryScope "Tenant"
         $Result | fl
@@ -96,6 +96,10 @@ Function Query-AzResourceGraph
 
     # Select from list of pre-defined queries
         Query-AzResourceGraph -SelectQuery
+
+
+    # Select from list of pre-defined queries - output to $results
+        $result = Query-AzResourceGraph -SelectQuery
 
     # Run query using unattended login with AzApp & AzSecret
         # Variables
@@ -129,7 +133,7 @@ Function Query-AzResourceGraph
     [CmdletBinding()]
     param(
 
-            [Parameter(ValueFromPipeline)]
+            [Parameter(ValueFromPipeline = $true)]
                 [string]$Query,
             [Parameter()]
                 [ValidateSet("Tenant","MG","Subscription")]
@@ -161,11 +165,14 @@ Function Query-AzResourceGraph
     # Header
     #---------------------------------------------
     Write-host ""
-    Write-host "----------------------------------------------------------------------"
-    Write-Host "AzResourceGraphPS | Morten Knudsen, Microsoft MVP (@knudsenmortendk)" -ForegroundColor Green
+    Write-host "------------------------------------------------------------------------"
+    Write-Host "AzResourceGraphPS | Unleash the Power of Azure Resource Graph" -ForegroundColor Green
+    Write-host "Developed by Morten Knudsen, Microsoft MVP (@knudsenmortendk)"
     Write-Host ""
     Write-host "Github repository: https://github.com/KnudsenMorten/AzResourceGraphPS"
-    Write-host "----------------------------------------------------------------------"
+    Write-host "PS Gallery: https://www.powershellgallery.com/packages/AzResourceGraphPS"
+    Write-host "------------------------------------------------------------------------"
+    Write-host ""
 
 
     #--------------------------------------------------------------------------
@@ -174,6 +181,9 @@ Function Query-AzResourceGraph
 
         If ($InstallAutoUpdateCleanupOldVersions -eq $true)
             {
+
+                Write-host "Checking PS modules ... Please Wait !"
+                Write-host ""
 
                 #####################################################################
                 # Az.ResourceGraph
@@ -236,7 +246,8 @@ Function Query-AzResourceGraph
                                         Write-host ""
                                         Write-host "Updating to latest version $($Online.version) of $($Module) from PSGallery ... Please Wait !"
                             
-                                        Update-module Az.ResourceGraph -Force
+                                        Update-module $Module -Force
+                                        import-module -Name $Module -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
                                     }
                                 Else
                                     {
@@ -326,7 +337,8 @@ Function Query-AzResourceGraph
                                         Write-host ""
                                         Write-host "Updating to latest version $($Online.version) of $($Module) from PSGallery ... Please Wait !"
                             
-                                        Update-module Az.ResourceGraph -Force
+                                        Update-module $Module -Force
+                                        import-module -Name $Module -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
                                     }
                                 Else
                                     {
@@ -370,21 +382,17 @@ Function Query-AzResourceGraph
     # Checking Prereq for Query
     #--------------------------------------------------------------------------
 
-        If ( ([string]::IsNullOrWhitespace($Query)) -and ([string]::IsNullOrWhitespace($InstallAutoUpdateCleanupOldVersions)) )
-            {
-                get-help Query-AzResourceGraph -full
-                Break
-            }
-
         If ( ($QueryScope -eq "MG") -and (([string]::IsNullOrWhitespace($Target))) )
             {
-                Write-host "When -QueryScope is MG, you need to define target using -Target <MG Name>" -ForegroundColor Red
+                Write-host ""
+                Write-host "Syntax Error: When parameter QueryScope is [MG], you also need to define -Target <MG Name>" -ForegroundColor Red
                 Break
             }
 
         If ( ($QueryScope -eq "Subscription") -and (([string]::IsNullOrWhitespace($Target))) )
             {
-                Write-host "When -QueryScope is Subscription, you need to define target using -Target <Subscription Name/Id>"  -ForegroundColor Red
+                Write-host ""
+                Write-host "Syntax Error: When parameter QueryScope is [Subscription], you also need to define -Target <Subscription Name/Id>"  -ForegroundColor Red
                 Break
             }
 
@@ -395,24 +403,89 @@ Function Query-AzResourceGraph
         # Check current AzContext
         $AzContext = Get-AzContext
 
-        If ($AzContext -eq $null)  # empty
+        If ([string]::IsNullOrWhitespace($AzContext))
             {
                 If ($AzAppId)
                     {
                         $AzAppSecretSecure = $AzAppSecret | ConvertTo-SecureString -AsPlainText -Force
                         $SecureCreds = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $AzAppId, $AzAppSecretSecure
                         Connect-AzAccount -ServicePrincipal -Credential $SecureCreds -Tenant $TenantId -WarningAction SilentlyContinue
+                        $AzContext = Get-AzContext
                     }
                 Else
                     {
                         Connect-AzAccount -WarningAction SilentlyContinue
+                        $AzContext = Get-AzContext
                     }
             }
+
+
+    #--------------------------------------------------------------------------
+    # Select built-in queries using GUI
+    #--------------------------------------------------------------------------
+
+        If ( ($InstallAutoUpdateCleanupOldVersions -eq $false) -and ( ($SelectQuery) -or ([string]::IsNullOrWhitespace($Query)) -or ( ($ShowQueryOnly) -and ([string]::IsNullOrWhitespace($Query) ) ) ) )
+            {
+                $QueryCmdlets = Get-Command -Name "*-Query-AzARG" -ListImported | Sort-Object -Unique
+                $QueryCmdletsArray = @()
+                
+                ForEach ($QueryCmdlet in $QueryCmdlets)
+                    {
+                        # Run the function
+                        $QueryCmdletInfo = & $QueryCmdlet.Name -Details
+
+                        # load cmdlet properties into memory
+                        $QueryName       = $QueryCmdlet.Name
+
+                        $Object = New-Object PSObject
+                        $Object | add-member Noteproperty -name QueryName -Value $QueryName
+                        $Object | add-member Noteproperty -name Query -Value $QueryCmdletInfo[0]
+                        $Object | add-member Noteproperty -name QueryDescription -Value $QueryCmdletInfo[1]
+                        $Object | add-member Noteproperty -name QueryCategory -Value $QueryCmdletInfo[2]
+                        $Object | add-member Noteproperty -name QueryCredit -Value $QueryCmdletInfo[3]
+                        $QueryCmdletsArray += $Object
+                    }
+
+                $SelectedQuery = $QueryCmdletsArray | select QueryName,QueryDescription,QueryCategory,QueryCredit | Out-GridView -Title 'Choose a predefined query' -PassThru
+
+                If ($SelectedQuery)
+                    {
+                        Write-host "Selected Query:"
+                        Write-host "$($SelectedQuery.QueryName)" -ForegroundColor Yellow
+                        Write-host ""
+                        Write-host "Query syntax (pipe result to screen):"
+                        If ($Target)
+                            {
+                                Write-host "$($SelectedQuery.QueryName) | Query-AzResourceGraph -QueryScope $($QueryScope) -Target '$($Target)'" -ForegroundColor Yellow
+                            }
+                        Else
+                            {
+                                Write-host "$($SelectedQuery.QueryName) | Query-AzResourceGraph -QueryScope $($QueryScope)" -ForegroundColor Yellow
+                            }
+                        Write-host ""
+                        Write-host "  - or -"
+                        Write-host ""
+                        Write-host "Query syntax (pipe result to variable `$Result):"
+                        If ($Target)
+                            {
+                                Write-host "`$Result = $($SelectedQuery.QueryName) | Query-AzResourceGraph -QueryScope $($QueryScope) -Target '$($Target)'" -ForegroundColor Yellow
+                            }
+                        Else
+                            {
+                                Write-host "`$Result = $($SelectedQuery.QueryName) | Query-AzResourceGraph -QueryScope $($QueryScope)" -ForegroundColor Yellow
+                            }
+                        Write-host ""
+
+                        # Run selected function to load query
+                        $Query = & $SelectedQuery.QueryName
+                    }
+            }
+
 
     #--------------------------------------------------------------------------
     # Show Query Only
     #--------------------------------------------------------------------------
-        If ($ShowQueryOnly)
+        If ( ($ShowQueryOnly) -and ($Query) )
             {
                 Write-host "Query, which will be run against Azure Resource Graph: "
                 Write-host ""
@@ -424,58 +497,14 @@ Function Query-AzResourceGraph
             }
 
     #--------------------------------------------------------------------------
-    # Select built-in queries using GUI
-    #--------------------------------------------------------------------------
-        If ($SelectQuery)
-            {
-
-                $QueryCmdlets = Get-Command -Name "*-Query-AzARG" -ListImported
-                $QueryCmdletsArray = @()
-                
-                ForEach ($QueryCmdlet in $QueryCmdlets)
-                    {
-                        # Run the function
-                        $QueryCmdletInfo = & $QueryCmdlet.Name -Details
-
-                        # load cmdlet properties into memory
-                        $QueryName       = $QueryCmdlet.Name
-                        $Query           = $QueryCmdletInfo[0]
-                        $Description     = $QueryCmdletInfo[1]
-                        $Category        = $QueryCmdletInfo[2]
-                        $Credit          = $QueryCmdletInfo[3]
-
-                        $Object = New-Object PSObject
-                        $Object | add-member Noteproperty -name QueryName -Value $QueryName
-                        $Object | add-member Noteproperty -name Query -Value $Query
-                        $Object | add-member Noteproperty -name QueryDescription -Value $Description
-                        $Object | add-member Noteproperty -name QueryCategory -Value $Category
-                        $Object | add-member Noteproperty -name QueryCredit -Value $Credit
-                        $QueryCmdletsArray += $Object
-                    }
-
-                $SelectedQuery = $QueryCmdletsArray | select QueryName,QueryDescription,QueryCategory,QueryCredit | Out-GridView -Title 'Choose a predefined query' -PassThru
-
-                Write-host ""
-                Write-host "Selected Query:"
-                Write-host "    $($SelectedQuery.Name)" -ForegroundColor Yellow
-                Write-host ""
-                Write-host "Query syntax:"
-                Write-host "    $($SelectedQuery.Name) | Query-AzResourceGraph -QueryScope Tenant|MG|Subscription [optional: -Target MG NAME|Subscription Name]" -ForegroundColor Yellow
-                Write-host ""
-                Write-host "    `$Result = $($SelectedQuery.Name) | Query-AzResourceGraph -QueryScope Tenant|MG|Subscription [optional: -Target MG NAME|Subscription Name]" -ForegroundColor Yellow
-                Write-host ""
-
-            }
-
-    #--------------------------------------------------------------------------
     # First
     #--------------------------------------------------------------------------
 
-        If ($First)
+        If ( ($First) -and ($Query) )
             {
                 Write-host ""
                 Write-host "Scoping - Only First Number of Records:"
-                Write-host "    $($First)" -ForegroundColor Yellow
+                Write-host "$($First)" -ForegroundColor Yellow
                 Write-host ""
             }
 
@@ -484,11 +513,11 @@ Function Query-AzResourceGraph
     # Skip
     #--------------------------------------------------------------------------
 
-        If ($Skip)
+        If ( ($Skip) -and ($Query) )
             {
                 Write-host ""
                 Write-host "Scoping - Skip Number of Records:"
-                Write-host "    $($Skip)" -ForegroundColor Yellow
+                Write-host "$($Skip)" -ForegroundColor Yellow
                 Write-host ""
             }
 
@@ -499,21 +528,29 @@ Function Query-AzResourceGraph
         If (!([string]::IsNullOrWhitespace($Query)))
             {
                 Write-host "Query Scope:"
-                Write-host "    $($QueryScope)" -ForegroundColor Yellow
+                Write-host "$($QueryScope)" -ForegroundColor Yellow
                 Write-host ""
                 If ($Target)
                     {
                         Write-host "Target:"
-                        Write-host "    $($Target)" -ForegroundColor Yellow
+                        Write-host "$($Target)" -ForegroundColor Yellow
                         Write-host ""
                     }
+
+                Write-host "Context Account:"
+                Write-host "$($AzContext.Account)" -ForegroundColor Yellow
+                Write-host ""
+                Write-host "Context TenantId:"
+                Write-host "$($AzContext.Tenant)" -ForegroundColor Yellow
+                Write-host ""
+
                 Write-host "Query, which will be run against Azure Resource Graph: "
                 Write-host ""
                 Write-host "$($Query)" -ForegroundColor Yellow
                 Write-host ""
                 Write-host "---------------------------------------------------------------------"
                 Write-host ""
-                Write-host "Running Query against Azure Resource Group ..."
+                Write-host "Running Query against Azure Resource Graph ... Please Wait !"
 
                 $ReturnData   = @()
                 $pageSize     = 1000
@@ -580,8 +617,8 @@ Function Query-AzResourceGraph
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUyZ80j2sGWPUTtq2V2eKiX9RM
-# tJqggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUn5ObTo5e4BzA80quRJ/dthE/
+# Ww2ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -660,16 +697,16 @@ Function Query-AzResourceGraph
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# FybaCF/yqw45CNhmJxpab6I7a8AwDQYJKoZIhvcNAQEBBQAEggIAUuLpyKK+ksuG
-# E1+Anauv9lBr+uOTDRveO0Hn2dgIEivMq99V0sKWzL5O6MIG2FaxTepQBPKnuime
-# XmV0ky8Tygm8vtvKm3XAve+HVbAqv7SX6YxsitlpxXb7fBDR0PpIsj+yFxheg9JZ
-# x2CNi3dMT6dpRbBIBgyN4dD0uqmkVAQmaMq4jdfxS+5ttylH0292pUcr4ZKF+pBJ
-# CTxtdN1NX8Yc08uK9z0oICxOS2XXBAlc4yUTH3P5eBHP102bKHDBxoyWVSBjru4F
-# mTFwQpG0vy+/7qJFNK17z1LfUpew6Tncm0E/RmbgSp5NU5OKUNissPQL6PB9KKqL
-# hfQBmx4P4gGf5/rKRohSXgXGawZvR1g3c/Zp7KugTasYxa+LqJzD81cZsVDlu/m9
-# aXy6D+4bNN9UhQ8P17AMVxQE7r5wg7l1b550XR+Ze/63djUagiJlOJN2Gt8ZAJq8
-# FhjP4o4uBB6Mny0jnjqExK9sXFHNu8ak64RiiMrXxR/sQfYwhl8uKNDysvT3xMBk
-# 0mFcV4aa/y7C6fKozOSIe2CJ8rW/GOGMwUDjqEqw8AWm4/BjBEraMKCj/JrigA88
-# tgNCvitHm2Ss/TEz4k7d2sF6Jar1XG4HFZU3OIR5QIwSMN6B0t4xcZ+EMPntvfpp
-# EhBvllk6MGgHcZrm5YENILdjnX0WonU=
+# WXocxB8lhp2PgSsaNCawn6c/8gYwDQYJKoZIhvcNAQEBBQAEggIAqLcqkkDE5s6f
+# 5S54NLgJzj4cp5zWz9OTbxWsTd5Sr98YXLjzAwVA3Ki4j9MfMRj9FgKRHLNwotk7
+# nXWo5K5tTHjjuwDvisYywJldVQmjSdxRe/deN0Vj0tsPHciHNyGyEzgzZAmMxqIH
+# PlmaMYj7xTQpfXn/5boC/cN4P+8w1A4uXS2tsWMIwztRYpebJJLxaMyrtxh/kDRD
+# XxQhaKpM9QkttXMkzafsPvwqkAVvBQskRnBzEWo7phmIm8wgxOf9YK6euQtZKEpd
+# GiywzZoUFAFpB89AdAAbcJ+GAwYzp2WhauPzn+LCW3eXYdaSAJ5KIYj1P9lr22+O
+# XZPijVIZhH7dgH4ZDxf9RAMFG1rFhTm+VYCmkSqLKjEThzjWojF9g0+RNmRjDz/O
+# Y77T1nnr3ynbL30gdF+wR/1EcG81WT6aLguQh0SVeAbrBr2WBnTU2sEm9fI9r6CG
+# 4PRUAEuf0HGU/EapHqjeBNyPd8KdDqEXDnvOtGSP3tWbdjKorBXJSF14syToQx95
+# 9cSyRp8BwLdtKeT4Napwt6qOYGDNo/8wNpYj6AW9/vEFnfYrY1oWJqUgFJ1JRQ2s
+# R8syf2X2gcScHPW1XUo61GfsI5cYaipQsQ5H1eIw06sDOO6UdJHBP6Mn003x5iJR
+# btsr3dUvUmcJ+KOjwWKOv9helRPy/Xo=
 # SIG # End signature block

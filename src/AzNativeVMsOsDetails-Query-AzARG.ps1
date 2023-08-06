@@ -1,5 +1,12 @@
 Function AzNativeVMsOsDetails-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
 Resources
 | where type == 'microsoft.compute/virtualmachines'
@@ -22,7 +29,7 @@ $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
-        Return $Query, $Description, $Credit, $Category
+        Return $Query, $Description, $Category, $Credit
     }
 Else
     {
@@ -34,8 +41,8 @@ Else
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUjurj3bdvKLcY4cDmWUvl13TF
-# bEGggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUWZANwa6MbeLVtSjx2KKGxrvP
+# Zeeggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -114,16 +121,16 @@ Else
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# QJZvBF3CNMdKW62m6UJ8BbOMN3kwDQYJKoZIhvcNAQEBBQAEggIAHw995aPRGCB8
-# p1K8WKZ+txZEAAvJA/Zw/C7gSNdXKm1ABvsG45kV5JYwzGCGMdjggAKwRH4iKX6s
-# FBYbqrKVPlmoT/vfG/NWUbFF3sh7/kbFgKNSmxq0oU2QNbRjkoWJvORBNpDgeBB+
-# Les22nqjWXILVB0a0DJztdMIdnpsq4ViBMF1HjlstdynIbFN0CtirEgCWYbM88pE
-# BaHOXWH66KJ5Ayj5RYh3ojfZHqkKSpghBaoulgB02Qb1Y4/+DX+zmpYRt2kENxfP
-# slL6Sy3Gx95YZ3WR0IWDDGQ284IJn5GDGRcXjC5IBhFi2SzYB7w4Og6a2CbKKEx/
-# Wsy0B08lC82O1fquv+jAZ90uRceuaGjigWMoDpSvcOl5Snch6kWYzcZ9lCa/I1A8
-# xqPcfaLZvEyuh4m0su5gT2gJXWTS4Dbzi1wND1LDTIDXr0K5pboMWi5UHAxYxI9Z
-# ciXkaM6wyjhifLnPeauqNZ2JQW8WeOQgl5eKvxhgrEUv7LegsUq6yuA5X11q6K1L
-# E0lMQenh2Ege51mJbI6B01g3MSyNoyyS8UXxXNzXiJFECRr1oq7zOn5N1pvh0YeL
-# rtDyEhXamUqOGSCXCtw3Bd/UszghjEQ7E4rjw0PJr6Hz6wiBmRxeo3tus5SOE5nZ
-# EGEpeCKYNoEj2AvRRNCkCHbKTYXgPQg=
+# OFbYFSvOPvRnrkXMgKd9voZi+GkwDQYJKoZIhvcNAQEBBQAEggIAfzn55agF/h4A
+# UjpB4TwC6jnl2UVBdeE0gvTZgiL1HynIj8+bPKELee+S3ceQF3kUKkrJtLoTECTx
+# No8nlYV04qsqvxJQMDn4fVXgkAhTGFDYnO2CsmFUVEb34pxc73SY967E3CiQC056
+# b6JYspR0UX/TSepqPOwMqttfDagaI/qqhF/0yiG8xxhpEMcVaKHCEZ5d3GgygO+D
+# FR2tPSbQ/WtQCDIfEcCOIFslMCG4FFsYJszbFznWB6XZXnuEhVL+Wa3Hw0Okjy37
+# xzG20EjXCDv723H2GvHaNmHNhaOEjf2c/kF09qPrfDuoDdu8Vnssed8qawNN+epi
+# OqJNxEW2c4VJ3vnuMi/sTsfs2MMO7KiWFAF6rUFevAIr/wWtJhzp2hyrRkPiRMgB
+# UqLVLMdvnxGghZTHef32Cv4wDc+lhwHjE/VBmo08uSorgBXTgSGQd8Ckek+GDqYM
+# 0Wjkum69z4NM+UxY5hhDhynxUlydJAuOrY7i6UBD5421VKFIxg+VNmJ24EtJxasg
+# yTTCuc3jxigc0tnihFctxwgqhs+Jofb6u2Z28XmSxndmqPn8CWST5QQOstXILJxc
+# 64WuOvEhT9Q358iQ3QPDCmhepsEIJtR9LUqLhd9+/C19W7Z7k+sbY/AqteZFUi/H
+# EckAbzmle3s0ALXum6XPqbdzwHz+zks=
 # SIG # End signature block
