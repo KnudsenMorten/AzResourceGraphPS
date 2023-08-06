@@ -1,22 +1,42 @@
 Function AzNetworkSubnetsWithNSG-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type == "microsoft.network/virtualnetworks"
-    | project vnetName = name, subnets = (properties.subnets)
-    | mvexpand subnets
-    | extend subnetName = (subnets.name)
-    | extend hasNSG = isnotnull(subnets.properties.networkSecurityGroup)
-    | where hasNSG == 1
-    | project vnetName, subnetName
+resources
+| where type == "microsoft.network/virtualnetworks"
+| project vnetName = name, subnets = (properties.subnets)
+| mvexpand subnets
+| extend subnetName = (subnets.name)
+| extend hasNSG = isnotnull(subnets.properties.networkSecurityGroup)
+| where hasNSG == 1
+| project vnetName, subnetName
 "@
-Return $Query
+
+$Description = "Subnets with NSGs"
+$Category    = "Configuration"
+$Credit      = "Wilfried Woivre (@wilfriedwoivre)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUSa+Yt86EV63CYE1oGyIs/GEe
-# Ixuggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU0pRuoUNU1GJ8ryJxuQGI0iL6
+# s02ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -95,16 +115,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# TkjLNikpPGvRgnB8N2Ag7hUDmycwDQYJKoZIhvcNAQEBBQAEggIAsEXnNLdTe1E8
-# gYaFGmIHzTeoL3izNcBL/Q01PbOrTKKdYrsGtl/+NyRC2TJyIRJ6ZdCkycHzJOsL
-# IMn7hehtSPGQLMp4SvqrZYxuR4F/EAbfi4Gakjr9XN8VFQhz9l9RveO9LwdTTpZ5
-# LLdLLiu06rB+luaaKFUxaMnaomwjBdLkUjwDR2+yZjINloIGu2hli0UYoTrPkvcu
-# A7yeYgUprxUbGeZw25+c6eGlsI8yLTSUdefWmztBwo/OKPVFUn6NFwzBz5YzxhsO
-# 8ROW17kFW1KI05p2hfIJWG0Ou+alY7JOQUgUY5bop5Q2WiqidP5xKcges01w2kF4
-# 7k6LzIIc/d6nCIrVzYQP9IHqhpsxmHq3q/IxLs990u0U+dDSKaV47kZ+3miUu6yg
-# EMTIFTTXN7u8Fmufkqu1zAw/1ETqpHrLTNNVqgQYfeN70sSTvf4oVQ47aUkRWgrm
-# ekedhhbKpCtB8FpzVHl2EatcQY2WhaTvAoggBfeRuU3jaf5MbMbD/1XWh4Frl89c
-# 8LLuB3KAGKQ9+A4HuV1x6UGVnxSclD/4Mf/PW4q0L4bjY7HkI2GGJEtVTuub/smf
-# vvloZOCr2piu5rgdEcCphbZ1eDx5J1vNWEOoQYmC/3cRdxLMxNK3dXuQkpRJ4RqE
-# IwKsiwfl+f7nfo82F3XRqKptzLdULBU=
+# 911Ab06injDmbXqygCjFnvQYU54wDQYJKoZIhvcNAQEBBQAEggIAHtQrsSYl7AUc
+# Z/k6ff5x++wGtaCiVzI7/TtoSWXpKJY7SfsTc1X9c22VqcrLpWj4b5Iil/ABGfPW
+# K4ET9IESxE6SdXcVbh+aZl4lii0kqnNh9NmoQy52f+eV/l6BnSdnXDPWHXFpgq7Y
+# pTm2xh9U+9G/jLO3pXrlmd8bgxLO+pOyqVGufmjhPao1p0U3+x0PnDAVj58qY15O
+# 9g3X5P51US6fHKgwHMWby6tuelk45xKghfYgrMW3P4zMn+t9VzhlaEmkiUAVPDvZ
+# NC3OGxCZK/I9Egizg/9pdAByfaGt+FNBZiXk1ji6XiBxlbnjK54hcHBQtazf5x16
+# ++nDzHel5patYgDcgd0D58/3Xh6YtmNZF07RoyQTv9TRLJBSRRp5LO8vekdAWr2T
+# zbzQzNmTtuX99jyXcaxV4KcH/sOWztTkJUlTNhhudK0dOD1Eys7qJP62sCZK6PNx
+# nkKqgcjjRB5NxiUxfcwXdGoLlRlKqKrDcj4XeR+BLFwqvdmw62kfpDGqh2LsbEzG
+# nYOjXm8ggj/FeHDrdCdlBbWZhfSV6XuY6bbYrZJpkUn1RL9Dpjc9tbCR7ty8s/X5
+# p1UjETgOthCJ6H98EUUEg+B4Sk7PvR++b3pQLnxtLxYJtCoInOcbVd59CSCs2zhE
+# swt4aj1sMR3TyX636Bvpn/+n2R2Bt6E=
 # SIG # End signature block

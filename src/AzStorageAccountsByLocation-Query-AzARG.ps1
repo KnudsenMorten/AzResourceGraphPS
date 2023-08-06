@@ -1,16 +1,37 @@
 Function AzStorageAccountsByLocation-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    where type =~ 'microsoft.storage/storageaccounts' 
-    | summarize count() by location| project Location=['location'], Total=count_
+where type =~ 'microsoft.storage/storageaccounts' 
+| summarize total = count() by location
+| project location, total
 "@
-Return $Query
+
+$Description = "Count of Storage accounts by location"
+$Category    = "Configuration"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUvcuNVh05j7dOGjJVdZaEySfG
-# txKggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUnPbj1kpe1OrsIMqNkNlXDbSd
+# CNuggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -89,16 +110,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# nAPJx9PV6ohTv2LIRVsgWlf9aV8wDQYJKoZIhvcNAQEBBQAEggIAUpjbRsC1OmXf
-# ardDT+aw1SS0L5fiZz5dTRNLao9GOQPD5ZZbhs3fUCSDM4qEqSXoZxIechg+DQvm
-# 0zxzhFjpfYN5TDOijr8p8IJ5HfSlSQEv4Px3KSyIsBtbeaX91ySl8b7vvqJ/W2vF
-# H1rhUrktWaQnX42+8Tw4LNPI/JzHSC5TsxQUzzlZ9u9R/anrsYofvvSRQ0JnNVUh
-# tDn2cBi6EQd6IiutT+DZOzLdmo3HoPK73yEg+yMRK1+DN//B2EkCPJkUYp050ipM
-# 9bTqoCR94NK6RLm077keiwvSXw76PnTEYitXZq+welVc15I0s5oCXyhbvf9lpIqy
-# ZslV05A3EFLQtjYSbd9F74NDLh5KzZ2EQ3EIcowcehKQMnGzEWPLZd70iwx3l5gz
-# /0MUO0JAbMCzI72Fyl24sUbcosgw8DWGcgXOlzDV8taKb2E8qapUWxbvdBB0aXAg
-# +KcTKUdUwgva6aNDKjuLNkWdoDq9d3bPdo9p9YK31Rcr6pqeY4s7nFCDmc6va3ek
-# 2hy2XX4wguafdQmxj9XB5JgAIdYva4qt6/U0hS8l2vh5Gcw6Gom7a8XolQ5uh8bC
-# kdrvQeccGhMppJGkpxwABoICR/BdEw+d57urvxFQwTWirYKKLysz857vPX8z8hYK
-# HKs1e1OAVxkSk2ZlsOCckvCHm8O9kmk=
+# jEaKPkmQx2pGhu2EMCFk0bliTQQwDQYJKoZIhvcNAQEBBQAEggIAUAeBv2FR8U2z
+# 7dtNP6Yiydno8agPIQTm+onUAuJE5vVRiuty81XJCFpXRjOZLMj69V30usXUznBC
+# J2fsQLCPWaVSCNb/I7Zj1pq+eTEyO5rbQIXuo5/0ZKrnm0f6Fazt43mSh0u13R7m
+# GfxeD7VUrT2xLZtsk33T3iEhPSlelwH4k/JMDEpZ0xoNcraGXjcCsm9Gzb40i09P
+# oic7tRwN307Ks2EBQ0Lr3yhgTi9z7W1WTv0GI9LZZFHnAXi3lIay7PDnvqWHKFn2
+# 5l9EnPpNYXZcvECl3KxhJLLVweoq+PYU3EJ7qGZmUeSZJG+EBpiBaKXXKI/MiI6v
+# jpDp9VvoTNS1YTTeg1fVwAEf/dMDI79/K+sTXXJ2Dj4HEFdkncuucgzHpPxnLhu4
+# nywfOHQzleoiCLSAA7Hu6y9bNEKHu28MlpYtcUV17wtHbk+uBNzCSJl+PwKOV+U7
+# BpC6LbnMDHd3DHNR+hjEU/tvbpESgUvBxRfDN3igm5lCJKsORzUlCNMTYttVIHnq
+# QTECzIH/TGSwLEtOWMZ/t8hzScoavTqbfHYxh/RUk+u3uzRMqfxRC69jU2JVA6aK
+# 9yMpKjdpCU1LaZOVzfwgKHdQ5/1U0WhHQ06bsC+eL4ntFlFptRTqylhbyFRCa5cR
+# geXlBafEQxNoLIxNxsp0Mx6TIRlNCAA=
 # SIG # End signature block

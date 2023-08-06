@@ -1,20 +1,43 @@
 Function AzAKSNodePoolInfo-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-     Resources
-     | where type == "microsoft.containerservice/managedclusters"
-     | extend properties.agentPoolProfiles
-     | project subscriptionId, name, nodePool = properties.agentPoolProfiles
-     | mv-expand nodePool
-     | project subscriptionId, name, sku = nodePool.vmSize, count = nodePool.['count'], powerState = nodePool.powerState.code 
+resources
+| where type == "microsoft.containerservice/managedclusters"
+| extend pool = properties.agentPoolProfiles
+| project subscriptionId, name, pool
+| mv-expand pool
+| extend sku = pool.vmSize
+| extend poolcount = pool.['count']
+| extend powerStateCode = pool.powerState.code
+| project subscriptionId, name, sku, poolcount, powerStateCode
 "@
-Return $Query
+
+$Description = "AKS cluster details"
+$Category    = "Configuration"
+$Credit      = "Ludovic Alarcon (@ludovicalarcon)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU+A41I6JK91M9KkcLMY8R89Ms
-# H5Sggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUt+e5ZyHr3T2ExMILD3TLnATo
+# w+Wggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -93,16 +116,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# /9ypQNMTpS/xc26VElT4NHAqFiMwDQYJKoZIhvcNAQEBBQAEggIAMSbJXgczBseh
-# IQHv4x7YyO43Jyfz0aSPfoHhWHr8Lpl08eKU6nZ55jQPMoSDdQPiXxozz0HbUuIf
-# oOSmEqBnxOwBsNDgEQdqvAgORFo3yQgl8HXRFRvNmkkE0zQMyPuuvdyuouZ58EWu
-# spcOhvGDdRkDvaOp+wNVTEH6y4RdSc9xvH6iLSKDRmxo7x/Ny/rhB74kV1Oyt9Qt
-# jRT/qVxK8PQD+2Fk3iGyIrRlNBhAxHHU0urlhBSgRvlFLnpRRXtmgsX8yCxr4lSW
-# akzgF36c+JDrpE4X/FlDVkOX4hePA81mqei+VCSh6WsPP0MQxdRyAjY+yp1+Ccgy
-# iJr0an0ttYUWmmhFUdpVN89ClWC1RRhw/UV9LNcINS2yO0S9OWAfJuUQwdSRwsIC
-# JBt5+yfscZC8f4tmtBYhCJ2KnEiJvY1O2L0qOraTNnCOMmQbb+cjyIM4bQ7XIRSo
-# A9fijaybY2Br5oPpJ//E8YkMUXuErx11ukZ+pYpUUL/V/qX2iHVrhMScskGYd8Tq
-# +IZRHVldztgD6+Hc4/Lv6D6O9WdY6m/A287gX8RTn9avenpBBWPoT4h8y+BeJOGw
-# VUOTOv2Le0nVaxpVc+4F5EGA5uuIVhzZ1WuH+LS3PcYo0gwyTxwIp2NzRcmqZDca
-# VM2QjiCB2rKLXzMM24iiFcap+6yHJaI=
+# WIp3zkkL/YU3qu8ePn10phkj+WQwDQYJKoZIhvcNAQEBBQAEggIASpPyFkrC+mCF
+# f3IgmkdTBBC4g6uXlO+0MYfA3jmosE+/Ik1TUdHqTXjdSJIitl+95u/e5/1w9ON6
+# gfERX454oFdiUf6XJqZle4M7IQ+SdgLwUv5nTHVJ1lbzFwogcwCoVtqdfZFaZQsb
+# rs/T21zJwRoU+1fbVp6oOvoZtJe3kBuOGVE8DjlwZZukiLR7DrKgBufl3V+NqRGw
+# cvTuF2nBggpQb/WxLp6r5LznXMJBGtnz4ahFa5kabLUpAOkifr9ZW+JI5hhwCtrm
+# 0NkS2BqU1rCNH72Py8x6289sA8B7V+KtvgeJu9zUJFWLlLiQxYtTJ5cv6P9zuPuT
+# gFR00xzeLmV/aEGo65FoX7aBBYpuUgqqnTBBqwuGEaSSFOmJOwn3mMWzGVt+S+cv
+# fegsPUvrQMw8XdCICkNbKZT+xIO3unvtp4lKv04C6qQTFAos7uzMUu5bYxZzwbFJ
+# hMK14oE9YdVNYUJFHHjbEOFp/RdMhIBrtGlNyK0q7c1nPLBFNFggfkz6dBgq7uH+
+# eYgBrALZaux6OH8YgSxV4GownrSigS8EKM+zD55JOwa6K9aW/WeP8FuK4XXaTKtw
+# KyHVmPEaJkZmDFVSVY+KFKkNHknMSYmmW7Jykq8CVzbPRCgjxLWZkjXj48Hxc2k+
+# vP3+KAFH9fGrYLcC9XNxSkORZF0PR/Q=
 # SIG # End signature block

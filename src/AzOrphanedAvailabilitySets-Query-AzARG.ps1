@@ -1,18 +1,38 @@
 Function AzOrphanedAvailabilitySets-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type =~ 'microsoft.compute/availabilitysets'
-    | extend VirtualMachines = array_length(properties.virtualMachines)
-    | where VirtualMachines == 0
+resources
+| where type =~ 'microsoft.compute/availabilitysets'
+| extend VirtualMachines = array_length(properties.virtualMachines)
+| where VirtualMachines == 0
 "@
-Return $Query
+
+$Description = "Orphaned Availability Sets"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUT47h/h8e4vKGXoUFYP/pruIz
-# RxSggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUxsk9vThUSeTcGjA40jWJlwF3
+# x2Cggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -91,16 +111,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# SpLWeFp8OTCt0MbN4bd5vHMmQqowDQYJKoZIhvcNAQEBBQAEggIAWrKJuBVh82Dx
-# XRikX6THgEd/8d20cCfWMuHhR57qkuiuUxfBM3XLUyKWPqTU9cCEHEBw0FTctuL9
-# RszdRDMOViYJ5pYJAjO7FCsSdrBwdEaxMtBUXL7JOE4sOFdt6tXkn/Eqjx8XaSFF
-# 17HX/uHaKIdcdYyWsUh5Yv1E4Y5ibGbDNwn8OTrWkzf1NxOKanlE1S5ZpOedzw2T
-# Ow2GAczJ4vFs3MjIwv7H36Csu0D/vQ8jIwDW1CgpTjMFRIw9MbtA+qdBd2C9n4PJ
-# 0Vnk89xhQY4xpB+IgvCH8x8zS9BUalWXtlMTzbFWk49qFvfG75H6eF+ql3HQnJql
-# o0dv3te3LJAYG+x2KENNXu5mXi7pkGBOWFKSQH2iFCDnysePBh1koC1LQpcKh6Jr
-# tFu8oE7MuRty1tc0B8goOyhdSguORsLizBbRpr9QwVUKy1FWkbkXFbraAqUkyBl6
-# CniHv4AFhcv65E56sSYMcUI/V8P0k0dIykhubFE31ddMWGHgyXNu0AMBRtp+pS0M
-# TWaGX3GQ9afImsQaxWmvHXKeRVrmj5no1cbcJIblzB9rHA/wkOq9rXdllF6+ey5K
-# KDW7qDf5Gf+84jx2VWPsqMlfyJpCGVz3qriiMa1P3CQCM/x3DjEsqyO47QNtFQB3
-# DutE1+4uyrb79JY2uUrsQZWhssVSZj8=
+# vtdVCdrVOG9Z2W5aBSsPfkM8+CowDQYJKoZIhvcNAQEBBQAEggIAhCI1710lRkMq
+# vy+zYkWi2nM8WNpJb3+6Xf+MfNQD3+QjyFgZx73p48YmeRyl4M49ZFsJ01+djYNO
+# iI0CB/X3KYa2l/eQUkyoar7HH6N+DDcNlCCp6tI0I7HPOWcZfAJbu4UVKGBJ70XR
+# GZx15pHEcJMGfx7QGtsBdszfDDEJGiWvFDd3mYnmUnsR8cS0lI10vvvttrMRoQGn
+# Li3TIy4p+wXY1NOLj/xmGk6kdb/tACnf+10VOeVGgJdpogiaAqtURV1vU+uEHKih
+# UyxqA40PuWTiXRBRX++SeoJpbLe3DmXyjVzBwczl6bgo6yhAV9uJO2qMn7huIijR
+# JtsxiIWHmgT4MFRpRAoaLwS6JC6hNDU6bsXPNTeVbIa1vOnVFDyio5dVtpca3fA9
+# nmdUKpjBXUR6n0EHN0SxZ5APXn3SUF0IXR9CrpbXFTh1/2wKA2ULtEddq5ZN0wJQ
+# NHL2juQxfUfyWxIuZpaUfxSUojtk97rppviE2Gu5m10Ek3K/lQ0tup/JvbMEcedx
+# rf1B8JLj1LlTQTwnXLNB1FB3nCd02UFKtc+kpX1QKPc1XasxMjSBsKV/s1T1O4w0
+# 3Qlp7/jNiJQGuFGfmDkLXAWOwoUkbeplMT22fciU4Cnm0EirN8NmpPYDPiuypynW
+# IPTgq794mDZCuNWfxZ/pZQAmCSBJKtM=
 # SIG # End signature block

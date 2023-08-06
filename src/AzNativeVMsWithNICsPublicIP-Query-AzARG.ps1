@@ -1,36 +1,58 @@
 Function AzNativeVMsWithNICsPublicIP-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    Resources
-    | where type =~ 'microsoft.compute/virtualmachines'
-    | extend nics=array_length(properties.networkProfile.networkInterfaces)
-    | mv-expand nic=properties.networkProfile.networkInterfaces
-    | where nics == 1 or nic.properties.primary =~ 'true' or isempty(nic)
-    | project vmId = id, vmName = name, vmSize=tostring(properties.hardwareProfile.vmSize), nicId = tostring(nic.id)
-                    | join kind=leftouter (
-                        Resources
-                         | where type =~ 'microsoft.network/networkinterfaces'
-                         | extend ipConfigsCount=array_length(properties.ipConfigurations)
-                         | mv-expand ipconfig=properties.ipConfigurations
-                         | where ipConfigsCount == 1 or ipconfig.properties.primary =~ 'true'
-                         | project nicId = id, privateIP= tostring(ipconfig.properties.privateIPAddress), publicIpId = tostring(ipconfig.properties.publicIPAddress.id), subscriptionId)
-                         on nicId
-    | project-away nicId1
-    | summarize by vmId, vmSize, nicId, privateIP, publicIpId, subscriptionId
-                    | join kind=leftouter (
-                        Resources
-                         | where type =~ 'microsoft.network/publicipaddresses'
-                         | project publicIpId = id, publicIpAddress = tostring(properties.ipAddress)) on publicIpId
-    | project-away publicIpId1
-    | sort by publicIpAddress desc
+Resources
+| where type =~ 'microsoft.compute/virtualmachines'
+| extend nics=array_length(properties.networkProfile.networkInterfaces)
+| mv-expand nic=properties.networkProfile.networkInterfaces
+| where nics == 1 or nic.properties.primary =~ 'true' or isempty(nic)
+| project vmId = id, vmName = name, vmSize=tostring(properties.hardwareProfile.vmSize), nicId = tostring(nic.id)
+                | join kind=leftouter (
+                    Resources
+                        | where type =~ 'microsoft.network/networkinterfaces'
+                        | extend ipConfigsCount=array_length(properties.ipConfigurations)
+                        | mv-expand ipconfig=properties.ipConfigurations
+                        | where ipConfigsCount == 1 or ipconfig.properties.primary =~ 'true'
+                        | project nicId = id, privateIP= tostring(ipconfig.properties.privateIPAddress), publicIpId = tostring(ipconfig.properties.publicIPAddress.id), subscriptionId)
+                        on nicId
+| project-away nicId1
+| summarize by vmId, vmSize, nicId, privateIP, publicIpId, subscriptionId
+                | join kind=leftouter (
+                    Resources
+                        | where type =~ 'microsoft.network/publicipaddresses'
+                        | project publicIpId = id, publicIpAddress = tostring(properties.ipAddress)) on publicIpId
+| project-away publicIpId1
+| sort by publicIpAddress desc
 "@
-Return $Query
+
+$Description = "Native VMs with their network interface and public IP"
+$Category    = "Configuration"
+$Credit      = "Microsoft"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
+
+
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUSxh75upKMKQa/ORNTIxCS2RA
-# tTGggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU5EdG/UzRpyQ0NUciIXCfqBUd
+# ex2ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -109,16 +131,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# z0fNvmvr2BoGX0PUGrtwMo/3/EwwDQYJKoZIhvcNAQEBBQAEggIAJmB8kqJMbYE0
-# Cpv6XjFjw0NAjq9rDlYFwWCN0p0kbbGziDhBmlxmPcc1siwQ3k257mOwA7RWGHW8
-# rX0A2b2ZMsNmrEgQthlk+wfT41VR7Es9NWG5JcpHlizauotqPqTpFrJdeajCh0Hr
-# Xty0dFX5x6EPNrd6h9XfOa2xA4QSowUijaAqKLoQdRybSjN4tZaFYn1j/gUMtZIH
-# /smROxYLlmFX9DQRQuKMZDpJQESc5AZEJ4jjvxX7Gdw4mkCdzTW01Ej4HlblD/5h
-# 23GZsQOXzfUhdZeO3fcK74Ua8IgDIaTCjQlRiNkIYyXNLPAGz7ImOoUZ6OPboBGa
-# /smGYmkA95EFg4gffeah2bdhcvboUkRV3Cz1+ICtsT+RIWFgc1Il2qOp+2lKWivi
-# hubvqEQlbkJ9MUN9S8PvTyJLxJnvSDhH9pMbhc2c/kfpmbt1tEShX8ehbFcLJNom
-# Flb8Y6v+Aak6x4vjOUm22XGpkcqrc7/5e1aeHcKIpd9qR0XUjAdm3ImVYL7iFhNo
-# pc4b6XnHFpqkCMoPAQ7gaYQI6IDv/t4eHlkUCOSd5uog0RSfVjsxo2e9gUNu7CAl
-# tqj4NAXMF1Pf7e+lKN/ft1Udh0qMhoMuIMMnxq276OZvHCJnzsqWDtbNUjTYL1sc
-# GUOZwzFMDI0y2o6qutY85VZihsBsTbA=
+# WxcMqBcXMo+KsxqGfkgjLTaMWQUwDQYJKoZIhvcNAQEBBQAEggIAvbUD8kfAnURx
+# EkEeZ2HXTBqNGVkgv9hbVqq1LmIKTOj1EkeqWVKMqR7JzTMpwUXEOGopeGbxg6sb
+# Lu6+QmgChWU+qctGAhan5Y8MIoarVryDhFu+stTjxgozJbZ7uRxiFUYNFjUcgsT6
+# kzJWQVc2NKTP31FPmmLxjiVR7nrPJ/A1dYd9PMu/8044KpCUcRCQTAH1Q1vGt6sZ
+# HPRAuTzul9wqqGpIULAXZs6IiAYDinFLFh88UVUx7tTOc4hgQNPM7JhI5awA7Xbx
+# 5TWETyEZawAI38tRekKyjsicKuBnAeNNiCTHHGPuFV9WdbR5L1pKasw66e02ouv3
+# uORTBkvrccUmfUb82qYWGiyrYEAWxnD7FuXqwbTvK+2UypxacUQcD963JsXXPsgV
+# 8i/4Ve997qbiBsvNW0J9AprnprrUYTcGG6K7PepDOWfM7jRsUu1QLB+vMpfiSQih
+# mMztOVr79mToBCBDVQuVrLZsid9AYh2dWR4oZ81vrbYj5IB+3s30WMnfeO19Hqk6
+# 8UfzOb/EN3uvMsyhvUO8f2RNl+sEo6jJ7xFBRWJrPdpMiY1fi7ELeZdnxWcfX/ZF
+# 9ANoJ74OlROEaJhnhj/7yw6chjUHryBvwUuMbd/T8fIM0wCPR/ezwz+oqtwgyLE8
+# gO50QlY0XR2kH1fsVyt69R0MqMg7Yfo=
 # SIG # End signature block

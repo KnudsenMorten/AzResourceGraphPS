@@ -1,22 +1,43 @@
 Function AzUmcPatchInstallationsLinuxOS
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    patchinstallationresources
-    | where type has "softwarepatches" and properties has "version"
-    | extend machineName = tostring(split(id, "/", 8)), resourceType = tostring(split(type, "/", 0)), tostring(rgName = split(id, "/", 4)), tostring(RunID = split(id, "/", 10))
-    | extend prop = parse_json(properties)
-    | extend lTime = todatetime(prop.lastModifiedDateTime), patchName = tostring(prop.patchName), version = tostring(prop.version), installationState = tostring(prop.installationState), classifications = tostring(prop.classifications)
-    | where lTime > ago(7d)
-    | project lTime, RunID, machineName, rgName, resourceType, patchName, version, classifications, installationState
-    | sort by RunID
+patchinstallationresources
+| where type has "softwarepatches" and properties has "version"
+| extend machineName = tostring(split(id, "/", 8)), resourceType = tostring(split(type, "/", 0)), tostring(rgName = split(id, "/", 4)), tostring(RunID = split(id, "/", 10))
+| extend prop = parse_json(properties)
+| extend lTime = todatetime(prop.lastModifiedDateTime), patchName = tostring(prop.patchName), version = tostring(prop.version), installationState = tostring(prop.installationState), classifications = tostring(prop.classifications)
+| where lTime > ago(7d)
+| project lTime, RunID, machineName, rgName, resourceType, patchName, version, classifications, installationState
+| sort by RunID
 "@
-Return $Query
+
+$Description = "Installed updates by AzUMC (Linux OS)"
+$Category    = "Security"
+$Credit      = "Microsoft"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUuP+eTcDBWIc1ViV9KsylocU+
-# VAGggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU+qj20QXLVzblPBlL2O3XwQ2s
+# Mryggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -95,16 +116,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# iE01V+TJkT0vHsWU4Q7GEUKx5KkwDQYJKoZIhvcNAQEBBQAEggIAXeMe1yp2Rcee
-# Ux5MrQUOxLFH+iN/Q32d4Ek0fAN/+5hY33IPTivJMHmZTBb4BxfI7ZPfBb3r6ZIg
-# Ufje4PM6rvzAmby+yXpsQgu+g6WaESgDYKWM1XrIkclv3570gLK6U6GxFsfO99wi
-# oA4v1eifeKsqu2GhBe86C6WfWz42SO2D072CspeOElMYx9PFQb9ch5/SxN/Nln0I
-# o4vI3BanDswWl60sjhOdHHtzV0nev7mqJ+kWb4ZgYf8swh/H3wVXmQjEcNf5EOKW
-# jModJZLp+QXsj4TOuub2hw/bbhcRwJxJUHDFVJvRdgQKXqmmVD1wQmT+Wn6js9PZ
-# MwG7W4d6gI9H55keh/QWIdZrsf6KbQ4CFXDxzL06r31InfRjxeXdGPxRyl4R1RP0
-# Bf48U9OehX8gLGbqMWMl7zZg3R+HHNMe+4TfgCbTMRCBJBugDFL0Wtn+sCd1TvKB
-# KzF81GKDkXt4cyaWvXpFYpUkJAqIlzQEUbfDeFVmBEOqbkDbJew2oo7pbBpHZw4V
-# SiCCjy485JrrY+HG9k787+mRck/J4gtECuJr7VglNc6mIa3K+T3j/kL2l/WRzN/p
-# bydYiwqqlQxRH/uC1i0unY/gVZaPRIbEkFhnbFE1nPAPWwQpvYlhRNbw0ZWNw7bZ
-# eButW2ItzBNmNchNG4GuYV6PvCRWaJY=
+# 8agm6SBmbjZxACbRYb9i61ZTvK4wDQYJKoZIhvcNAQEBBQAEggIAj+rdIUYX28FG
+# SN/ewQcQC3o/CMQYN9VQPbFXXiztkqlc2vaPxcCrCN0dXp52FnPqwEpXx7UOSmf8
+# VxbVUlbaXX4DeCzFvpkLJq2mnoPxKZ6KuZ/UfuPlsshuJAGvPFrkdZ2yAnFzAWuy
+# 9vPANHtZnXlc0V8mkV1Qlri4pv9JRKuzRFqPw3KYILuKfWGxfkvYOOzPIVfElTZF
+# TKVeoIBEhRNKbkcm2vjPtCIPVRwKniQ8y/Tn4s8IJoyzKEfrV2LGZGAW6UFRvHPM
+# Sfx7jFp7N1rrJLW3SkttAr7b4BW55qbYHxWYNfJiFEfVL+yA9InOLC3v7dRpqzX2
+# TpuD8iPt8hROyLatQiY8UMrI2Mr143uwNQjysCzU+giUuqUNDWUrQXzLTOoKqeSL
+# Wegomz/VmYpKEm42V9LngIpuWaOzxHV1oKpopbBU/dAmwg3s4IvddPPFVpOUgqlw
+# ZxE2+mg44DNqFuMR1CIQjkMxsNV7xrV+QDnkjOp7xjpdHwZwc+zq1AAtfyKTu5uR
+# C7mHpmPmise8Xr2MwEgmgon7DySTYlBsQyXFZCPpz5XXhim901Gc04vPqUXE/D4o
+# o74+c5I7GTb6w86MGVwTImw717EY59NRmMjwjpF/V2LoAbVcXOhul3SKCf4mtSUQ
+# B+VSwyeywUUxR2WLC8vVu6dyunZnJmA=
 # SIG # End signature block

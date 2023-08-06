@@ -1,39 +1,60 @@
 Function AzPolicyUnused-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
+policyresources
+| where type == "microsoft.authorization/policydefinitions"
+| extend policyType = tostring(properties.policyType)
+| where policyType == "Custom"
+| join kind=leftouter (
     policyresources
-    | where type == "microsoft.authorization/policydefinitions"
+    | where type == "microsoft.authorization/policysetdefinitions"
     | extend policyType = tostring(properties.policyType)
+    | extend  policyDefinitions = properties.policyDefinitions
     | where policyType == "Custom"
-    | join kind=leftouter (
-        policyresources
-        | where type == "microsoft.authorization/policysetdefinitions"
-        | extend policyType = tostring(properties.policyType)
-        | extend  policyDefinitions = properties.policyDefinitions
-        | where policyType == "Custom"
-        | mv-expand policyDefinitions
-        | extend policyDefinitionId = tostring(policyDefinitions.policyDefinitionId)
-        | project associedIdToInitiative=policyDefinitionId 
-        | distinct associedIdToInitiative) on $left.id == $right.associedIdToInitiative
-    | where associedIdToInitiative == ""
-    | join kind=leftouter(
-        policyresources
-        | where type == "microsoft.authorization/policyassignments"
-        | extend policyDefinitionId = tostring(properties.policyDefinitionId)
-        | project associatedDefinitionId=policyDefinitionId 
-        | distinct associatedDefinitionId
-    ) on $left.id == $right.associatedDefinitionId
-    | where associatedDefinitionId == ""
-    | extend displayName = tostring(properties.displayName)
-    | project id, displayName
+    | mv-expand policyDefinitions
+    | extend policyDefinitionId = tostring(policyDefinitions.policyDefinitionId)
+    | project associedIdToInitiative=policyDefinitionId 
+    | distinct associedIdToInitiative) on `$left.id == `$right.associedIdToInitiative
+| where associedIdToInitiative == ""
+| join kind=leftouter(
+    policyresources
+    | where type == "microsoft.authorization/policyassignments"
+    | extend policyDefinitionId = tostring(properties.policyDefinitionId)
+    | project associatedDefinitionId=policyDefinitionId 
+    | distinct associatedDefinitionId
+) on `$left.id == `$right.associatedDefinitionId
+| where associatedDefinitionId == ""
+| extend displayName = tostring(properties.displayName)
+| project id, displayName
 "@
-Return $Query
+
+$Description = "Policies without assignment, or not attached to an Azure initiatives"
+$Category    = "Governance"
+$Credit      = "Wilfried Woivre (@wilfriedwoivre)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
+
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUE2ZgS7ZYv2GG9rx8OluaS38y
-# v7Cggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU1lgRQqOsNNIBjnXZOJ5C7XaW
+# rxWggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -112,16 +133,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# bB03hjdvigSobOiW08EOJ6d7nD8wDQYJKoZIhvcNAQEBBQAEggIAGceuZ3ugLsDq
-# 4DDetE0QEm1uqtkLFxaa9Xw8G16Q+DGrL2lkAx4ZuJ5gpZQWpqo6yUWFqE5zkYQZ
-# FWvhEioT7ost6uFC4g5dwWcUeVSyDTeyVWoNy4/TwQbi0FnwJhrKFZyYY4YB+NPO
-# N+53H1x2Mt989NDYxuJJsZ6fFbpaZpf3ipnOqregZpRPwa9kMt0xjtaDj4SA3wpy
-# 8jpdcBO86f/9uvaBEgGt+XlaVD9rZZjt34fb/V+MbqemaZvikd95EQUivgxx0U4l
-# 7cblgmmpA910GHUi3gVoKXwJeBEi8Q4UcpmGQNWVmvmUNzNqVpZmZkgFt33qyhdM
-# uoG6pMdz5f3U469KOou2+qVX9/BHj9bX0ieRHlN8AizMK9dXIyoqRh+fguNvy/qF
-# m6mi4viX200dHzQhqPO9NA+HgLp6cZz66p1HUV+ga1sWhYgwMoE0VoENzYzvlzVa
-# 1lBHbFicA1J3qmFjL7E2xFfoua0c0xTcr4PLl8r3GvD7wR50eHWdXUdPjgymi/h9
-# HOHGvi/Sw07QCKXOq5JLj0R9UjFCbvsN9U2u49ILoNsRx7faQaCCuhe5zzQmpBXB
-# 0TWYdvUBIuJmXFJ8ym0yEb7i+C6SThgJ2Sfxtr4XJfmpKdUobfToWfyZ9rpm1lkG
-# GZeCvkFCuZTwXlmgFV8NqKCensLxF+M=
+# DE0wOOLB4Xqbc8NBn5zuh5JVdqkwDQYJKoZIhvcNAQEBBQAEggIAiQpmB4kSoHJn
+# HtlCtAnegTT3XONqm9dH9DbculSpZxfZKvlonx767AX3VEAftY2s+y5tnJXron5Y
+# GGOzTtxQBk/+dOIIq3gbYIbhy/xJwC+qdh/jGC8qUktaIzQyNBh/7kIjyznYAtpz
+# J50xK+UrtTN0OgZmE3kjhL4m4g8MUd/B8Wpac27UOvt2EYwjUjlaaS5iC71jMASv
+# 7anhxaCQq8HRc+9bh7vTWmo/4Z10uJdWoXs8ILCpe2nzfqOeK0i6TwMrzHZiouV6
+# nv1cltVwBwScOIOdyVzNmiLlyEr3hbFIZt/xTMAVeCWOb6Gr/40iPhG9tMSBhn4j
+# a9P9I6ULsHS3SZXpZ/xUQFYl5CyterhzKPZNEm7W4HIxw6TPHDWak6AVbxfUoUfZ
+# qWPvzLvHLj2jIcgDoNTMjlPxRJShxANDFWzCWW/ZPP8UFhExCW/WdaVC48klTV/L
+# HgDDEWd3D8pse2FNuLC/AjEwnvLa1U5CWJ3R8YgiJElPbA/seH6pAVCO3tokLgJF
+# ij9CbHozBhpry08PSUvt12d37nMa9IdalZpCv+JqG7hqa7Hslk1LGbaxjz0iQCk5
+# VBjuYFajuPkSVUGGOc2OFrC9NTMSmL9jLr+WtrO+ASR9TxP3fFmB/BO/1Ptzf8HN
+# Lei7NSIg69h7G143ANex1m8OIGrSjIY=
 # SIG # End signature block

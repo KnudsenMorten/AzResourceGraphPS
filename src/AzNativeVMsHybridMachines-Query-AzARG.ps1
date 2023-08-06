@@ -1,34 +1,53 @@
 Function AzNativeVMsHybridMachines-Query-AzARG
 {
-$Query = @"
-    Resources
-    | where type in ('microsoft.compute/virtualmachines','microsoft.hybridcompute/machines')
-    | extend ostype = properties.osType
-    | extend provisioningState = properties.provisioningState
-    | extend licensetype = properties.licensetype
-    | extend displayname = properties.displayName
-    | extend status = properties.status
-    | extend computerName = properties.osprofile.computerName
-    | extend osVersion = properties.osVersion
-    | extend osName = properties.osName
-    | extend manufacturer = properties.detectedProperties.manufacturer
-    | extend model = properties.detectedProperties.model
-    | extend lastStatusChange = properties.lastStatusChange
-    | extend agentVersion = properties.agentVersion
-    | extend machineFqdn = properties.machineFqdn
-    | extend domainName = properties.domainName
-    | extend dnsFqdn = properties.dnsFqdn
-    | extend adFqdn = properties.adFqdn
-    | extend osSku = properties.osSku
-"@
-Return $Query
-}
+ [CmdletBinding()]
+  param(
 
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+Resources
+| where type in ('microsoft.compute/virtualmachines','microsoft.hybridcompute/machines')
+| extend ostype = properties.osType
+| extend provisioningState = properties.provisioningState
+| extend licensetype = properties.licensetype
+| extend displayname = properties.displayName
+| extend status = properties.status
+| extend computerName = properties.osprofile.computerName
+| extend osVersion = properties.osVersion
+| extend osName = properties.osName
+| extend manufacturer = properties.detectedProperties.manufacturer
+| extend model = properties.detectedProperties.model
+| extend lastStatusChange = properties.lastStatusChange
+| extend agentVersion = properties.agentVersion
+| extend machineFqdn = properties.machineFqdn
+| extend domainName = properties.domainName
+| extend dnsFqdn = properties.dnsFqdn
+| extend adFqdn = properties.adFqdn
+| extend osSku = properties.osSku
+"@
+
+$Description = "Native VMs and Hybrid machines details"
+$Category    = "Configuration"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUIiCQhpRVfrr/SwxwxDSZGKdC
-# Oseggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUBYC7heUCrM2LFvw2IH7N4qvL
+# Km2ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -107,16 +126,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# jTvwJLgU2dmsEsHb8i/zb5ErUlwwDQYJKoZIhvcNAQEBBQAEggIAEDdUyNyFBlaV
-# U8fM9n0ftWXtbDGnPYpPQfdTLuY0ioHliCEResC+ztGYJIpCMoFqNMnHy8DU4bRE
-# SMA7fQTMWPDgRlkZxaAOXGtC7xrGroKw02PIPfIMS1r6W2JeZYGRSUsOjj21WpQ8
-# TmIQ4Arl+9XpLBhg6b/cewm1a7apnCv1qK7cxGceegrOR+XD3L5hxkDTzUWQIZcn
-# mA+IFjnQiX+AqxsHssD+WN7YGWpM9CruLesWOOcUjbR4DeFwWRpBwqmNihVUNKi+
-# YFqq1PC1QkRUYaToospbyylqhVzoeVUY6Y3yh7i5xMVEVLc1Ba/5QHwA5fRZ2ETb
-# 5qtt1BWBF4ZXYd1TKfXgYLHxfFggYtWkpQtU3IPRFPPZhfaIYE/14uimuzjDv/jd
-# EEH5rLA0DX+r/lLYp5a7yykWJrEr4OVNj2xX6EBnC6wITTH67JZ7a20xd1CbFstK
-# 0SXUBx+PySjUzvgC0lITu9hjDnGQC+5xpLahTnKm290kT5dnSiWUdzXaH1jjjK+9
-# 3/g/lT59rQgHyGfzedm9c/qwKZFbziAYeJgO2mWZE/vHeD5kQQVv8Q2x1PiPYfrq
-# JCbkJnEzsdAzpVElG/nA+KFyAR/r2cdxQbmRXwirge2EDxs80OomThi5WTirtqxn
-# u5zCMba9B2KrRdsRZhpuy4pfDeCq7TE=
+# fXuOnoIxjc/VzcEukwOptXGRGBgwDQYJKoZIhvcNAQEBBQAEggIAhFHs/gNlOtKI
+# UyaA/0msDuM04Y3gsDGyVAG3JBoKQYW/yNM7gw6NUfYuHZZQlLSg+lOeiOiusAQt
+# cDXtOHic0pNmtjnW8D/U/y2VU/8yGOF7falb0JCbYDjCovkJfPj8XUoMSZcegaN0
+# ft7gGpngXovLTjHrGfVTdwG6QhN+Do9Wtd7ry5btNGbBnMyIrNc0bvaPyWfDwSiA
+# 4xwV/quH+WtZCqj2NTcSVZbvMM8lCf67QqCCtts/TF22pnT+2NNetZdM5/2rWq5t
+# yoOGeQvWRVzEGIrJUnWUDf4vSHlPFzpKsBNmqULOXtIBCTYAZnwIND1/zsNLVZLK
+# Vjgr79Zh6PezBAKlZIB0Vt6W9CSzWIU4FQQ77VqaLrXbFyXfBoYFrj91bXAzncWi
+# lu7/AirSKZ8T5g3p8XMiGfMFPGBOMuWMZjRY7HzrEDKnejFIZtAqi/9rGxZMs2iG
+# G/KBoL7E2pKIvWj3YNepbiX8zrWC6O762fEzYzjVGA8VxqjdQ+4CLxkj61FH5j6k
+# Tu2piqGKhclMpJ+AA3zW9qlfS/iPCTLaTMvlYMS1a3E0AczT/tn+hSQmBNoB8BZX
+# qfNCbqR0YOYiInee2AfxRcewLyqJAGjkKx3nIGFmw4F8GUv/36sKKYPQfaGeG5PU
+# gg5A7IWr3DWcgFzwGSLMWrs458J+GUw=
 # SIG # End signature block

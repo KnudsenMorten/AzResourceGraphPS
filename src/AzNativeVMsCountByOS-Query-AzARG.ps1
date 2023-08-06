@@ -1,18 +1,40 @@
 Function AzNativeVMsCountByOS-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    extend Os = aliases['Microsoft.Compute/virtualMachines/storageProfile.osDisk.osType'] 
-    | where type =~ 'Microsoft.Compute/virtualmachines' 
-    | summarize count() by tostring(Os) 
-    | project Os, total=count_
+resources
+| where type =~ 'Microsoft.Compute/virtualmachines' 
+| extend Os = properties.storageProfile.osDisk.osType
+| summarize total = count() by tostring(Os) 
+| project Os, total
 "@
-Return $Query
+
+$Description = "Count of OS-type for Native VMs"
+$Category    = "Configuration"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
+
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUeLH+SoLkg1DLk0O5dkHLpDpD
-# 1miggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUMOM+AfEdRSp2OPEMPVymWCV+
+# 4Cmggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -91,16 +113,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# KT34/48lvmdButPMn5yja5sWPXcwDQYJKoZIhvcNAQEBBQAEggIACOR5mFRID9lc
-# IZLxsV2VmHLc31kPteEocCEPEMTHuMAgkTICwELW+Q9we45GKP8SjX2vH2r/b0QO
-# 7e78QYiZ6Ie6ZQqkrvzNvYMzcaLGWz8dOtKf96ZO+YDnIxltbHE8EPFiOj7fRfHp
-# +1ZclYJd/CH1pOwctQ7V8p5k9rfonLUVOAeMiL6grkJMHNFCO90VT4W809uaAJMp
-# g4DhVmli49ECjT3TWLYXStya+omX9nW09mCcipZkafbFsDJAVDV/GN4ANSkgA7Sm
-# v8PJUEr9OvL94Z7xaxB6iV5fLPPsA3/r7xIeN0Oytiq5l8kmcSxXqNU7iRBGBlGj
-# 5XuiQ0I57l8nuqx5dT6+HCFb+sI1gbPF0ZQ4sg6FffgiR5PnjH1aOaqLL01Phw/c
-# DK+yeb2MIY9lvcY/CYiIKAl1ZUCcW+ehwCKysxiD4u8ayFkfJVDR4dItAgbAVyB7
-# zeDAkg31F9xmf5u838t5HskW9lQ49YrCcwYrbbIBA9gFI47UayiXpfgGGGG+Cqb0
-# zfLGPshluVS2Esr8pI17C+WR4PyfduTM1cFega7LSY8S5dyb9E60FHJ06tfHCW9s
-# uSo49yyu7ed/qdWv439BvwDWutT0rkxjZC5rvmdN4TfK37VCAX1fhxdmIvN1B2Ft
-# MCdpdM1E90BhQebV/CU+yvkdfV8ZnOk=
+# DmwF8xUj8TYg/4mZlFIj19Otqy4wDQYJKoZIhvcNAQEBBQAEggIAwLrpayy1I8nx
+# bU35BD+cI78y8XuVpswPPesgHLW5FRB/IRIrRBxgvGTMTUf6W1bsMjKdX68MJDKl
+# S2b6FSA0ndpzyzRpC91+bRpaVmF63p95YOoEiRaUpL40chdag9YkdWtyFNE2kUpL
+# m08F9ZaEdnmauzAu8r9lFw8fgHUDyqPDjMWmOg3368MOGhB4T0BYc8TB4o4zqWdH
+# X88TfFqzYF8Bo6RJiZpLVRLVnO6s2hAxfgPZbm2YtSppRcacTYpETy5turoPaYdR
+# c6Yu3X0jdw1+tI4DgnLZ6bTO+dYX5RAZG4VYiMX+T3ItuEZv9OZcA+Sbi1Z8yjhw
+# hShk0MvsJX/G32Y7iawD2I07a6Qex4dTNHeaq5dlJnzIutz9fiY3kqftUBh0yn4Y
+# RztPnCsycWtlllp4YvGs+xoT/9pi0gzz60llWe5rUpzURCZxxqsIe8PuEEzhT1Gc
+# vBJ0rVOXSoZtiRSlNgN17NUqhKFolhfwOidm9lZZJabSoT7nQ10sFTdIgDeMUeqW
+# /lwbSjkGhFHzMexHk/PrPOho4o8fESJw/4Dd6xpBrTiUrhjdjOE5c3qdVjDksjiq
+# z9nq9/dgv8l+anhC97HsPj8slODMIJPVovRR/8LTSv4dfnVUKeLWd5vqZcPoWNiU
+# Dq/bc/3hcnhqDqjy35822CoIkZ5wF9I=
 # SIG # End signature block

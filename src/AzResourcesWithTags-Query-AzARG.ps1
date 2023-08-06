@@ -1,19 +1,43 @@
 Function AzResourcesWithTags-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | project id,name,type,location,resourceGroup,subscriptionId,tags
-    | mvexpand tags
-    | extend tagKey = tostring(bag_keys(tags)[0])
-    | extend tagValue = tostring(tags[tagKey])
+resources
+| mvexpand tags
+| extend tagKey = tostring(bag_keys(tags)[0])
+| extend tagValue = tostring(tags[tagKey])
+| join kind=inner (resourcecontainers
+        | where type == "microsoft.resources/subscriptions"
+        | project subscriptionId, subscriptionName=name )
+    on $left.subscriptionId == $right.subscriptionId
+| project id, resourceName=name, type, location, resourceGroup, subscriptionName, subscriptionId, tagKey, tagValue
 "@
-Return $Query
+
+$Description = "Resources with tagKey and tagValue"
+$Category    = "Governance"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU9EML2NZH2Yk03BgOi110aTwl
-# xu6ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUdXb22/Mqs9y+fm3VB7A+rlUI
+# mqCggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -92,16 +116,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# ATjESeTv/Y9GelvogIy5N6SU8S8wDQYJKoZIhvcNAQEBBQAEggIAeuHcQa2P35hK
-# KgHNj7kUgM3hfhQDtb849npqxonuv3MGUbH9nUo68dlhO9uS+ILm5CCVTy66yE0O
-# CPT1Q6qD1s8gVAq7KAr2KLGjP9uTbWZxFFCQNYPzUaXuwrNQna98wc2H9s9NgsTU
-# cWEXaoW6HPMNxjBKuNlPgPY41HHup2mify0VRzklwbvTDMgjk9gCwk90oMtPMxBr
-# TFEeyaflvevPQFKxszjMGFvUywZEm4r1iR0N3P4aWJ8PhKGftnzBcbUr/Gcs9VgY
-# dJHY0/nduEpG4+k+gRcxTKOPQErMWHhRqzXYYdAAiK3Ev9GmgcTo6SOm6BR8I1+k
-# 1m1nVpzU6aiosMku98cx0+TSBxSxHpwnQSVa+OdTyjgT5e/vbAKwhyGsRtbNhU6N
-# LAD6Usq7JXYAhOVqFMp8Jq6AeBdUP5KYo1OxBrvlUC5u+ucd0Gx89HTp/7SAuRPg
-# OedlQeBNFLoYT7hUNlNpTU6Kik7zSgBU4lFpHKjOqZMn1p+GSCqUNCR31WGCTe8L
-# OMbvF1kKJMEu7AgpHs6k1MBugl2JjzYoZaSekvuVyMmdfDexAjCX8XCe1gqrbw0q
-# gobelx+hbPzWUTXmHRW+qDLlH2yo0JPaFqJYnyTphbn1V3s13RhTcxlB5GVuQYCP
-# ipmNqYvAeSC0DGQapJKtrQ3kwE20CEE=
+# /69r6fg2s/EfkrEMWDIZ/qKlrTQwDQYJKoZIhvcNAQEBBQAEggIADqRGxcCtGkEH
+# Fim02CKab1MWLEd7DN4s1XiDDcTgvwwGIRlZzblh9N9rQPJCFWAfcdGKVDzAAk+b
+# MhvGcoUAh+4/ozwT0y4NgczVcZ9fP58joyjqf6zyDCuiZAm/MVAZe3crNUvVQ3Mo
+# uGqdv34aL5wLG92uVhnOpuFVhMpZTE9z3V265LjkFwQQ7TmQPw5ha8PvItDK1cYW
+# tE1sj3HMI8DCshBWZzCz67F++Y8pRrhAzBxKIosIQWkBr9QBPlitqtv1hi/T/Bnv
+# jD/Y34mXmp+GcagvNWUwaAPckxuyXctcTveDR5idLPa8XXulTeIXpnBfWO1uJsg7
+# jIw1u274xuNYOLeDDobr9ENG84AInn3r597E7MOeKB0I3So/Pllu0X8sMvcO45at
+# 5DddJreUFBudnWdgVsa0rdyqXuqiknrSX0bBCYwyUbgeEEs8sWBE2B4QgJkNkr1q
+# xiEIrYXxjfG2pDAnPil56nde4NbhXpSPcLFbhPsulR6++8nFobF2P1z3FA5SmBuE
+# cvJtyG1/Hl0qBDHSNI0/traqAHt4LgJPBp8C6CGjvTOV8WRAlDji26/3dmyovhxT
+# wiGUTQo6E/xRzV5DcaRzq4ymJbMXDcivLxBBW8WSVIkwH3U8x0nWNuU995p7ljhb
+# zjXqJlIVB9OPFVm+yFBU3U2w1CLE/2c=
 # SIG # End signature block

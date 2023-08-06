@@ -1,40 +1,60 @@
 Function AzRoleAssignments-Query-AzARG
 {
-$Query = @"
-    authorizationResources
-    | where type == 'microsoft.authorization/roleassignments'
-    | extend roleDefinitionIdFull = tostring(properties.roleDefinitionId)
-    | extend roleDefinitionIdsplit = split(roleDefinitionIdFull,'/')
-    | extend roleDefinitionId = tostring(roleDefinitionIdsplit[(4)])
-    | extend roleAssignmentPrincipalType = properties.principalType
-    | extend roleAssignmentDescription = properties.description
-    | extend roleAssignmentPrincipalId = properties.principalId
-    | extend roleAssignmentCreatedOn = properties.createdOn
-    | extend roleAssignmentUpdatedOn = properties.updatedOn
-    | extend roleAssignmentUpdatedById = properties.updatedBy
-    | extend roleAssignmentCreatedById = properties.createdBy
-    | extend roleAssignmentScope = properties.scope
-    | project-away managedBy,kind,sku,plan,tags,identity,zones,location,resourceGroup,subscriptionId, extendedLocation,tenantId
-    | join kind=leftouter (authorizationResources
-            | where type == 'microsoft.authorization/roledefinitions'
-            | extend roleDefinitionIdFull = tostring(id)
-            | extend roleDefinitionIdsplit = split(roleDefinitionIdFull,'/')
-            | extend roleDefinitionId = tostring(roleDefinitionIdsplit[(4)])
-            | extend description = properties.description
-            | extend roleName = properties.roleName
-            | extend roleType = properties.type
-            | project-away managedBy,kind,sku,plan,tags,identity,zones,location,resourceGroup,subscriptionId, extendedLocation,tenantId)
-      on roleDefinitionId
-    | project roleDefinitionId,roleName,roleType,roleAssignmentPrincipalType,roleAssignmentPrincipalId,roleAssignmentCreatedOn,roleAssignmentUpdatedOn,roleAssignmentUpdatedById,roleAssignmentCreatedById,roleAssignmentScope
-"@
-Return $Query
-}
+  [CmdletBinding()]
+  param(
 
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+authorizationResources
+| where type == 'microsoft.authorization/roleassignments'
+| extend prop = properties
+| extend roleDefinitionIdFull = tostring(properties.roleDefinitionId)
+| extend roleDefinitionIdsplit = split(roleDefinitionIdFull,'/')
+| extend roleDefinitionId = tostring(roleDefinitionIdsplit[(4)])
+| extend roleAssignmentPrincipalType = properties.principalType
+| extend roleAssignmentDescription = properties.description
+| extend roleAssignmentPrincipalId = properties.principalId
+| extend roleAssignmentCreatedOn = properties.createdOn
+| extend roleAssignmentUpdatedOn = properties.updatedOn
+| extend roleAssignmentUpdatedById = properties.updatedBy
+| extend roleAssignmentCreatedById = properties.createdBy
+| extend roleAssignmentScope = properties.scope
+| project-away managedBy,kind,sku,plan,tags,identity,zones,location,resourceGroup,subscriptionId, extendedLocation,tenantId
+| join kind=leftouter (authorizationResources
+        | where type == 'microsoft.authorization/roledefinitions'
+        | extend roleDefinitionIdFull = tostring(id)
+        | extend roleDefinitionIdsplit = split(roleDefinitionIdFull,'/')
+        | extend roleDefinitionId = tostring(roleDefinitionIdsplit[(4)])
+        | extend description = properties.description
+        | extend roleName = properties.roleName
+        | extend roleType = properties.type
+        | project-away managedBy,kind,sku,plan,tags,identity,zones,location,resourceGroup,subscriptionId, extendedLocation,tenantId)
+    on roleDefinitionId
+| project roleDefinitionId,roleName,roleType,roleAssignmentPrincipalType,roleAssignmentPrincipalId,roleAssignmentCreatedOn,roleAssignmentUpdatedOn,roleAssignmentUpdatedById,roleAssignmentCreatedById,roleAssignmentScope, prop
+"@
+
+$Description = "RBAC Role Assignments on AKS cluster details"
+$Category    = "Governance"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUwWmyCUX+Pb85vAeorJfNXgxu
-# 5R+ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU5tsDDZqaZJapAbKkvRbQLhi/
+# bbSggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -113,16 +133,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# HsyFVOYe6Kihz4/nlC8gf82GLRYwDQYJKoZIhvcNAQEBBQAEggIAnBnwwHHP1rg5
-# ZQBahEYKcJ7plYYHshLiHOxQjagScbDomMZKOrmBO96mpMfPNj5Sh68d6ub9ejSM
-# liKHO8BqAmhA+ACtkJa6wqT5pBR55qglVw4L996twabiPhMTIyyJqFiiF/b0Y4zr
-# JwyKVbDmB7FttDIJ8+CeVF0QHrmcbUXMMn+Qt95CvxsohYtOFAK5BSLpz5pHmab7
-# LNJ0DLo3E1KnL7Iv3H1pir7OGfB5oIFU6NvHWV+3IdmoN+57azO5r2x/Oft2+ZQ+
-# IWRt8OOgw4+JlrIEFR0/MbPOGIb3WgFchpXJ5dOCXYGQqCnmxiNoBpdibCz8kLiq
-# hV/frcJqXn5b9shW6X6gpegF8z9TMCu/j8TV65x89IhbclvrzlE2UnRh6XHD77cj
-# 98SFT/X47KgNTw0WyOTvdZQXT8I2PHsquGZtqlVnwpuPWBD02/HjX8gCuPe5nCP3
-# Yu5tg/o4vTFBRo5yYw7FVn1atf+gvrwOzf3eNq2vc7OJ9InMWxxjwsW0ufSNh8eJ
-# sWpZR4SmrxrrjnyGzDbbBGAKXDcaSVrYCT8+fogBfEpLd1rj4lD2DAsbjmpI+L0c
-# iFAi2+FBQsx4KdR2CoT0tVraHnrCnAh+LAuQennDy2lSm2Uv/Z9miS8evIo19u6a
-# IVf5cB0maLDjD2e/ymYsdw3txAqf+M0=
+# srZy/X7mOcV/M7LA4E96o/mBWC4wDQYJKoZIhvcNAQEBBQAEggIANzBgUICtAwiq
+# QjWh67xneaKXvVheOYmejnUUhg2op0/K5nN7Qlpfmg9YH4YjT8JcAl/Zbm3+vqSm
+# y+0EvEw59Wwx3qINUT+BRzKp4ZreehmNsmgNIs6w+0HmJXdnKHOiBMObrpu30u33
+# bI42jbgxWNkxs0UZuWJm10CiRmjhKVXVTufTA/fr7LRLQtWj3Wqm6XZ4Zn7eI1yv
+# PCYAJXHveMvdFrb5X+1hguw7wn2PyTavvjxl9V8GOlivml7edwv25z5q/eJs8ZES
+# olqNIFAZDgEca5z906UqZAGShMqFbLILi2TiVsVoHXcCz25rK4TTUT5KdJ7uWK01
+# i57nFJWqvTT/+JvY8sh9W5jpD+A5WsC2aTOPkqF583gZp2GAIxxcUFENewUcNKU6
+# TVGPFvwwyNakWxAgTVEkNu6RhH56WpbbfK5J6ZvX7UFzFcQDc9kKbeljfr4DhsoP
+# 6uoLwLnnKCmFXsI+8jbKVgApuRnu2cRGpunSpEb3QR5mKdzchbLnke3m/LRFv8LW
+# b4RjmY1lkx0B6HzhJwM+D2xeC69whD8a3Bihul9U1FxH86slCm0tCOpX3cHMAN45
+# jU+ysaVeQfNNXaR8YJkDd5+zDVq5v3pdQc2PwhHcmN8/iuoN78axsJzAeEtejlGB
+# u2DlPrzj8V5ZhlUV0P41DqKmwzraUyQ=
 # SIG # End signature block

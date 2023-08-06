@@ -1,20 +1,41 @@
 Function AzMGsWithParentHierarchy-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resourcecontainers
-    | where type == 'microsoft.management/managementgroups'
-    | extend mgParent = properties.details.managementGroupAncestorsChain
-    | mv-expand with_itemindex=MGHierarchy mgParent
-    | project id, name, properties.displayName, mgParent, MGHierarchy, mgParent.name
-    | sort by MGHierarchy asc
+resourcecontainers
+| where type == 'microsoft.management/managementgroups'
+| extend mgParent = properties.details.managementGroupAncestorsChain
+| mv-expand with_itemindex=MGHierarchy mgParent
+| project id, name, properties.displayName, mgParent, MGHierarchy, mgParent.name
+| sort by MGHierarchy asc
 "@
-Return $Query
+
+$Description = "MGs with Parent (hierarchy)"
+$Category    = "Configuration"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
+
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUodesbSl/CCcmCkCZtX6pHNdf
-# wXiggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUFiLu1qjFj8Z+8G3ubvutph5k
+# rmWggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -93,16 +114,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# b5z71t9z8AY+38FH7e5CyRFkhQwwDQYJKoZIhvcNAQEBBQAEggIACX+oW9zEc2uK
-# q/IM0UZrU/9lssCHPLbTzrgMkbr/Pv0AtVoKpc1Z8+Uy2xx41ZgqebrMLm7K3YG/
-# eilAo2Vz81pPR07e3mmKBjw/P/rGSyDBwh9uCoJCRT9ychMFKBwl47C+sy1chb6r
-# VMpIxt3YCTrL9VLofSYdO2H3OOezSmpvRXrrHvGZBalTeWx5jJeLh1ELPOllcVy4
-# jKw2WYaokvd0/1uZnsONnI3ltQobUWGzrnlKIq7iTzoEEuZ7t6MiHN8G3oyisZsN
-# Di/ftUycCchmlpyxQ7/N2eLvU9eFgtPZAj+UI4gyYAHIVwbEG08FpF3xdiLWASie
-# gCLcbsPWvkzSTUqRDcrj89QFh9zeXTTGeBcfa04ZuO4rGLvVD4LpA8Bo+DvkcQBB
-# x/jqb2TrsaCjikwt0ITQTjVyIpTqc3klAstZzIuIJxleRiCKP/AlrHRhVq3sE9LR
-# tR8ZCSzReXnusm3YNGo2l+FUHcnWfDU2DrBh/wQ3g6mrncCdzfBH4v4Iyur3pl/8
-# PUzpeUoh8Cq5q8/ujbUGS23Jlv+5keRJJFvJS4/ky0ovVcIHMMn2nCxuioF/K8BP
-# RhjmHZELVZuxWbKealD983pjTfYiQHOUGujtn7J0SdNA0pcbQwVP9X3ndpESgdkJ
-# pYoq1s47jUxjuXe1tFfvbpvPhEWvuF8=
+# Ylcf9Ib38Q9bqydwfzjteBr6fq4wDQYJKoZIhvcNAQEBBQAEggIAigen4MRSxR3Q
+# 7ykWjY6WmrVf4PC729jnp9FaZwb4HeKA5Pxxnj9tB1bXbsc6t6eoM+xFLm/ewwnS
+# YYw8H4eg5WwC1xYPnWmn6RNAmplxHG7i8tkuI1B5ZFUEsCoZ4NRXX3pj1kT7iBie
+# a+Iw3X+mN9odErGcFOhIeb1Zee4EKiNagYJcSyntjDAENdeOmc+krWVz8aFMHVW7
+# 5ToPbcnJ18k2sgocs80f9m7a90eqohQ2dLJSStXjpK8XDZq2+D/sgfRd9pLWvlbk
+# /3dzSnOFRbuqkaAePiimnJSFQIsmzlCMh6twM2459qkVLxBknZkCoY29Mlx6hpG6
+# H+yZAHqxtbYgi8VBGpTf6q+P4mJfcd4u7MlZPXD7T88sAVBICTnp/cBPfk+t92Tf
+# It1SRAQueRY9h7tMx4Oe8dWBn5Zlqwg/J3muT+fZ7Wu/F63zD+FoubJLK17MF/iL
+# Mr8erAIQOiDoZ4wG+BrJWF2t6Ph/yp8bqHonjbPaqaW+NWlDaSgftyONcaAgcPWo
+# igS83Ytyz0R99BS5jSMMRhj2T01JeA+KTJXf0pF0DcUJB/ZmRxjoRA2c5Ce7mso7
+# ++jaytNwfjD/LsQBz2VF2r8QJtcmZY+H1CLxbnKlB/zaallbkv+7eF3IbCcj6/Mn
+# IdpqnXh8WfFQIeyUDj7rhI0q9XvNZmM=
 # SIG # End signature block

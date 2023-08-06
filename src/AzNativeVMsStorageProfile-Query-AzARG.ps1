@@ -1,21 +1,41 @@
 Function AzNativeVMsStorageProfile-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    Resources
-    | where type contains "microsoft.compute/disks"
-    | project Os=properties.osType,
+Resources
+| where type contains "microsoft.compute/disks"
+| project Os=properties.osType,
     DiskSku=sku.name,
     DiskSizeGB=properties.diskSizeGB,
-    id = managedBy
-    | join (Resources | where type == "microsoft.compute/virtualmachines") on id
+id = managedBy
+| join (Resources | where type == "microsoft.compute/virtualmachines") on id
 "@
-Return $Query
+
+$Description = "Native VMs with Storage Profile"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUcQgfupXhFEF/+If1QM9mQP4c
-# 6vGggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQULjkrx9+QGP8AWVd0RBbwFewy
+# MFKggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -94,16 +114,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# K0cK81nfTTRlFcr9BjCOGXLY2JYwDQYJKoZIhvcNAQEBBQAEggIAJzC9P9qrLfv1
-# 3APOMiYfEIOQRfZDmD5NwMmPAaXRi0do9vC3FWQPl7ZGE+FI9un6yGHGxE5uv1K2
-# ngwRdxFa046fbbaudc9Sjf+P+ZldA4YNGu+vgFZ0PIGJyuLbdAKqKxlWolrPN5yw
-# o/nA4dfZjhqPesY9Q40RGRvLQnFUTcWjIsKaxc5WOHD83wOXWJsCdHOcI0esh5Td
-# z2XwkT1YJQCqmmgFTnkXGzZcG24EwsweurFO/QNdNNFCQyguwBy9t+k/pJpbpv8+
-# x+vHssu8UMrDOeBll7v42WC8TqtRLSECBPeJE0SGjkp1c1SW8sQfph49p0L1JDJj
-# P3ITwuePjfopvf5kzavTqx2C9G3H52HRQQkkwMmR7o9IBLq9NR4izP5dJFluUn78
-# mWGBIrj0i5JHu+JFZgXQENIs6JM2+MhAKKaId7ihzQatqmSX6GQSDSNvO/JFCHCO
-# Qtejcbkpj2K4OtvAiwleSi5lcvZEmGNlngW0NmYdf6YXQ1FkG/JTc8OqQ53tdykZ
-# MOQqgQWx5KEnxsDdj7Vw7giUe4m4mAnUbG+l2Q6wXqVYAbR2NBWb7l8lHv4UfuGB
-# eu6oL3Qyo7qv7UpDVg+LzHHXD/hs+C0Qi1bsktGER60dgr5THNrAAqBs18nrnHnx
-# rdAaqFxGrprNZiry3MmrFniUGhTYlV0=
+# qRlyfNQJpHN4mH/qtg5qP80xOm0wDQYJKoZIhvcNAQEBBQAEggIAxBVJTkQnam96
+# lamni/fDeCM6wtZoeC32wl1pN+mNQMCBdK66oRsoSErH/3rKwbcNRFVM8wZ62Hmx
+# x4leLX8463STbB7pBtS+FHuLm/tM0H4QKr9YiDmLNEUVJbPBW9axHJGg3EKoBYvb
+# fsz8l9pvM3nC+RU5hM0IChmtpsF0NlLHuYKigtRpf3HSX9DwI9epGfc4cL+qZ+J5
+# LTMllz8FjYefeQEhRiGlXs9lj/YtLxXGO34EGMHkbwQbXvVXpXquv6wnmocaY/sG
+# MVm76XodqLKMcsWxc/usjIxZT0w8a+enRsObK9CTyMGiottc2F1/Ld1S6Wx3ITkB
+# dVZNAEExZoru9yOyQZkQcgFlh5FvWFmq9mukh28nLzDxo7m1fJgHMsEyw3GNnAB0
+# 8Bxh7X4SOg1uB6Iw0dmfZ9ueAidqtElovnbhcU0zcCxfdf2KD8ljjqIfVkzuVgv4
+# 3pnTJelWnOOsgerB30hnaqJpHbNS1FoptMGT4OVcQRQDVsk+Nko5+7AkByHWWSQE
+# sYpQMYmSJl3uRjiAvKP6CVGafIGUvlXKUO/+iFbF/lY0o+ccpWmELDOzZPOkN1lN
+# PeMD6PGDjM1in4mV7l9gxBOQBdFloxY/BeL6rDNXTL7az6Zt3/2ON/DY5wfCKguV
+# o2GhxOOqvfwQI35W40mBw1jM+UH5AXQ=
 # SIG # End signature block

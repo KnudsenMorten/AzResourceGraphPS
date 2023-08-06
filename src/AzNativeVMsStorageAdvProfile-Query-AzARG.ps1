@@ -1,33 +1,53 @@
 Function AzNativeVMsStorageAdvProfile-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    Resources
-    | where type == "microsoft.compute/virtualmachines"
-    | extend osDiskId= tostring(properties.storageProfile.osDisk.managedDisk.id)
-                    | join kind=leftouter(
-                        resources
-                         | where type =~ 'microsoft.compute/disks'
-                         | where properties !has 'Unattached'
-                         | where properties has 'osType'
-                         | project OS = tostring(properties.osType), osSku = tostring(sku.name), osDiskSizeGB = toint(properties.diskSizeGB), osDiskId=tostring(id))
-                        on osDiskId
-                    | join kind=leftouter(
-                        resources                      | where type =~ 'microsoft.compute/disks'
-                         | where properties !has "osType"
-                         | where properties !has 'Unattached'
-                         | project sku = tostring(sku.name), diskSizeGB = toint(properties.diskSizeGB), id = managedBy
-                         | summarize sum(diskSizeGB), count(sku) by id, sku)
-                        on id
-    | project vmId=id, OS, location, resourceGroup, subscriptionId, osDiskId, osSku, osDiskSizeGB, DataDisksGB=sum_diskSizeGB, diskSkuCount=count_sku
-    | sort by diskSkuCount desc
+Resources
+| where type == "microsoft.compute/virtualmachines"
+| extend osDiskId= tostring(properties.storageProfile.osDisk.managedDisk.id)
+                | join kind=leftouter(
+                    resources
+                        | where type =~ 'microsoft.compute/disks'
+                        | where properties !has 'Unattached'
+                        | where properties has 'osType'
+                        | project OS = tostring(properties.osType), osSku = tostring(sku.name), osDiskSizeGB = toint(properties.diskSizeGB), osDiskId=tostring(id))
+                    on osDiskId
+                | join kind=leftouter(
+                    resources                      | where type =~ 'microsoft.compute/disks'
+                        | where properties !has "osType"
+                        | where properties !has 'Unattached'
+                        | project sku = tostring(sku.name), diskSizeGB = toint(properties.diskSizeGB), id = managedBy
+                        | summarize sum(diskSizeGB), count(sku) by id, sku)
+                    on id
+| project vmId=id, OS, location, resourceGroup, subscriptionId, osDiskId, osSku, osDiskSizeGB, DataDisksGB=sum_diskSizeGB, diskSkuCount=count_sku
+| sort by diskSkuCount desc
 "@
-Return $Query
+
+$Description = "Native VMs with Storage Profile (adv)"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU2CrLJ6RlH4NzGSIwKFxFhdhk
-# BWuggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUT3WctsmdlpxBowveeJcPWnW8
+# ZzSggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -106,16 +126,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# hr89cG4y+WbBaXh/+56WQpdbsGQwDQYJKoZIhvcNAQEBBQAEggIAjwwC3943i32/
-# NCKnhps2o52iYx4c/llTweCPfU6jgCnvo1LXlftTTPztis9a0E9rSpwjRf0YGHij
-# FExxU5+JqWu9ywuH7ibFTORKwNv7I7SHGGSTOWQURh6QAFau/2BpeSN0Ib1TkkJx
-# WxvLKSjwYySyYRG6NUCKvQNrFdo4tEACin07dD6v9kNjO4Y7NK1f25Z4DOZsM7Dd
-# Z3PTpKTCiPoMH5fW0syigfZtXQPwmirf+/2os0EgL4QIshAepuh/U/u+TzicX5q6
-# QW2EexYk9glFA/UxgHB4UHiU6VLtZCKC1LSr+WftelxOUu0YOgfJm7GDdNxH/OWe
-# 7vq7vACEqDk44yHpe3OlPMfQMttSoU47h2bwnBrL3IlRzr8K7rHsi0NGhiHLRxUs
-# MigWRn/skBJBNGD/XNJRgFEdvaFXZXKHWGuRlCv3ZC1IK7AwfOptT2RWBx4BTsTa
-# yrwTZIxS5XGbx5QVlOhw+FW+93OU7vm8nc1bIABzHOaEavB+lhWukY67HuH7XQP7
-# QLHgg2MKkkRxH3jLF0XUWi5Ult79GKyYZyHp9huf4Vtpvz7V3ukQcOWbAK1ddgbe
-# SYRe847NNaqvNv9VGSUGccDhMUKT2MS86ukPTy14yBn8ISD02g1S5toPSEYUI93J
-# Sw18GDvUkZ+2TsdzIPcB6dH/Bj0ZT44=
+# 1qwkQudEB+EJG+LbchGW2tIvu3YwDQYJKoZIhvcNAQEBBQAEggIAuOgtHYVvvKZ6
+# GrV8V/yHaP2HeHPNEvur1nBJx6cbYmD99mhZsnY5ZXt1eZP3Z10Q4PcxDhexacp9
+# rROqtJ/48AZTsFPWHTFblK2L8I+zetQYEyICCZq6RuMxUzFAdh3t9p2+gOsvl8T+
+# /+5iCEfq9rYfOUhQ18De5oRv20M556fQrI4i2QHrDA5G9tzr+6yzlsNR3OoKcd4d
+# x3UU5IU//6rozBewmyaObSqmaJIe+DmDYRQffKH0GPbwDCrxpxk4ymbvLNWqf1Cz
+# Gba9eZwfxTId+f5+nUOxyXBt+V+ge/76SKl6b107hpjRgYdzYY6wjnYsm7BPUHiJ
+# BfvsGzRmo/4rREionnoiwhN2ZEoluzxdc2lbOg2SHYl/GPM0k0yQ1Ja/sxam6BlZ
+# nakIekvJ220zp37OX/v6suk4jIciNHyC3rYsOOyk/Qy2H+qLoJAQ7FK9TyGaHok8
+# iljdVLc57ygUBXFS7B1RElkoEbUFMKJ5/qgc+3af9OSwC37+0fX02bwcPIsxJ9fd
+# bCXSqpDpMuCXJihERu71NY1KoU0rORHlzgT72gEDZxgPjIiCVrQk8idpH2SwsVEW
+# jfr+DHV5R25VBIxwGCcP7KRRoK/+cIr20+DHeMKuTEx5r3Eexv2a5rqtvxJgRrkB
+# bBQhKcHUb2LjoOQnSF6pTFcX4LAULNM=
 # SIG # End signature block

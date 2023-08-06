@@ -1,31 +1,51 @@
 Function AzNetworkNSGRules-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    Resources
-    | where type =~ 'microsoft.network/networksecuritygroups'
-    | project id, nsgRules = parse_json(parse_json(properties).securityRules), networksecurityGroupName = name, subscriptionId, resourceGroup , location
-    | mvexpand nsgRule = nsgRules
-    | project id, location, access=nsgRule.properties.access,protocol=nsgRule.properties.protocol ,direction=nsgRule.properties.direction,provisioningState= nsgRule.properties.provisioningState ,priority=nsgRule.properties.priority,
-                    sourceAddressPrefix = nsgRule.properties.sourceAddressPrefix,
-                    sourceAddressPrefixes = nsgRule.properties.sourceAddressPrefixes,
-                    destinationAddressPrefix = nsgRule.properties.destinationAddressPrefix,
-                    destinationAddressPrefixes = nsgRule.properties.destinationAddressPrefixes,
-                    networksecurityGroupName, networksecurityRuleName = tostring(nsgRule.name),
-                    subscriptionId, resourceGroup,
-                    destinationPortRanges = nsgRule.properties.destinationPortRanges,
-                    destinationPortRange = nsgRule.properties.destinationPortRange,
-                    sourcePortRanges = nsgRule.properties.sourcePortRanges,
-                    sourcePortRange = nsgRule.properties.sourcePortRange
-    | extend Details = pack_all()
-    | project id, location, access, direction, subscriptionId, resourceGroup, Details
+Resources
+| where type =~ 'microsoft.network/networksecuritygroups'
+| project id, nsgRules = parse_json(parse_json(properties).securityRules), networksecurityGroupName = name, subscriptionId, resourceGroup , location
+| mvexpand nsgRule = nsgRules
+| project id, location, access=nsgRule.properties.access,protocol=nsgRule.properties.protocol ,direction=nsgRule.properties.direction,provisioningState= nsgRule.properties.provisioningState ,priority=nsgRule.properties.priority,
+                sourceAddressPrefix = nsgRule.properties.sourceAddressPrefix,
+                sourceAddressPrefixes = nsgRule.properties.sourceAddressPrefixes,
+                destinationAddressPrefix = nsgRule.properties.destinationAddressPrefix,
+                destinationAddressPrefixes = nsgRule.properties.destinationAddressPrefixes,
+                networksecurityGroupName, networksecurityRuleName = tostring(nsgRule.name),
+                subscriptionId, resourceGroup,
+                destinationPortRanges = nsgRule.properties.destinationPortRanges,
+                destinationPortRange = nsgRule.properties.destinationPortRange,
+                sourcePortRanges = nsgRule.properties.sourcePortRanges,
+                sourcePortRange = nsgRule.properties.sourcePortRange
+| extend Details = pack_all()
+| project id, location, access, direction, subscriptionId, resourceGroup, Details
 "@
-Return $Query
+
+$Description = "NSG Rules"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUmeC+OK4rPe3NpvBIdZttuEjO
-# 1KKggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUdUupEJJWn8UlxzZ04Ru+8HOs
+# jV2ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -104,16 +124,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# V8dNyQgCjaYPT2xlcbMjaZKCs4kwDQYJKoZIhvcNAQEBBQAEggIACPRTeuxGr+CR
-# SDta4wFqTdcqGQu8qPO/xx9H7zzz1mJ96zyFl0WMN6r0q9qPAef9KM7Q5iJvXuWD
-# eIHK7+5DF0bvaAYsJhZn+mL/KKy65iCePEUbNL1ByaQboxAuVNoQA0NGF26SF3AI
-# zfyf8AU9AHFHtwjB88wHfqSNyCD2//qiJcceU1JTXdo6kcnhlQen1UvA1MZCFbGx
-# J6WoLNvMNwlpqMQ2adal/QDi/iOghPCyhIyak7Ed0O8524R3WzL9EziwP84Wrktb
-# HWoUauGYOMxEumJGBIZsdiaf8zyFCAoWjXCUA/lM94YyCOZ8jaeFoArAqoKBbOHf
-# eq8moHgD4gJABV1QKo9AxAGAQVluXpd+Vrcr6y0JWYQrttroxZ3K59Cn2i48uWIw
-# ULMz0eyIBnZ/lGcWFEf/1OH4xR5Fh3PBSKoZlcrBv632GNhdazMKqT+6zTjc5HXs
-# RRloxuEhMACSrx+E8iSyC1zHjfd2/WyISLD6WsD4qekfW5L7pxH5m/elk7/t0P1v
-# 5+lNxni4mqdeWHB6aWH6W3pwp5Hc/i9e5g149QJzskNhahijizBsdO0cm9QHK/A8
-# smjzYGsmZJ8tWIdzFnwYjxxC5WuriD6R0R6tz37pVakV+1izbNS22l/zxRN/Y4a6
-# M4+IkU4elkb5anzXP2Q2ayFWfnOUL5s=
+# E+Zmq7qhP2L9x+N9RTEVtaWhnrEwDQYJKoZIhvcNAQEBBQAEggIAAdAO5QSlQnXb
+# /XNJWib1QsiWynot6DhnJfbQWLHmjlrhMGVm/3bTEwlNvlOC86A+Ko6eaBj8relr
+# e5Aia61w0I2LM75jwtbSNW+SijlMmX51BJuLEpCbXhFq4nYcYGq6NJKqul+StbXK
+# pYJKm3Q5JzLoAr8ZkdIQlpOqo62gOuB3LsNY/bR/5hTd6ypXaPn8QLgBcCBpDwds
+# WSWwhcocHzXIcKwE8n5d6cZTQ2VXawo2sv1Dc5loW8WikfLp68nZS8z2ZSlw+FJj
+# bgPDU0SUDKpozQoW+60hXNI7BE4AelAeb5jw+KnBTUBdArasSaroSdpeZHl7Ehbx
+# oPrtpq19+h0rJ4FWxKEMmisSfQVvQxkfqh9K5D2BvjN4g9DGTkUUfdwkzVPmQMV1
+# d2tQMXybwFJnrt+SdS0YF+2D2OQWekAaXDCVB715FHKFyBcKY3dpqPUxRLPJfXq6
+# 21wqjB3dPLU/eKreYj17NUWSgecXUqLrgkgj3XvnZmVBmDqFr8DkZDAkPB1BM2JW
+# qdk/ty+1izmkBTB6XsLumeLc4Hv/vnrlVICpZqONtM8wjPmhJLsfKnc71neqHMJF
+# oFYSSr8mpKmncl3iF4F+Q6ng36WXOLARi4E7fptPZx2xMgHXnmpo0ITbdzVWmzd0
+# U55BJ85TT4clhSnpGDHBM96VFzJ7PbY=
 # SIG # End signature block

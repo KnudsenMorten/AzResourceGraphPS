@@ -1,28 +1,47 @@
-Function AzDisksIllogicalSizes-Query-AzARG
+Function AzStorageAccountsGapHttpsEnforcement-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    where type == 'microsoft.compute/disks'
-    | where properties.diskSizeGB > 128 
-           or properties.diskSizeGB < 126
-    | where properties.diskSizeGB > 256 
-           or properties.diskSizeGB < 250
-    | where properties.diskSizeGB > 512
-          or properties.diskSizeGB < 490
-    | where properties.diskSizeGB > 1024 
-           or properties.diskSizeGB < 1000  
-    | where properties.diskSizeGB > 2048
-          or properties.diskSizeGB < 2030
-    | where properties.diskSizeGB > 4096
-          or properties.diskSizeGB < 4090
-    | project Name=name, Size=properties.diskSizeGB, ResourceGroup=resourceGroup, Subscription=subscriptionId
+resources
+| where type =~ 'microsoft.storage/storageaccounts'
+| extend Prop = properties
+| extend HTTPSOnly = properties.supportsHttpsTrafficOnly 
+| extend BlobEncryption = properties.enableBlobEncryption
+| extend FileEncryption = properties.enableFileEncryption
+| join kind=inner (resourcecontainers
+        | where type == "microsoft.resources/subscriptions"
+        | project subscriptionId, subscriptionName=name )
+    on $left.subscriptionId == $right.subscriptionId
+| where HTTPSOnly =~ 'false'
+| project name, kind, HTTPSOnly, BlobEncryption, FileEncryption, location, subscriptionName, subscriptionId, Prop
 "@
-Return $Query
+
+$Description = "Storage account security gap HTTPS enforcement missing"
+$Category    = "Security"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
+
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU8OvKHV7ZkRZMDIFEWYNm0+hb
-# Aoeggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUrQGfEBpd+5YnncWZfWFsBxY0
+# KSSggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -101,16 +120,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# q8SJEe/K5E+HyhldBy9IPD1iem8wDQYJKoZIhvcNAQEBBQAEggIADDboYIbRWcA3
-# KiIrn18Rd0OdweUZLMa3WRboAljv+VHAEPWfDeIbIrYs/VSFOKsD/glsp5K4qKK3
-# PYrw67xN1UZ+eJJz8pYyGnTMK1JGb358Gxuq/5wpTjwUBDDJlKfFltGaLyiZdIvL
-# yIMSZKZjduA+0biKm8LrQ0JmJCXslX05pCFib7fedTeVDtcyOdOwkfwn0KScxfFs
-# aDTZ3y6NM+Jhif6Q/ZS6aqaRzhsA4sFmY//qGKKYeNOLMuzpwsW59n4MSm409ouX
-# T/mR3CgTe7m0cbI2na5RH071G17MdccyICRLmYjQT5LdWVsHlSvYo6sctIIWK3C+
-# 0yhhoe/AqengBEMrGWWvSc541+5pvoJaYMRDvmXieLGo82maJaLZ1oR4fcjw8uKR
-# 3Tiypn3K6bz1qzlRkzP8b3c86O36MqwX+VppBDbh/jgzHMkatEC6LNXc9LMAzGhZ
-# 04TtwrN8u6IL+Hy6rx2uS/g8eHbMHthgAgwsu+bG9W3/ILLH1sIxv8UQbpBbbhiP
-# GvUi+41gsap/lI5206Zz/ghqZLU7lmx15mqnAI1Zun9MvpUmoTe52b1b4Pq6KfAd
-# h0uP0zfWALx5nidLetFTikbj/wzfPWtLK2FTIYUl8i6vhPUfUsKcJZBmma4Fkkhl
-# 1iR9KCdl7ReoENxqsIN454MebhEk93E=
+# c/Uwxcx3ysxnS4zun1yl5H73SqkwDQYJKoZIhvcNAQEBBQAEggIAMFCGxC62SD4x
+# OcKuXh8mzg/BZ6xQLCKnsrmtYliebOPBznjvq3RGHaHDCAb6O41vcJf/LyUjoKrY
+# x3MEWDG5zWf6vqCydUMmq/FjFRgh1g4wRPotpgn17KzrleJDKJ8B+acRSmmI13UR
+# GgOvrgQggiIeCKxOhQZZo6WPb3fvN5oSQuSQQysDOnArsrOR5j8mhRPVwo/0u53K
+# zAquliPWqTrqTOgR9v5qAqx2Nxh8pbp7bL5zkbnxK7hEm9ofXGYglZouWTqmRK6j
+# /FjueliiA1hPgltnYL0kYpvgQn3b04cA1zX0OWtA1FrhJGuSg3am4X++pMlBQ3mC
+# sdCtZT4i76oF4Of9OUNBewP6/jt1kFN1ueBQxt/O+0UKdNYCbPu+awi4A0Vj7H/g
+# Bm0zHo4EGR4/LeM4xYhQpRBF4zKkZPt8UhdjbS68q5LaldAu30EXnhtnrxg3OxM8
+# K3VbQ7IXbeaFMECTP2MRybf7ER7qrKYHSCUXfAo7lbEq6stFaPz1ynufc5ZrYb52
+# +PX/r5HeSmuaA9UT+H6Ri/7DnIr0VcpKMEm8T2GCSg8EePhRpcta0k7jQ3mrC1hw
+# BznUXMVNfvjBbksKbkGTvOdbq8J955+1u1raevHgcHgKnI1jucnbPZMoMY3iAX6A
+# UcJbP1pVjjVC+Bef+8rY34hg9h6GjJs=
 # SIG # End signature block

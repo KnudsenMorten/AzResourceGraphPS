@@ -1,21 +1,41 @@
-Function AzSQLDatabasesByLocation-Query-AzARG
+Function AzNativeVMsOsDetails-Query-AzARG
 {
 $Query = @"
-    where type=~ 'Microsoft.DBforMySQL/servers' 
-    or type=~'Microsoft.SQL/servers/databases' 
-    or type=~'Microsoft.DBforPostgreSQL/servers' 
-    or type=~'Microsoft.DBforMariaDB/servers'
-    | summarize count() by location 
-    | project location, total=count_ 
-    | order by total desc
+Resources
+| where type == 'microsoft.compute/virtualmachines'
+| extend vmName = properties.osProfile.computerName
+| extend osType = properties.storageProfile.osDisk.osType
+| extend osVersion = properties.extended.instanceView.osVersion
+| extend osName = properties.extended.instanceView.osName
+| extend licenseType = properties.licenseType
+| extend powerStateStatus = properties.extended.instanceView.powerState.displayStatus
+| join kind=inner (resourcecontainers
+        | where type == "microsoft.resources/subscriptions"
+        | project subscriptionId, subscriptionName=name )
+    on $left.subscriptionId == $right.subscriptionId
+| project vmName, osType, osVersion, osName, licenseType, powerStateStatus, location, subscriptionName, subscriptionId
 "@
-Return $Query
+
+$Description = "Native VMs OS details"
+$Category    = "Configuration"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUNL7F6O1L0QUHLcbcupod7Wdw
-# o5+ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUjurj3bdvKLcY4cDmWUvl13TF
+# bEGggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -94,16 +114,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# 5iB4Sall6Qd679wiOziOFReMUdQwDQYJKoZIhvcNAQEBBQAEggIAyIG6JziDvESI
-# HXW0szpGbekSJhQ2g8piqHUprLZdgiQ5TULiwJG4Ai8jwqMinHlRP+txpe8uoFM3
-# 1Wzhz8PAs8E60h3FOyld++ghReTAIucgoa+GfcqqxwbJ3I0EwjdX/SNgFSIU37f7
-# +eT9qgbjqiAMrRdTUcMOAia+ckBlZn8IhqP4IKZhvPZlFMTssPbOCGPh7B6vvhDf
-# WAOiAYiGqibdOFOcw9P/0+d/Wox65WUYmAThRrwLFZug5a6JQiX1JeHsZVpbVZ75
-# F8qv2I2Fr0fX/D1tetmi5F81vJ0HhhMksze49qalDDe2cEEIjPkyCqffwmhewQSb
-# zJkq64w61IaOgF7G3IBqLLiJAz0LHiIsKD6wEc3L3+q8HZ2R9divBCE1JSaCGFQS
-# NA3Gpg2lFpLOV8Mqi9HNNwmKCOnCCyE1YcXirysDXuoaN01G563EjF0G7sK3YLnr
-# 31kyhRvfZL5Jl94jOePFkrwsPpA+xpQDYg5A66ee17i3upBm3lKpRO4aSd15QW0S
-# V38nfsmmxxlcEkwMRnnNG5+SnHp9GJN1GRMvCT5vDk2Ocd1hzoTUbwfKVEXFoxRM
-# WfzSwNz9Ez9xtrVpz0kRcdrsq5Vv2/lbh80T3W2vhbrxn5uDv93+LhwNU9Caq0yi
-# sfn3VNHs1mFk/4z2Q7Usj8Pm0Xpca1U=
+# QJZvBF3CNMdKW62m6UJ8BbOMN3kwDQYJKoZIhvcNAQEBBQAEggIAHw995aPRGCB8
+# p1K8WKZ+txZEAAvJA/Zw/C7gSNdXKm1ABvsG45kV5JYwzGCGMdjggAKwRH4iKX6s
+# FBYbqrKVPlmoT/vfG/NWUbFF3sh7/kbFgKNSmxq0oU2QNbRjkoWJvORBNpDgeBB+
+# Les22nqjWXILVB0a0DJztdMIdnpsq4ViBMF1HjlstdynIbFN0CtirEgCWYbM88pE
+# BaHOXWH66KJ5Ayj5RYh3ojfZHqkKSpghBaoulgB02Qb1Y4/+DX+zmpYRt2kENxfP
+# slL6Sy3Gx95YZ3WR0IWDDGQ284IJn5GDGRcXjC5IBhFi2SzYB7w4Og6a2CbKKEx/
+# Wsy0B08lC82O1fquv+jAZ90uRceuaGjigWMoDpSvcOl5Snch6kWYzcZ9lCa/I1A8
+# xqPcfaLZvEyuh4m0su5gT2gJXWTS4Dbzi1wND1LDTIDXr0K5pboMWi5UHAxYxI9Z
+# ciXkaM6wyjhifLnPeauqNZ2JQW8WeOQgl5eKvxhgrEUv7LegsUq6yuA5X11q6K1L
+# E0lMQenh2Ege51mJbI6B01g3MSyNoyyS8UXxXNzXiJFECRr1oq7zOn5N1pvh0YeL
+# rtDyEhXamUqOGSCXCtw3Bd/UszghjEQ7E4rjw0PJr6Hz6wiBmRxeo3tus5SOE5nZ
+# EGEpeCKYNoEj2AvRRNCkCHbKTYXgPQg=
 # SIG # End signature block

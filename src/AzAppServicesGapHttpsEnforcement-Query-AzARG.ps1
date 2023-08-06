@@ -1,16 +1,39 @@
-Function AzStorageAccounts-Query-AzARG
+Function AzAppServicesGapHttpsEnforcement-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type == 'microsoft.storage/storageaccounts'
+resources
+| where type =~'Microsoft.Web/Sites'
+| extend httpsOnly = properties.httpsOnly
+| where httpsOnly =~ 'false' 
+| project AppService=['name'], Kind=['kind'], Subscription=['subscriptionId']
 "@
-Return $Query
+
+$Description = "App service with missing https enforcement"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUfqvIJQ5oOwL+v2OKK4g5bs5B
-# q86ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUeVvCDvdu/LujlZJRvTLqhpde
+# Vlyggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -89,16 +112,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# XxDyezCtAnbVWA41eHhRquLz8fUwDQYJKoZIhvcNAQEBBQAEggIAy+cDVFmh86MX
-# d6JVcj/p0duJQ4f6GaO/2NS84ykLAZzaTxHAkD1WOORmL80lA71S2AaAvl5pHhXg
-# 2yqx9HXFK0sUL8OevJoCwcG+BUY/3naOyFBq4M5jZuLRn7TtdVD60eMVBCpP8mKw
-# h/b4vnu5OKnhC1MKAGITIebDbg/jiD1UxZ4UHCbTSZkdt1kNAAXEekFUwDbqipHp
-# qK5WicejxeCNj9BS4yRc5nBci1V/PQK9um3LJv4XuYugtfCvl5ZpBJNXhEv4HHOE
-# ywMtQjHjj24aJgrAAwJFeHKI4rW0V2IxYuMkRYYh4J3V+qyghO7jDEKg5PUXTKfW
-# 5bPcbCaC3CT5y01p7gJOho8l0jMj884jywCVF3LI6lo0vVqjlpa3b8JkKhH4JJbV
-# NLmYuER3l0gYdpjKOZbORxNfkb06WRJm9gyZM22cNcoZZpsD7QaNYrJ6t9wY5/fu
-# 0UBVx/Q+VpdpPg5yQyymikUE16mJB38Vp3FKquoGmldm0dYk1W4X0sbswZJyHCQl
-# 1esMImjf0jD+fsGkYFwlsNs26yJkuVCv/F9+hW3YlBF0oB/SZgcq1eiLHYna5R9u
-# y9UROk8o8NfeOG/tYYjQkOKamzMxVnqoEh67/Rm/nXCLK4OIcswF76uwpkCPic0C
-# cHzRRzrIqi5GRj2WY2zy/NDldgBuL3E=
+# dYq4n0/USw/4jcv3Gijf4NgaWL4wDQYJKoZIhvcNAQEBBQAEggIAntDG/1ziyAYo
+# cvafcjzYpMJsp2zNUEhMJL1l/L85uRshNM5g/UcMGIriwDlbi3PLuDE4OVmtWNe1
+# hTD/TdhFW2yhFegZ39QPoUETSXQRXFxAv/+fq3NUGLEFGqTbhSA6kxAchNDJnha8
+# ps6YsTFPONvdQAQaSeq4qSjyshOdfgECIdGZnn3X95QupnJTv6Kl77FBl3cCiS8b
+# Zv2N8PS1Zzkb+ABO3SS1iSP1x6z8F/oB3hhASN/3bcwkhHUmnG4taXP9Eaj7D9+K
+# rd7QDIHTUHgw5MX02Oil/AaQeLipVA1lSHG/nKhq74qsPfNy57P1Ac+YGIOUS080
+# 1zQpIUo2keZJ7EXPnHTdHbXBO7KCodDQ97iUMqkyqfyFhCyoBNRx8VkR0Ue1E+74
+# JD2EYXCrxV1ivMVTgLgpRz5tx3Ykea3XNiSQojks4pIxO8cuaa/KxAA/8L5Vs4gO
+# O5CE+ejZ4jKY4ZvKGlM3tZBgs/G9oBJXrpoZ0CoD5e2wyCAzaVyxJPvUaMoLyguo
+# 6IiiQtFj5brPQp1R9QIL+38UrxMTVRO6kivfKzQiEJyGaA8/rxe52xerHuwZKMFj
+# LAFmFKZPa0UYtih5Mp6DyfnMDxfhENsl1Jqy6BaJ1QYgjV8ez8pLPE9jbh/b3nW8
+# qJEcWicG/d4nIboBeXiHsM/osBH7alo=
 # SIG # End signature block

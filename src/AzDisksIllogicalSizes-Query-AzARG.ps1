@@ -1,28 +1,49 @@
 Function AzDisksIllogicalSizes-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    where type == 'microsoft.compute/disks'
-    | where properties.diskSizeGB > 128 
-           or properties.diskSizeGB < 126
-    | where properties.diskSizeGB > 256 
-           or properties.diskSizeGB < 250
-    | where properties.diskSizeGB > 512
-          or properties.diskSizeGB < 490
-    | where properties.diskSizeGB > 1024 
-           or properties.diskSizeGB < 1000  
-    | where properties.diskSizeGB > 2048
-          or properties.diskSizeGB < 2030
-    | where properties.diskSizeGB > 4096
-          or properties.diskSizeGB < 4090
-    | project Name=name, Size=properties.diskSizeGB, ResourceGroup=resourceGroup, Subscription=subscriptionId
+resources
+where type == 'microsoft.compute/disks'
+| where properties.diskSizeGB > 128 
+        or properties.diskSizeGB < 126
+| where properties.diskSizeGB > 256 
+        or properties.diskSizeGB < 250
+| where properties.diskSizeGB > 512
+        or properties.diskSizeGB < 490
+| where properties.diskSizeGB > 1024 
+        or properties.diskSizeGB < 1000  
+| where properties.diskSizeGB > 2048
+        or properties.diskSizeGB < 2030
+| where properties.diskSizeGB > 4096
+        or properties.diskSizeGB < 4090
+| project Name=name, Size=properties.diskSizeGB, ResourceGroup=resourceGroup, Subscription=subscriptionId
 "@
-Return $Query
+
+$Description = "Disks with illogical sizes"
+$Category    = "Configuration"
+$Credit      = "Wesley Haakman (@whaakman)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU8OvKHV7ZkRZMDIFEWYNm0+hb
-# Aoeggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU2aP3lsbRbxTL/yLFsCQgA8pc
+# 6/Oggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -101,16 +122,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# q8SJEe/K5E+HyhldBy9IPD1iem8wDQYJKoZIhvcNAQEBBQAEggIADDboYIbRWcA3
-# KiIrn18Rd0OdweUZLMa3WRboAljv+VHAEPWfDeIbIrYs/VSFOKsD/glsp5K4qKK3
-# PYrw67xN1UZ+eJJz8pYyGnTMK1JGb358Gxuq/5wpTjwUBDDJlKfFltGaLyiZdIvL
-# yIMSZKZjduA+0biKm8LrQ0JmJCXslX05pCFib7fedTeVDtcyOdOwkfwn0KScxfFs
-# aDTZ3y6NM+Jhif6Q/ZS6aqaRzhsA4sFmY//qGKKYeNOLMuzpwsW59n4MSm409ouX
-# T/mR3CgTe7m0cbI2na5RH071G17MdccyICRLmYjQT5LdWVsHlSvYo6sctIIWK3C+
-# 0yhhoe/AqengBEMrGWWvSc541+5pvoJaYMRDvmXieLGo82maJaLZ1oR4fcjw8uKR
-# 3Tiypn3K6bz1qzlRkzP8b3c86O36MqwX+VppBDbh/jgzHMkatEC6LNXc9LMAzGhZ
-# 04TtwrN8u6IL+Hy6rx2uS/g8eHbMHthgAgwsu+bG9W3/ILLH1sIxv8UQbpBbbhiP
-# GvUi+41gsap/lI5206Zz/ghqZLU7lmx15mqnAI1Zun9MvpUmoTe52b1b4Pq6KfAd
-# h0uP0zfWALx5nidLetFTikbj/wzfPWtLK2FTIYUl8i6vhPUfUsKcJZBmma4Fkkhl
-# 1iR9KCdl7ReoENxqsIN454MebhEk93E=
+# KnP7e2VhbW+UYcTeDy+Z31s7R9wwDQYJKoZIhvcNAQEBBQAEggIAyiKM/VTsnEAc
+# 2n8o1OsWM71hFJqcbI1nP4rXm6BaaNZoxfigKmxn8DFj7/AqPjWSavf/ESfPFr56
+# WrCaDxXzG8+tCXUSE8fmrhSMXJnq7BWgZTBzHi6YDAeiLTc2Wwbb2bC/JIbx4SJs
+# q1Hpp9XIRQDbl0epHQp7P1f0Dbk7HqwExvxP9o/YHFHk3ZPSRMm2EAprm75mKQB/
+# uvN/hVcg4OwIcfdEGvr1oNLH/dCJfeXsBtnE+RJrHWkHs/yVBadLQ4vk05En5U7G
+# ddL5AFvKLWregFH/LCBYptU+gOioLBOQb/OAXwjcjWgwDqPEDAg9/9P/CsukzxxJ
+# m3EmagVDekS37ZUEqmWgP3iGSik3jJn+5siqV6dVCofi9kE8dFmdDKL1rxzIPJPe
+# kSqEG3Pa+WSSwNG0oemTLZDhlrgq7sAauYIam2T5kQvdrWayoWLOy6LP0X1twX27
+# HdMOPoIVgiFMzkAqRonQZ6tkr/h+gjU3MsKc6pfrxTdl/v4mHjCW9keQEu1Gblo2
+# Yi2N1s5Iuyru6mq4A7+s4dInQDokAZOnHMVge5A1CudlKTZzl8OW4+1koASXrj+2
+# Kujy0rvHcOaYI5GKq0tVFpdYfYdOyXx6WEY8CdJgoh6HeNCWCvYY9GSw6zOec0cq
+# 0kFwR8d9ENgItE4YkEPWV/CuTpMVU3s=
 # SIG # End signature block

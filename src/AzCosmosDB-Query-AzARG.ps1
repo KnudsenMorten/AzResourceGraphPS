@@ -1,23 +1,39 @@
-Function AzNativeVMs-Query-AzARG
+Function AzCosmosDB-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    Resources
-    | where type == 'microsoft.compute/virtualmachines'
-    | extend osType = properties.storageProfile.osDisk.osType
-    | extend osVersion = properties.extended.instanceView.osVersion
-    | extend osName = properties.extended.instanceView.osName
-    | extend vmName = properties.osProfile.computerName
-    | extend licenseType = properties.licenseType
-    | extend PowerState = properties.extended.instanceView.powerState.displayStatus
-    | order by id, resourceGroup desc
+Resources
+| where type =~ 'microsoft.documentdb/databaseaccounts'
+| project id, name, writeLocations = (properties.writeLocations)
+| mv-expand writeLocations
+| project id, name, writeLocation = tostring(writeLocations.locationName)
 "@
-Return $Query
+
+$Description = "List Azure Cosmos DB"
+$Category    = "Configuration"
+$Credit      = "Microsoft"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU0WaQeG3vM7aSRuWbulmZFUqv
-# xC+ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUIEf9Rk4vUzcnBeRmvKjJh2Ri
+# pFiggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -96,16 +112,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# yWSxE+p3LiH03GxZsjMaiD98uX0wDQYJKoZIhvcNAQEBBQAEggIAUlWiYwDirHPE
-# mm/lob/M4A1croQ79IpMNi/2kRnHlL4+e0bOziApkLEAVqjwPOkAH+dGNIi7Mr2j
-# KwVbd5HGj4/Ygd0ffyxWXN6doov6z/pb4sAPMTjEMEOP8xIF8oReVLbZPxIuTc8S
-# MTC1TRgWCOjLrFFgVedfKvQFsq7etwr5k0LZkkZ0TXzn8MR9NNGf3MdBZwA9U7Zg
-# qc9seH5PZG5OOXCeiAo42bf0ATYC43nsMQHbcfhpbgeW4htyFMJPwUGmeGLAyr6O
-# uVQQkGfBhIB4pdN2rSHKuqjhCUW7rqN7mABrx3NG1KlAVaCeyV7gADObW2pthMlR
-# SgCd48MOGh81p6La3Q6Q0nJckvRIRU5eMGDP5ueuydvk224RdlOPio1NP7vkP8cu
-# WyRbpBaZBKWWqiPMDm2/xLtyG8HJWMlO0GXrw2i6bYZENEWaSG8bPHrjUzpxvZmF
-# O21HrEOA9UCYsbM4FNRWulBqJodpAqBEuvFr5XR8eSURfGHArVNzlm38bkvYaV1d
-# WlJu1pC6f5YGvOB6dV2uSHFRIS1pFCNWeacVG1mcex8+f9ATslbY9CrRRNSNP/+V
-# knkk16plgN66uQlundBIz2Dj/NLn0NG2YyAfqI4clSvG6OleARtlMN2rzyIvw5E8
-# JfDlbcEAtOuGHlwChx4CRid5pK66SmU=
+# 2sNFzWE3wEE7BI600fjox5YarIQwDQYJKoZIhvcNAQEBBQAEggIAMH9iRmOuWFYk
+# HJxvKJigCwHx2VsHn81PrmnBlrOtL6X5cpr1L0NpemjnQZW7511CU09+a5Ovwv9Y
+# Gg9/dFcAf0MCPs7q9aP/dUXkB8TgZQoz+coYinvoNfWFXs9451dpdAefowiumckM
+# lpMMCe7yGd47RQnr6Dbk3n4CHD7XgaPPdZm2BUa4ZygA1JYuZCbTg4el56MnxgwX
+# 9DyQ+jliXGRv+maN+fJT1ENCd9PIqd55PYhZknaIp980HMFtih+zXOSnLPYMpo6F
+# v52NTP33OdZAwwqL9r5OBLoSm6Z6T0FdNbBxmTXhMthtmfQBq//JDeDAl6pYv2hj
+# DTPOa0Hjmr9GPb9VpsdDYp3CgTRpSRw4h97qXnFGfQ8K/sENAG7nsaqjjGcG0S5C
+# 95szzhLOgssD4zBaK1rVyEH+xVrgqql6Kj30sQAVOx11jz5Gz3k3UBsXHdV5YjkK
+# u4Nkuj7oxASG8NrRVhBsR9BX8CAyUEp2ztPXYXqmVxu5mei7baEGTjjSIipPhpdg
+# eWc31dKJ2qyM7r0BJo4T1mrOPsVj9ANH6IC6gVyxzBgpFUksYL/NUOGUPn7kvLC3
+# OyuKUUHoqtFDkbJ98uRc18x5LDQ8PQ7n0Opd2iUTIiVqE1yj2ewt4jUCedz2MJcK
+# zC0I049tNBvD316+Aj07qr5qYGHzJ1k=
 # SIG # End signature block

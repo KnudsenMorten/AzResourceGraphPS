@@ -1,28 +1,50 @@
 Function AzOrphanedWebAPIConnections-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
+resources
+| where type =~ 'Microsoft.Web/connections'
+| project id
+| join kind= leftouter
+    (
     resources
-    | where type =~ 'Microsoft.Web/connections'
-    |project id
-    |join kind= leftouter
-        (
-        resources
-        | where type == 'microsoft.logic/workflows'
-        |extend propertiesJson=parse_json(properties)
-        |extend ConJson=propertiesJson["parameters"]["$connections"]["value"]
-        |mvexpand Conn=ConJson
-        |where notnull(Conn)
-        |extend connectionId=extract(""connectionId":"(.*)"",1,tostring(Conn))
-        |project connectionId
-        ) on $left.id==$right.connectionId
+    | where type == 'microsoft.logic/workflows'
+    |extend propertiesJson=parse_json(properties)
+    |extend ConJson=propertiesJson["parameters"]["$connections"]["value"]
+    |mvexpand Conn=ConJson
+    |where notnull(Conn)
+    |extend connectionId=extract(""connectionId":"(.*)"",1,tostring(Conn))
+    |project connectionId
+    ) on `$left.id==`$right.connectionId
 "@
-Return $Query
+
+$Description = "Orphaned Web API Connections"
+$Category    = "Configuration"
+$Credit      = "Mohammed Barqawi (@Mohammed_Barqawi)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
+
+
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU82sU55NLNjQ5pB31J46UgJHy
-# T8eggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUZojKv9zASfGXJcASqpf1/XEF
+# 7a2ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -101,16 +123,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# XwUpaQDSmgMfYtYQxD/3H8PsrNAwDQYJKoZIhvcNAQEBBQAEggIAN0fDBtvfR7OZ
-# fKGfH1+YNSLu5Jr+L7XxKjKKi0KY5vm94dvBzHGoPmWAF98SsqxSYmweFGc2uR/l
-# b7DUykVz1VASfPkUR4Ov0TGAvpAGHYHCiux6gKi50zFgyJIF80/PJKBf2EOdtnBP
-# G9nxXJQXxeTU2wsotBSFHNQ4f0nFqrLUXR1yj1Q4hqVc+o8K9P0oFcs8pum6Vzk7
-# nqMyrRmu5o+MCz1KfyJeqe/v/Z8H7xoExfDGi7nzciKXnPL7471G4gpEqK0ilbnP
-# 14avEe+/KxSd3xC/yU9wqkBXkHjDlidMHr4WPaEa4wrH6Ol/dG//8NeA7A6yF7bS
-# tXIr2Sl+X86H1E10+QYeb8bgzS7a59AdBeFbVLXF4Jk2m53U+t+g6y7AzcBje9UB
-# uox0F0b1iezGnqxWW509vD7leogr662gk4v19yY/7uNm5yLc53C2Jw32yz/OOnXW
-# nyGoSlqttT4XlOzwMATdpJ0wAhuF8YBUtYzXEh/a93QT7KO3y5V8KpAvVUNzojgJ
-# orEOZ3a1UueBe9g40RcHkpl6P5Yy+zrmPayRAoYJAxMuzbrHtKkg9lTD/EFupXNy
-# U6zs9v+66IWKNeywgevifRzOc0Ox7WKeFc6yBAX8K6tzaxBldoC9XM+jhjZM1RCP
-# O4IcKXP1XAKB1FZGwgpQhgXo3AO15+o=
+# 6mymDxLZHQWQ3ssKYs7EkkGJrH4wDQYJKoZIhvcNAQEBBQAEggIAmKYb02+T50DV
+# rwZGtblE0hdxWvf4q39aK6uRb5efWu74kwtbUOdzBwC+R32Pg39i1croTSGVfArl
+# 90xnN99FoD5+MEDBRDUSGH7qWF0bm4p6eYkIEdTRaNPThsw86IPAva8LehmkzB8/
+# Kj1f/7YFLazqq4kEC/DJdUoKRLVRMLnliZrPJwgxxoU6J/HBxqE9KcTe8QqcGRg+
+# 8S7e/agzkn6ULyXLVxzDWh3sonEUd5uvmcHdbclf8n9edKRD+AzkvdXKTPdt6or5
+# wtsJocja9yNc1mbSs0UkTFRHdfGh7v1PvBrE3c5EoEI/8ftxXGlY1arUJrwJn9sW
+# 6rNy9rHJaBQzjgoV8cIrNr1xhodPmYY4VwJnDd8bLxaCTEhKbkngZTK46F+5Gg/X
+# ZWWEFssJoyBpVZFEJhXzlx9NLXC5RAjYTfg5EVgOUzQmp4s8JYXH11AsuELVP4Gy
+# 1zIg4fKJFikeB74Md56V3KKHF3nsYDayLEWfZwoBUR4j0xMK0Me7kDspifRptDh2
+# Y7Owp/9L8YjtIOcz4V8fujTMaLO1KnXPpT6Jwzopa43E/iT1e5ktTAdxf2rfD+e3
+# vu2GcaXPnFgqb/LSGnGz9t109jscwI+tf181eVuaVIJVTnjVXrY+tlR/fHtOSeD6
+# 5TCGOyrfXi9THofOyipBsEs5HxrLq0E=
 # SIG # End signature block

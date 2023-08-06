@@ -1,21 +1,41 @@
 Function AzMonLogAnalyticsWorkspaces-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type =~ 'microsoft.operationalinsights/workspaces' or type =~ 'microsoft.insights/components'
-    | summarize count() by type
-    | extend type = case(
-                  type == 'microsoft.insights/components', "Application Insights",
-                  type == 'microsoft.operationalinsights/workspaces', "Log Analytics workspaces",
-                  strcat(type, type))
+resources
+| where type =~ 'microsoft.operationalinsights/workspaces' or type =~ 'microsoft.insights/components'
+| summarize count() by type
+| extend type = case(
+                type == 'microsoft.insights/components', "Application Insights",
+                type == 'microsoft.operationalinsights/workspaces', "Log Analytics workspaces",
+                strcat(type, type))
 "@
-Return $Query
+
+$Description = "Azure LogAnalytics workspaces"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUMY0RHPtG+izeL3omrHz26r+9
-# N8eggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU+jWomaKnhwctxF08r1qnsRat
+# 7SGggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -94,16 +114,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# RBmG9KY+3c1d0udEmAoNt/L+pecwDQYJKoZIhvcNAQEBBQAEggIAq5h93mMAGNdS
-# RmONinDW5JOU7pFStlbYhtsg1QSOIhaA0SPA06ocC2fVPUy0hV+zRetcZx73DmXG
-# b7UIjxNhll9r3vGgVwjKPmdXk9Ds5oEDJPHI3lkYERgGEOvgJQPvs341U8f8MuuY
-# v1e8zWqKntwHgOgwKmIdZlQ1AYeTp35t+c+BpNJiK2vV0l4a/GpRStejfbEXZgZ7
-# fQLnc6QQelzoRHC/DmR8Qr1NrrLb4go8NLDLqnjJgjgczHm5BHOELO1rHQXmKItf
-# /1G9WLjYYS7WOw+uKykURtoDIT6+cK/aa0SfEdQWiLOyUxkyzLxvhyXd0gRu7mEM
-# cSFtZy7kKO841v/RWA32fjUiBmp0kNRqRxgwEzEZfI9yulL8UM5W72a/VLYT75OL
-# bE9NJdWuAVnhjMfBC+zJg9XOGlO8sUg7I9ZwY2xRlE8eFXZfGAwFgjyJg7rYxeDF
-# t9etOwJssQiWemrd2YcOGAVHRGRrbJIrFCyoc53MkOWeWI1qjtnZ9sqPZstWDKGx
-# kyYwzT17Bklv5pFgSBqU3b4y4UfNEyuhlvtLBy6+aSYNxJStOTmLCVy1W+ps/HXo
-# L/VQaaVK9UzkmjhFixSMm1Mf358jMdd4lSfOs0Zfu24PWUZQtSC5coOuggAWLpPE
-# YV7j/E9YzNEGt7KYSAh+qOhwqQUOssI=
+# nSdB0qhegfb1n6VItA/2GJ+gPqYwDQYJKoZIhvcNAQEBBQAEggIAl0Hxcn4szWPT
+# aHpk8cEXS6pSO+IFJLpBDaCzb0+2+ik0UYFipgQHX1tYxut1SeQoH4M5mrtV3Y72
+# +vvbQtILnPt3SJsmykFSzSYZgqp0RlEft5Covubo64vnHPFIWzt9VaqapVmy1MLT
+# JerJmucj+x+uN4kP6lrXQ5YzMY+B0Nss3MaO6DVlzBPdYcsuAk/ctmt6/lTkHbsH
+# j5LdOL8iak5IbbyZan6c07MRMbWhNhYfvAs7i2KTx2Y7c/NopnhAMC9tzO803wI+
+# 6B1QX95x8Nzk0XTrlKhYzfbaoH0t/0qoJzFurNZJCiERn9rWm4XFCDLuNHlHlO3C
+# J7tppxbI+EB5nk5BIjhB/eRF79YZ/LjqeI/etlI1hPKmnyuhtsTR3Yv8zdXoO/z/
+# lcQAY0VWMJKzubj0xl+J40MwrdTehtzbruAZJLigLTFfG9eZXgMX+QCAnjwPgNo/
+# 4zu5n/IeLBhBKRLCJ7Pd1YJ0XP3ZZ6ixd/ouaLG7koecwBIM4oIxTOw9mebl3JMB
+# 25t4/3qakiwzRBsauH/6tLTaTyULb8IAynmQ57HnHe3oV228Mig1WS+WuV4Woqkz
+# wvCLg5KpTMxvlLC0hb13Z7vB4yNjR+nM8Klj0tJNHb3hjHtzxHaBg4h1TsHiEIXY
+# 97zBkhv6o47ZMeFVkD/zMvZNUiy8D6w=
 # SIG # End signature block

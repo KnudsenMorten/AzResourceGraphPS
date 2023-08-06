@@ -1,21 +1,44 @@
-Function AzStorageAccountsOverview-Query-AzARG
+Function AzNativeVMsImageDetails-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    extend HTTPSOnly = aliases['Microsoft.Storage/storageAccounts/supportsHttpsTrafficOnly'] 
-    | extend 
-    Type = aliases['Microsoft.Storage/storageAccounts/accountType'], 
-    BlobEncryption = aliases['Microsoft.Storage/storageAccounts/enableBlobEncryption'],
-    FileEncryption = aliases['Microsoft.Storage/storageAccounts/enableFileEncryption']
-    | where type =~ 'microsoft.storage/storageaccounts'
-    | project Name=['name'], Kind=['kind'], Type, HTTPSOnly, BlobEncryption, FileEncryption, Location=['location'], SubscriptionID=['subscriptionId']
+resources
+| where type =~ 'Microsoft.Compute/VirtualMachines' 
+| extend OS = properties.storageProfile.osDisk.osType
+| extend imageOffer = properties.storageProfile.imageReference.offer
+| extend imageSku = properties.storageProfile.imageReference.sku
+| join kind=inner (resourcecontainers
+        | where type == "microsoft.resources/subscriptions"
+        | project subscriptionId, subscriptionName=name )
+    on $left.subscriptionId == $right.subscriptionId
+| project name, OS, imageOffer, imageSku, location, subscriptionId, subscriptionName
 "@
-Return $Query
+
+$Description = "Native VMs image details"
+$Category    = "Configuration"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUGsshfad/Liwr4g5RJYf1lqEX
-# TGKggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUnGE4fBkNlJLbbO3c19r9CQAO
+# Gguggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -94,16 +117,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# NGbDCHObHwjz2DpSuX6RNjQNrlMwDQYJKoZIhvcNAQEBBQAEggIAVqWbIr1VYwIb
-# zAc7qYYKdrcFzo+4vsUoN4H1G3zjyDEH/fy5Bz75UbBKgpFZ1dQp0Id/N9GIDVwC
-# ZqhyRGM1w/6Nt2kziePlDHDnDFB6Qb5xrSo9ZklqvDGy7Dy0PtX9+NWmWO2Ijp2R
-# tLANxk+RYBRAUkYyG7JIn1urk81E+aoJX1o5yuOiAeZDR7/A0rqfab8Eo5LosJXQ
-# uD99bsEA5ucEosHBIB9mhd9tOrfUfqJxGFgdCEyxzFDh/szJGbU+mJPLH7L0NI1U
-# LTye6drgIttexe5wtxp6ziN1HM2ZWgdkDr19RFOlZ52zHsAq5vizHblG1oO+/n0b
-# ofhAmRXFLhXIFk4s0FX4Y0NALpIXXHKdtNQRyBk+JrNLXDGd88wS2OK6LxEaPH2Y
-# XNrJruKwsdTTd0AFD+aiqBWa71C3lvqftgEnlfOFNhkuLDsNraJWH57C0/pHVvaS
-# QsIJ3fyioLz6IjiuuRtdgzLNpTQxJoTC5gTsp7qfrndKtWuK8LySNvYJdU5vZUad
-# RMzgpnYEDpOOeXscRc5M00+oOuKxzk/SXrI2tGDTrh9/tV12d3tHt0g9C5XJ/TN+
-# j0aLXVhY1nsaZ41Lnd72wOkS6KhBgPV3oKZQpaFNNZFhYko1xOVF/pawk94EnmED
-# gY/MKvs+mlaFWD9DVFvGVYZZ/Iwopk4=
+# CVO9jOXmYbbVZCt/0QylJXzASGYwDQYJKoZIhvcNAQEBBQAEggIAwzOMdjmG956Z
+# THSNDEGm6HtAcRnzo7phlAyi2OUPfp+IB0pNNla2QF2xIGRl8vgXXnMunfnb40VX
+# g8gGwimvLAIEK/2AlCpryhuEdHlUZcv7nWBcW56uapi+Tp9S7/fW6/mEhJIMJ3gE
+# sSKeTn8RrHUDUern/DBZg//HihAC/Potz/5/Of+9ZQeMmKLxibKWBPzRAATyw8dy
+# ajF/KznISLFfG+1DbgCg+JvJbDKADeuVnv89PUydUPLgSIyuGQOpJkn9IMA6GV3f
+# OE+oNUNUpYljhwmiRBtMxfeASiy0qUnYSHjjrsS7BD+a9F0sRGnObQCALBxO8zRW
+# 5CWtUILnZK6sVoHUAhcsqEcZmIgtvJetO7/XmlcUwBDX454x6QcBGSyCaT1cf4Ki
+# CmvHcZtikt2upwc8t+mvAYhw0Or0RFIGQ7rVOuLw4dfQYfQoE1VdLWQtpmiNN/Hr
+# jHlC1c6r1XX50I3SefBtu/gmNt4okjGQDiZ3cGeMDYZVUgClR1rA4J53oVj+LX4K
+# rTx54oN6w5GUK6j6An/F6w1l3ESLRSeVjHbcoOMi+B2Gr0XPlFVxaddiROqFsYDo
+# wrP93DdfUBQ0zw3/gHXm0ImtcK6PN0LGvrQzE0lmY77YivH6S+UKh5na4Gzz2FDI
+# 7JMbPd3Fz5VFPInRKFwHbRnSAhcZPMc=
 # SIG # End signature block

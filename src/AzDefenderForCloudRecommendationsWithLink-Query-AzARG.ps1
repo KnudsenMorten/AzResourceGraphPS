@@ -1,48 +1,67 @@
 Function AzDefenderForCloudRecommendationsWithLink-Query-AzARG
 {
-$Query = @"
-    SecurityResources
-    | where type == 'microsoft.security/assessments'
-    | mvexpand Category=properties.metadata.categories
-    | extend AssessmentId=id,
-        AssessmentKey=name,
-        ResourceId=properties.resourceDetails.Id,
-        ResourceIdsplit = split(properties.resourceDetails.Id,'/'),
-	    RecommendationId=name,
-	    RecommendationName=properties.displayName,
-	    Source=properties.resourceDetails.Source,
-	    RecommendationState=properties.status.code,
-	    ActionDescription=properties.metadata.description,
-	    AssessmentType=properties.metadata.assessmentType,
-	    RemediationDescription=properties.metadata.remediationDescription,
-	    PolicyDefinitionId=properties.metadata.policyDefinitionId,
-	    ImplementationEffort=properties.metadata.implementationEffort,
-	    RecommendationSeverity=properties.metadata.severity,
-        Threats=properties.metadata.threats,
-	    UserImpact=properties.metadata.userImpact,
-	    AzPortalLink=properties.links.azurePortal,
-	    MoreInfo=properties
-    | extend ResourceSubId = tostring(ResourceIdsplit[(2)]),
-        ResourceRgName = tostring(ResourceIdsplit[(4)]),
-        ResourceType = tostring(ResourceIdsplit[(6)]),
-        ResourceName = tostring(ResourceIdsplit[(8)]),
-        FirstEvaluationDate = MoreInfo.status.firstEvaluationDate,
-        StatusChangeDate = MoreInfo.status.statusChangeDate,
-        Status = MoreInfo.status.code
-    | join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId
-    | where AssessmentType == 'BuiltIn'
-    | project-away kind,managedBy,sku,plan,tags,identity,zones,location,ResourceIdsplit,id,name,type,resourceGroup,subscriptionId, extendedLocation,subscriptionId1
-    | project SubName, ResourceSubId, ResourceRgName,ResourceType,ResourceName,TenantId=tenantId, RecommendationName, RecommendationId, RecommendationState, RecommendationSeverity, AssessmentType, PolicyDefinitionId, ImplementationEffort, UserImpact, Category, Threats, Source, ActionDescription, RemediationDescription, MoreInfo, ResourceId, AzPortalLink, AssessmentKey
-    | where RecommendationState == 'Unhealthy'
-"@
-Return $Query
-}
+  [CmdletBinding()]
+  param(
 
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+SecurityResources
+| where type == 'microsoft.security/assessments'
+| mvexpand Category=properties.metadata.categories
+| extend AssessmentId=id,
+    AssessmentKey=name,
+    ResourceId=properties.resourceDetails.Id,
+    ResourceIdsplit = split(properties.resourceDetails.Id,'/'),
+	RecommendationId=name,
+	RecommendationName=properties.displayName,
+	Source=properties.resourceDetails.Source,
+	RecommendationState=properties.status.code,
+	ActionDescription=properties.metadata.description,
+	AssessmentType=properties.metadata.assessmentType,
+	RemediationDescription=properties.metadata.remediationDescription,
+	PolicyDefinitionId=properties.metadata.policyDefinitionId,
+	ImplementationEffort=properties.metadata.implementationEffort,
+	RecommendationSeverity=properties.metadata.severity,
+    Threats=properties.metadata.threats,
+	UserImpact=properties.metadata.userImpact,
+	AzPortalLink=properties.links.azurePortal,
+	MoreInfo=properties
+| extend ResourceSubId = tostring(ResourceIdsplit[(2)]),
+    ResourceRgName = tostring(ResourceIdsplit[(4)]),
+    ResourceType = tostring(ResourceIdsplit[(6)]),
+    ResourceName = tostring(ResourceIdsplit[(8)]),
+    FirstEvaluationDate = MoreInfo.status.firstEvaluationDate,
+    StatusChangeDate = MoreInfo.status.statusChangeDate,
+    Status = MoreInfo.status.code
+| join kind=leftouter (resourcecontainers | where type=='microsoft.resources/subscriptions' | project SubName=name, subscriptionId) on subscriptionId
+| where AssessmentType == 'BuiltIn'
+| project-away kind,managedBy,sku,plan,tags,identity,zones,location,ResourceIdsplit,id,name,type,resourceGroup,subscriptionId, extendedLocation,subscriptionId1
+| project SubName, ResourceSubId, ResourceRgName,ResourceType,ResourceName,TenantId=tenantId, RecommendationName, RecommendationId, RecommendationState, RecommendationSeverity, AssessmentType, PolicyDefinitionId, ImplementationEffort, UserImpact, Category, Threats, Source, ActionDescription, RemediationDescription, MoreInfo, ResourceId, AzPortalLink, AssessmentKey
+| where RecommendationState == 'Unhealthy'
+"@
+
+$Description = "Defender for Cloud Recommendations with link"
+$Category    = "Configuration"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUtemc+SG6U8K00ReB7BPNDUW3
-# Tuuggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUE8Kie6BN3SNhX3knb5ZGlxL0
+# Clmggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -121,16 +140,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# ZKtrl5LjCqSy7HmA7ORGHNxrRJwwDQYJKoZIhvcNAQEBBQAEggIADqczMP54crgT
-# yk9IST2/XkVRLzIvyCYAOwfNZ1X/sVW8pZlv4ohBSWSQGh0Fy6dFHtSKmeqdsrj6
-# gfVpa/J+V0jFiaHlUUDAWxxlFSzWwiyPJVIQ7KGAPdEz6k/pQTGdO56nmstqji9E
-# 2mgrD0IkNyEWOhbkzo7VLxLIDqdfCKms8zyNtxRPOatcK4tx1H2gG3hDS8gyRhCz
-# LpIsFoRq1U3MkIwsa0kHg77+plGIVyABltRhxGjP3Srt4Z4/kMyD7aE73P/RWfhQ
-# L5LRXHF5s/Lk8wB1nguR2J7/YfHOVVNbSDtXkMz1DEZWDJdp0WYM118MI/7np0Xj
-# BCbWUXpZ54PnJobo59JSKjzCSgte+qKhu4kW38lydZS3gsTzvYI2cmLfV5Gm493z
-# syOfHqM7qZAlbbgTzX/ErznBA4Bu3yoCsUPU99vmTBp+m9OsYrQFm+Jk/9mMypE8
-# C3iJ5ovyj+ZliyuFnhhrjaBRiezSt6bni+tCFH1Fw/eC0Ltsm4bZypVAOaS03z5N
-# zhuy7h8pfwMkopmk4c8QqR9bw86agQcVAz5PiwHKEmggtuekXDL2wsLQirjtgz71
-# 5IkE9ipQp1ivFsrbWBAWBsAXPiE5cBSR3BDajwq6xARexW3pDO0bmZPR2ipaGIT8
-# szu+B3rrA3Alx/6eE7PD6LybjuML1e0=
+# 6yXHWPFnbeA3FiSHV3bF8HMM0PwwDQYJKoZIhvcNAQEBBQAEggIAEQmbFFRYzjy8
+# E3FT6vVyZelIJkz1aQI348fvoU80BHe0ye8e6gwdMQ7srsj7ykZAK0cmrtyfEI+F
+# y1ZrP3DK8X7u8udQIG1FnP2auIqHqUh9ScJ1KBYK5dKDZBMMmKxpPUlkEk1cTiQM
+# LqQwmDcfR0AK4ZXztHYdB2iKTkQJaw/nj9l07RlNY2efkO51HjcdyarC53Xh2OWA
+# dO3Sy+bOyQEtwA1dvl4XtlWnQM9xADesB60Gqc9WxX1VTIIYKvGcCZWqbtypdY/u
+# ZO0sFtWeKk2Pnl0/uLKr7IubgKmyhX4xMNHiEVMEz/BwnjUAgX7DXpfvExqd9fn+
+# Hf5tzC+cupp4T6gVi1Q/v3BXP+0om81go91WIhHxiTYeQFVEM8QKagPBocm01PP6
+# jVjePG6ap8uUZl+JWpUAViWcSyEQRGbLABHpru5jbquuy5G0nBWUfhmCpls/hGCf
+# Vqf7IUyOgXy3MWzl93rG6fV4X/fi6zpUbjP/J02FcO2vrDlQleY0J8s2ecGhjIg4
+# 4ra4kcqM7QYYJR0A7JWI7OPC1PWKjOc+5MkQviHZhOc/4rOKgrwow1SQmUJUHVL5
+# bLdz8YMR4u6texFx3IYCRNIdsEsFyB9ZUArsc/OabSDQbO/WAlI7x5x3gN/w4/vE
+# ZWnbezFVGargpfg2Z/PL39OHMUAlLSM=
 # SIG # End signature block

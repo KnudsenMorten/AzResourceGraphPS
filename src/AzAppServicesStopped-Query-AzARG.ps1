@@ -1,17 +1,39 @@
 Function AzAppServicesStopped-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    extend state = aliases['Microsoft.Web/sites/state'] 
-    | where type=~'Microsoft.Web/Sites' and state =~ 'stopped' 
-    | project AppService=['name'], Kind=['kind'], State=['state'], Subscription=['subscriptionId']
+resources
+| where type=~'Microsoft.Web/Sites'
+| extend state = properties.state
+| where state =~ 'stopped' 
+| project AppService=['name'], Kind=['kind'], State=['state'], Subscription=['subscriptionId']
 "@
-Return $Query
+
+$Description = "Stopped App Services"
+$Category    = "Availability"
+$Credit      = "Wesley Haakman (@whaakman)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUyTmdNtcUYaBL6PA3SDIXfzVh
-# h1Cggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUC2vH6LTmHEVzPip1Oe7OcI23
+# 42eggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -90,16 +112,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# jHnfV8kffKqrLbYAnLT6CdSKSycwDQYJKoZIhvcNAQEBBQAEggIATe621seB6Idp
-# Slig0E4N9dOxfQKicUjheV4ZNfhJN9LVjHzIwPPOdY5fpVVtiWYKUQqPRUe/fx/c
-# CLaev2JKOnG0lCJS0wj0fwLI1WtsEeXDq7J0aoybJPjmqJJw82iizhyO1I4JH0VE
-# DFyl9aIQOVUuNxwGAh5AGhQuD8a5a8bMjd79ezEzLVa2E5PDglSztGTv+xKFE0lp
-# ewBazCf8cjr0Y0xLgRxTROTRXeySYXR0jlXVymgGDOQAAA4PSRa/jQIxBOFYl387
-# dqut3m2uYUIoOQXXQU0NHoO5cNGkt9vPrO83dqhGXAEVVvjtzCT0ZIp5YVWYUHkQ
-# 0hCyAmaOn6Gpv9QrxiDUrxzdGow0iaQTSC0EEvKQUFKTY0ekUzP411DepemAVqLw
-# UGaBK1Eqr+AGvzv1MKMBLBCP5+4OeWSfF3F0pzJ1UHmf5UQP9mFAZ3dnhN7vunTX
-# 9VdH4IdCuGPgmjH8QuaQr5vj8tR2gRu9T/g4EJONQCjbHfjZk9PJicaC0Mh0uIhH
-# 3c3S9QOTNZc/9mCINsRAdTQa7+6p+FVOp1sHjONgYVJE3wNZ+01V4UcqcAu3/QhM
-# 0VEogjdI+A6XdT6S/5pT80zHn9HQmhyQL1qWPiG2wsLKqIXjjnI1TwzK9xExKpJT
-# D31R1fMB37/5PKUMKBnCk4BjX/drrlQ=
+# MKq+GDL40qn6AVzsETMl3KS2iDUwDQYJKoZIhvcNAQEBBQAEggIAdjFEr/AaVq4G
+# QuD+pQrDbRtRulYtkC997ZcezjH2Ar7ZSNpmlMe3R21pfoB0PA9SdAAfgbxUOhq6
+# iPYYB/WNeV8PAoBEZr2oDcFM7RZTgHzGPd29TtI4vSGf+6yE9K2vKbMR1KEyBywB
+# BjRTG7oJryPQr8KEohTJzcyFzgvN2VwguYTmPbJtvkrgJMBf35ArLk0xfMTM93PI
+# ik39IVv7cnNxP33+ASWLB5ao75Dp18UWbdzV+b1xmivV25dG0N9hx6C1ZEOco/+9
+# lQ4Ly2xHE3YI0We5t6aMUSrNmIDit3wPsQG/7DEbZjC/d9Bjcj1MXTbQncN+L7iy
+# Itglr5Z2JixFqiTac9H5v1Cq2JMKR7/ik7WRd33hoE67sIHfmygiCkYdtKdelokO
+# DPHI/1Mo2cpFUYORYUSfa1FKehtARPwlwbF83QgJ80myb0EK6wqW4MLrA/OsA1ef
+# 65vjnfMbKoRivdPLZONRMVs8KY+G8TnhS0UsFIkJs5QHFMSFyW7gmH+TU2hrv4co
+# /tvTKkPCiGr+CRwUnQKB+2OE76qqmqTSv63OLuyOunIBKnvfKKNjPnlslmLUIlPv
+# 0H0BGuqYBXP0zqvpiKgrQ+yTUxQ+ThiMaTsmcWu18bURUT4DMYH7FUFE8d/UUCJJ
+# fYKKNMJMndeBW8KqdUpw5sSg/+VMv7s=
 # SIG # End signature block

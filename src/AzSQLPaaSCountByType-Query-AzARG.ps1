@@ -1,21 +1,43 @@
 Function AzSQLPaaSCountByType-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    where type=~ 'Microsoft.DBforMySQL/servers' 
+resources
+| where type=~ 'Microsoft.DBforMySQL/servers' 
     or type=~'Microsoft.SQL/servers/databases' 
     or type=~'Microsoft.DBforPostgreSQL/servers' 
     or type=~'Microsoft.DBforMariaDB/servers' 
-    | summarize count() by type 
-    | project type, total=count_ 
-    | order by total desc
+| summarize total= count() by type 
+| project type, total
+| order by total desc
 "@
-Return $Query
+
+$Description = "Count of SQL PaaS by Type"
+$Category    = "Configuration"
+$Credit      = "Wesley Haakman (@whaakman)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
+
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU3O0khzSzNv3/zyqL5dKMgDAe
-# Oo2ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUa12FS8V8LfrwG14opr+hZJ/I
+# eGGggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -94,16 +116,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# rCoZtnryc0tAHffbBEKXrQtfvecwDQYJKoZIhvcNAQEBBQAEggIAtZ+Tjj2Rnk1d
-# UGn2EoxyfZ9SIMotkOVDIRlhwFBkxI+tjOFsrCDTG862aNWEmZvvHeKN19+H3UbE
-# G54Sw0t3CpWIxrZerj/vSjQ7nxmeP87y6PszeRTLH2re9wKrkfrEuKBBymP4g8vc
-# Vqq4MoRWMlQdMMk5gDrYnbGCzdql1x0JdvnR5ZtwpqwfxxvUreIZtsOeiP7heFL4
-# ZCI3bw9ZvEVCiK+YNYeP/7bsY4Ggwm40jbESAxTinQVAF1qqgC9DNPp6XRa+HEja
-# Uo/XLGR95erX08IDnw+PiXEm8pOL9/AKDyzcxGR+7zE1cj4NG7vBJ98lo+bHQIjC
-# hcYZj2v8NTcbtQCBZKWK7IWi9CeZboomSOJ18AVAQyRA6MsRqKlOiKu2wBUO+SfP
-# Nwt5NlOo9QtYSSnmrswJ5GtQkb76N6dkzRnL91oYSTR3UL6IiDkOWHR6/TiYqd9V
-# bb61UdQilCQQkHyGZNIIAZ/+sDg6P73XdiTiw1eb14JBlQS3f4Ngo2WOhTUZWnfq
-# yD3ZpFXnEeKeUPPRnp6u1P+1fRVOHCU1PJK1EYnEMcy1TOV/sOVEqLCqWRSKf+HM
-# o5wlYGPHzCyWNiP7yadVzZGcM4lfCjRsd1Y7qTLGpZvzd3jFiHZd470Z3da6RkAE
-# bLZcPjMkzzpX3dGbvh7WrS9WfQpQoh0=
+# Y24LVqP0VPw/8xYKOe2o+vTzPjowDQYJKoZIhvcNAQEBBQAEggIAMXDhuHu66Aor
+# svxNGrmrPBizg4ZVPhFe7wc5yx9QQc6qvjuJMOBoxL2dYqNZE6w3ONmWwcmK4yBd
+# jSnfDp2XU9BWLL2DsJ3Aq70V9Nw3nXC6s4iZJqhHTaoGZlYF9JzecuQkXIijkizR
+# b8/jjg1Z7tAXmHs59kBBSurgDVVo4V/6Z+wgU8gdw9DjfT9vfI7+SSxcQBni9lsX
+# 7yJ/03fjQNqRBh/buubmNoTJx3krI7nQKiHPxd2oY0p+xiV6tLM098kwb7+xup+K
+# 78dKIbkgI7hfYqelSgnYiMPDHKL4lMWxxdm3s6pKdyKOwhl20sx7RdPVfs50rhgM
+# hfLSM4OsJ3DwGubQWvbPsE7UqyxhGdazeEAp09A+mNAp807pZMoc+wFCtsXtTv7s
+# JZlyRW48imfnGlHgUE+hZ7A49S8V6uHTLOqtI4LrauUjC2xAWlocTp6BaAukrX+r
+# HJHYIWxr7CdimBOPcEbXEXvyxON37bUmujsX6Ii15pZKpLEe1MYFkURAwEACCf3D
+# TKGYPMWU7SkXEC7Jo8J/zQoDxnpsbgTWPaImmGq+kwRsZy6nmSezpiQ3YF39wz37
+# WrVae5dejMzmNgtl/VN2ovG0ekRlu8JbqHoTxAjgIFDQStx32+Uww3tpQuYKAFRM
+# rkeySYcqDQEPOiQ2R/gTQ+yQWpAZvlA=
 # SIG # End signature block

@@ -1,22 +1,42 @@
 Function AzUmcPatchInstallationsWindowsOS-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    patchinstallationresources
-    | where type has "softwarepatches" and properties !has "version"
-    | extend machineName = tostring(split(id, "/", 8)), resourceType = tostring(split(type, "/", 0)), tostring(rgName = split(id, "/", 4)), tostring(RunID = split(id, "/", 10))
-    | extend prop = parse_json(properties)
-    | extend lTime = todatetime(prop.lastModifiedDateTime), patchName = tostring(prop.patchName), kbId = tostring(prop.kbId), installationState = tostring(prop.installationState), classifications = tostring(prop.classifications)
-    | where lTime > ago(7d)
-    | project lTime, RunID, machineName, rgName, resourceType, patchName, kbId, classifications, installationState
-    | sort by RunID
+patchinstallationresources
+| where type has "softwarepatches" and properties !has "version"
+| extend machineName = tostring(split(id, "/", 8)), resourceType = tostring(split(type, "/", 0)), tostring(rgName = split(id, "/", 4)), tostring(RunID = split(id, "/", 10))
+| extend prop = parse_json(properties)
+| extend lTime = todatetime(prop.lastModifiedDateTime), patchName = tostring(prop.patchName), kbId = tostring(prop.kbId), installationState = tostring(prop.installationState), classifications = tostring(prop.classifications)
+| where lTime > ago(7d)
+| project lTime, RunID, machineName, rgName, resourceType, patchName, kbId, classifications, installationState
+| sort by RunID
 "@
-Return $Query
+
+$Description = "Installed updates by AzUMC (Windows OS)"
+$Category    = "Security"
+$Credit      = "Microsoft"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUW1MNnUszY+uuaSYRaz/Mwz5D
-# U4iggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU+z+l/A5rZRPW1Kiozq4Q1LV7
+# G0mggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -95,16 +115,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# 9PaDcqzWECP4fsuBNEuev8/5F9YwDQYJKoZIhvcNAQEBBQAEggIAfD9Rs4SuKQAn
-# hVlECOwyWO/yw5gv+4y0S6O11dhwAfHU1aCT+jCA7PcDi7wJ3wvMuP4A/0QC78u5
-# 47Ym5O8gH9jjgIn6sjJPyBeLxS5bl/ycpo7YpsXRTtMbv+VyvG1pFlm6HT9CxUSN
-# khKD7EtIJleyhZ6xJAwGbOJjDtiOfTmBDdVUf7iBqyXD6G0UIS0839HeCOVidWlJ
-# am26ib8l3JmInEj6btzqN3lBXg6o8WG+xC0VIsaAKKiM8e2FAu3DoCd5SI6+RH1m
-# O24E5ppy7LDNBY7ehuaCrGvKc9b455V85CLcBGo+1693hg85yvAywpiSgZ974Txg
-# V2fZw9EYVhw32sCTvPD7mndJY854PAKnqN3upmfBXTNxLwyAApHnDLOSMaHLlhGo
-# 1uwALw7u3xhoo3QnTC17SySKdlshiejlKy9LeD+X+PUtYaBhr6l9QJY0DMvdzlp/
-# SDMsMx5TP8EXMSaTWYCNmo6VzwWf6WZ/zvNU6cwtuUmbAh0kj03ekehOyV0V3/e/
-# qJcyvmC2vwh4nu8nmA6L7vJiEy6Vlc+dloC3t8vAX21/OB5ibbPUZBOMI53R7pqi
-# RL+R3GJZYK36KInlGdVgKF4OoTfMg4Fz/1QwzV09RlZXlV05Yc3GvqwYNZ/4nzFe
-# t5j0TT6iOv/xEyt35qXyErDi97uOy18=
+# S2WpuNZBZUCXgjG4el4LBP00ZnQwDQYJKoZIhvcNAQEBBQAEggIAvE3XKeC6JvUO
+# aN95BqPo3TlKXa9K2l9EzKPDq1j3QHxSIp5Vhdy0P+r/vS1jMuiGjCWFdGViy0N0
+# CivvD9pbMHw2k4EkzIxyBOG3uQKxNmssABIM6ylUcPVC37aA29OqP3RJeLqCkZsC
+# edQ8m0dc/zA54lsc7DdE+iLY9wReAyE6TxBPy7mWTAkV3tZnzJHxZMEk4KTSaIWb
+# ZRchxzSfkiJTRZEPky+wUJW8UbfBcM6zm7y5zI79FzpAciINppTxKcU4QFYXJfCm
+# WQbCzXIuxVQ8Y0rUk2yNhOx3aScsaQilr/4rdrW/raiNdfvaco6lNeX0G64uOusW
+# 3G7Qn4xEJBnnSnL/9Dgx4JE+v/YOCWOo/56sTNgr8/ZXXF0jnPtXE3DAYO30DA/W
+# 3PDr+QzMKtJCOylJeoEpkyXYwwXuPeyUBgOIjLVUOtc+J4DAHoBsPNE4btbGJ0ga
+# psYoCi9biMY8w3Ks/gn1JGgVteEQGqIn16txPooCGCowKbBg7WfJT/4e5t04fHcu
+# Km0Ex5PpImt+lytIaAhBQQ3mUJQXN/D8w4uaUgFsNb4PwSdEdOwVDuUyA2EAhXom
+# OJk9wHUZvTkdLm7VjOviP6a1p3uUHctMhj74A0qMvV3Zj9JbveQ9OspjrNuRvgGU
+# CYc/5qDM7zIWyDw0RQJtooOl7J7j0l4=
 # SIG # End signature block

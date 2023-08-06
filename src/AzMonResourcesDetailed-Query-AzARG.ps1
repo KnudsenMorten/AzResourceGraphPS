@@ -1,11 +1,18 @@
 Function AzMonResourcesDetailed-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type has 'microsoft.insights/'
+resources
+| where type has 'microsoft.insights/'
     or type has 'microsoft.alertsmanagement/smartdetectoralertrules'
     or type has 'microsoft.portal/dashboards'
-    | where type != 'microsoft.insights/components' | extend type = case(
+| where type != 'microsoft.insights/components' | extend type = case(
     type == 'microsoft.insights/workbooks', "Workbooks",
     type == 'microsoft.insights/activitylogalerts', "Activity Log Alerts",
     type == 'microsoft.insights/scheduledqueryrules', "Log Search Alerts",
@@ -14,21 +21,35 @@ $Query = @"
     type =~ 'microsoft.alertsmanagement/smartdetectoralertrules','Smart Detection Rules',
     type =~ 'microsoft.portal/dashboards', 'Portal Dashboards',
     strcat("Not Translated: ", type))
-    | extend Enabled = case(
+| extend Enabled = case(
     type =~ 'Smart Detection Rules', properties.state,
     type != 'Smart Detection Rules', properties.enabled,
     strcat("Not Translated: ", type))
-    | extend WorkbookType = iif(type =~ 'Workbooks', properties.category, ' ')
-    | extend Details = pack_all()
-    | project name, type, subscriptionId, location, resourceGroup, Enabled, WorkbookType, Details
+| extend WorkbookType = iif(type =~ 'Workbooks', properties.category, ' ')
+| extend Details = pack_all()
+| project name, type, subscriptionId, location, resourceGroup, Enabled, WorkbookType, Details
 "@
-Return $Query
+
+
+$Description = "Azure Monitor resources (detailed)"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUm/+NSKS9dirfr5dpVxYGUeZb
-# H8Cggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUckQXDxOOapleCOIHOj1gmbDA
+# yDSggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -107,16 +128,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# TtmHa7DIUkOoPeTDZD6jcX21B6AwDQYJKoZIhvcNAQEBBQAEggIAZy70UKug11ZD
-# WgYKqUOl4lRisUJIs7JgplTJN8Q1ckcZGplvmOpCR5EWkiuhOkZmOUb1YKnOHJYA
-# pIJFvmRw7hDnbxXOf9b7n94z7pcXDwCIf2F7oRTb13+6vtb+hIwIq2HNz9QEGYOg
-# odG2+ivSZUvgq6m1UslAnAxhWYXCsVgXAIaK+F7u41WmsnG0c4XYlj01G3m5dfcz
-# 3uq/4AlCOnJohmsyEhcGNmIgRRwMkTaP7W0ggTpZEhQuxf4bDN8FDK2WqRsphIhJ
-# Nre1kAj8Cn1/brHpZpfeFpypNJYzYt80z81tQw4TpZyZ8EM/Jr2lRKOioly/VtrC
-# Mqc/3jl490uiAzwFOoBinkqSeZZWEBI6VrEvciEzvfu2rnjpdLvMejKJYoSM/O64
-# bLAQzGOCPGLdIYKYEiFUwwzfqadqadlwDi6qpZtqrzeshyZI0GKLTrDqJwqX0HD+
-# R6bRDa0SQa88gIfjfEUV4CP3h4dMWdAuVJDlnE/QHX0nzWo4vnsLV05L6uAN+CpX
-# OmKrHupbL5fxGgaqaz99WlLEGlsXt7ig9DTyDIpsZibVk83d1HgY5P+lVbS7fDwr
-# NaodKhv9Kj4pP7OGBarkyDXstvCeWUsketkylrOOnNuAXDpUiWhUslNvK7tA6ip1
-# Nm6sv3HGpEg4LovJXqF3veRA2awFvDA=
+# ohgEfNWtA22S4tai1pn3HgjzHJQwDQYJKoZIhvcNAQEBBQAEggIATN1RRDW/DFNX
+# VvhbdjEhUY76RSwDnc79QGCckrty6W/gyHicot/YB4Zrn/imRQvdng/lUK0JAmKT
+# +oLlV5VKyfUgl7OrYtBajTCpNawllpiTiqqlGwssPuZ2dM1sIHjNGMWsgnIa8Mxr
+# bQ+0nnEMWGBU537siljEEWAE8jFKxMcg79+ClWZt6LQFYPqeQigR6xvOzU8K6RB4
+# VdejSUoALEt+lhAnJIAaGS0Je4Ui1HHvFHqy/Fbu0daGq55sBkmldrtVi4ZVr8CC
+# OvwnmysiB8QImdZg8fcrZ7TbzbCKRFkuYOMraLPhKW4aOW8kI/+aWVIKfX7XKT6s
+# rxHhlwwLvyvdZ1bT2/Kr2gVJYGjLh3gjkFpUc2LM/TqbXpvxSZu+XlsI527ruDCm
+# PHwbfssuYS2zmSbWbfIjlKGOT+ul8iGCCSEwgozT/n1SxYl1S3xKiXcnxuj0+Gcw
+# U8cQ1e/kbqVeV9et8KNH6WgKCAs8S/x9SaTw1vNI4yTHuuVFwTGks9BjLl8g5rjc
+# kDoxqKRIURFLfp0LPnLIhCtsMumQQmflII4jatvpyI1pjkqr2b6pbga26KKwju5N
+# vJpve23WRyIXKnZEZsUBUsi7NlGO7J5xHnFlYe42P91UDc8wJE38KyJb7zyd+g6Q
+# jWLaVW8U1KInmmiF6XF4jbmJjaiySFU=
 # SIG # End signature block

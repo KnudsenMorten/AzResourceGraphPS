@@ -1,20 +1,40 @@
 Function AzDefenderForCloudPlansStatus-Query-AzARG
 {
-#--- BEGIN -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    securityresources
-    | where type == 'microsoft.security/pricings'
-    | extend tier = properties.pricingTier
-    | project DefenderPlan=name,subscriptionId,Pricing=properties.pricingTier
-    | order by DefenderPlan asc
+securityresources
+| where type == 'microsoft.security/pricings'
+| extend tier = properties.pricingTier
+| project DefenderPlan=name,subscriptionId,Pricing=properties.pricingTier
+| order by DefenderPlan asc
 "@
-Return $Query
+
+$Description = "Defender for Cloud Plans status"
+$Category    = "Security"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
+
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUTSG2QS7ebE0GrTTeKDAFHMXt
-# 3wCggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU+mfUTJ3pIFtSGp1v4Jufzhfw
+# Wxmggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -93,16 +113,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# wuT/xtsTKuqT9onSiCOW4/KNo38wDQYJKoZIhvcNAQEBBQAEggIAB2d37et5oiTW
-# jBgMjN7pnjF4+3DAboUmZ7ZEXOXdiRGg2hsvO3pMsNUJWcow3tqJRLYA+dtbQA2V
-# E60Ares9b4zqFNh9hAANDiTyRYBZWh5QwuAGtvK+Vz2xOu3q6amRVjAhHXY9ufpT
-# qs9zqK5eaHEVds3WkEwN5m8NtXfuxYOxVNh7Wje0YFjxT6oAAdgwTuYt09T0LQC7
-# 24f1hHqimGjPmJg1ia156p3T/STCUQr//NpzX9jDAvTHyjgK0etcwuL6LkuFhTFY
-# zF+ObgIwCJXcLqnut8Ng7+vdazr2aDJwZhM1CCDKtq7v15emS6c5r6dQiNhfozqc
-# OPiEedv7mrKDXOalFynWRmqm3BWfJs7Ank+0XgfUmMMqa+z2+h/IPcmfT8GaydPQ
-# 0nPchZCc+cguP9wq3NabEQbQTKgoGymC9rA6TyCCDO4pEhGt7JhStyk1kk10HMqY
-# VAkcV2kYqpVgvACZPOsxKLY3QNByKiEavNgcCB9pnJzMqCpM5sBK16hjS5uG8mas
-# cRAhE5yg9vVgLGnmFqJlTwicPdNXXfioLp5ObKtds9oo9qttCC5juA1E5ZEm2UbE
-# vHpp+ZQ8Hkl4mDPvNDeVMtASY2WfHjmNn7s/u/l4aMsXgJBcfJK2wN/4qFs7Og7H
-# CMgI0qykU0yaecuBau/Qi2r1n82iz6I=
+# yIuXjkP1jLgEQopkxFULpCDUWq0wDQYJKoZIhvcNAQEBBQAEggIAWCsxHLVpcLhl
+# +bxDnKBjq5Ktjf0VYTys7EyfJ3bYs587YSxqPFtbTwu5rEYDwZygivb0829KefBS
+# BLRelBpWhnFKfBlz8w3vr2p7RiidJ6/zdCci+ZHYvue7u7qT5e4C/ZCjs+UIaFby
+# jNA++e+sCW9De1AP1h+c4CKalOdLdsBTdrXKRrqfFIdbmH5fKigx5tpAvY7f2y4p
+# NYoC+faoH12hR5T/IVBjTsZF1P9PX6EBsj0GVwNH1py2Kmch3iRsVmNc6ZVjlLBq
+# kJ0tDO3Q5+XHqkR21PlNzI1xY+4PEIxe10Y1LKQLtI5qtBEiKQvX2Y3X4Krx49RX
+# Gy2igmWbyFc2fvN3FCN31C/epx3qKBpo25yJcrcFjxELLkdUAZWZdpRRO8aNuWS4
+# xRpC5nUOPDnrSc7bU3L5BDwoxy6A/ClX5P0NO/nykeATjX8p5NF160hT2hVqke5A
+# ycFVU/SACJ4ZbVNvH3gRcG+RE6/Ixag0JHmJSq3EJtSXeoL/z5hhwLj37JUG+BCT
+# 4kSW0I2AIc6yPnJN18zjhKSMg1Y7mpGloTddytfdrXdlNFPiPZLBLau6rm6w2gEi
+# tas8MxbT0asTOUnvT9Wg0npt6kGsT/zq/iNVbx73FutsTwZuqZNJgrWG09k4vxmt
+# lQtFrSnBA+gFm/ser8qZ7D5hYfm8ElE=
 # SIG # End signature block

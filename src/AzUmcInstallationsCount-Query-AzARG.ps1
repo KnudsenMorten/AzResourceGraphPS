@@ -1,21 +1,53 @@
 Function AzUmcInstallationsCount-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    patchinstallationresources
-    | where type !has "softwarepatches"
-    | extend machineName = tostring(split(id, "/", 8)), resourceType = tostring(split(type, "/", 0)), tostring(rgName = split(id, "/", 4))
-    | extend prop = parse_json(properties)
-    | extend lTime = todatetime(prop.lastModifiedDateTime), OS = tostring(prop.osType), installedPatchCount = tostring(prop.installedPatchCount), failedPatchCount = tostring(prop.failedPatchCount), pendingPatchCount = tostring(prop.pendingPatchCount), excludedPatchCount = tostring(prop.excludedPatchCount), notSelectedPatchCount = tostring(prop.notSelectedPatchCount)
-    | where lTime > ago(7d)
-    | project lTime, RunID=name,machineName, rgName, resourceType, OS, installedPatchCount, failedPatchCount, pendingPatchCount, excludedPatchCount, notSelectedPatchCount
+patchinstallationresources
+| where type !has "softwarepatches"
+| extend subscriptionId = tostring(split(id, "/", 2)[0])
+| extend rg = tostring(split(id, "/", 4)[0])
+| extend machineName = tostring(split(id, "/", 8)[0])
+| extend prop = parse_json(properties)
+| extend RunTime = todatetime(prop.lastModifiedDateTime)
+| extend OS = tostring(prop.osType)
+| extend installedPatchCount = tostring(prop.installedPatchCount)
+| extend failedPatchCount = tostring(prop.failedPatchCount)
+| extend pendingPatchCount = tostring(prop.pendingPatchCount)
+| extend excludedPatchCount = tostring(prop.excludedPatchCount)
+| extend notSelectedPatchCount = tostring(prop.notSelectedPatchCount)
+| where RunTime > ago(7d)
+| join kind=inner (resourcecontainers
+        | where type == "microsoft.resources/subscriptions"
+        | project subscriptionId, subscriptionName=name )
+    on $left.subscriptionId == $right.subscriptionId
+| project RunTime, RunID=name,machineName, subscriptionId, subscriptionName, rg, OS, installedPatchCount, failedPatchCount, pendingPatchCount, excludedPatchCount, notSelectedPatchCount
 "@
-Return $Query
+
+$Description = "Update assessment status (last 7 days)"
+$Category    = "Security"
+$Credit      = "Microsoft / Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUOlE9hZ2EFUwSJUJkZ+S6d9Sr
-# UW6ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUhbveoCbzSRbYnobKcOdCa8xD
+# ENWggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -94,16 +126,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# 0FBg/1FjrYAhd25f+dM6zgbGQOkwDQYJKoZIhvcNAQEBBQAEggIAE0N/04NYZoNG
-# cMkfLZkFuleTMCDqcaCIIdceH1IJHPi4jgOV7EXRYTfuSunNw1xEsY09mpavqm2D
-# sEyWsUA818AaEiw1rLMgRoqbglMPJDHKQqkdO/oJkYypP/LbsfCAXGSLFMI+GtAY
-# v81Iyrf9KM7Y9s2wVppyYnvwYzNRaKsA+/xFHihGwnM9kHnHQtfqkvB04IpNt9ec
-# uBduO12M6N6hnt1UMhRB4nOgEo/2gTKkpk4BvWJZcBD6PoqGdiOyCGZ2uDSQNOOk
-# NvV4kcVi8gMHrPSNhsBFdIzFFW9zONfoIAGnT/TdxJun29gZ3axU+5tlGSnkDwp8
-# 0FBBAH/jOG8pKhWmcgEHvgPL/vaMugdBGrydGKcpjG0MKOULZWrm37nMemq1YXKM
-# x0CrnKUlXdcJ8hkZSfl++sYlIjeKTS7Sz693mip56nKcPDtZjT9p1oa9hz8FB9uW
-# VHcgwKb3d59gRCkE10cFx4dd6/Yj8tTHw9A1MNOTQVzKLVs5tlFyh/l3jk/7sPoB
-# z9z+rDsTXkYoY1cNmVHkcWf5Lel9/0AbBU8W6ErQNCVnPNAhbGdQjvo9+Ic8jRZr
-# X5SgPDGeYbOApPa4GSaoYFlWI4A8MrsmnvJawxxp3ssO4OsX550VDuCFozhoVQ4U
-# 2ikj98NkOz/HTvNp2CVXKF2vu3e8f7Q=
+# EOA9sTeN2mwVF8N2wxbVa/yawDgwDQYJKoZIhvcNAQEBBQAEggIALdQV3QadtnV5
+# G1FMPpqa0KCSfAWAGxvNQPFgeC3dw/PIUZCMhPIQKn95LoNVMRTwZFsdjrhWPW+q
+# BY2+JjYdxAA0ddFc/TnB6/j1xUX++pQxG3RNjNPD2OmrZiX5j761VD5IsxeT8VA6
+# aX4vVRv5JI2PYG5xvaisTMXhysKJJLxfDasfGMNkOJAMVRXv1DLooIQFp+72EqWr
+# g5eJ62GM1ROTY3OQx3uZDA7+jA+6CNNgglOm6n5oSoek+lEJjk9ibyL8/Q5S7w3U
+# 15ZcrFu/vGTzQDzm5PJCekcOs+Xfh9qxpyhwZ0uoGelEbzWQhsAiTx4It5yF4Gjk
+# eMxuQLYfd8UWxWNn2rhCeysHd73tKPo1i4b/W40wGBqqvdNkOJ9RMPdk7UTkWS/f
+# 0sgPqqVnPKIKuauouzmHqZ1wTnGCXcKVMyygWpt34wPkyT1lI091jyeLkAulBSvy
+# /8pGRZWV0442QRAjKLabTkZLlg77Z6WZ4bC1WeA7/JcrKsfD43JE5f4tsUFm6Mjl
+# EKN8EFJpkeEAyeCszWJAfvtHrwo15Kj6bEBT4qlffkURp4+bqvfOVFRCIttBNgTH
+# GCmwb3X3FxWmAePvsiUTvNENupMGNgFhzCSwHP7+Oz+Ao6Wp9dh4KTz68JkSabYv
+# z8+kgaEHOEzxKEDZ1PbMnn9y8w1h7qc=
 # SIG # End signature block

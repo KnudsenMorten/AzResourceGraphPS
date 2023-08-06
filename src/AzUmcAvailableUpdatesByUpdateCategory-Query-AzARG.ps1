@@ -1,20 +1,40 @@
 Function AzUmcAvailableUpdatesByUpdateCategory-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    patchassessmentresources
-    | where type !has "softwarepatches"
-    | extend prop = parse_json(properties)
-    | extend lastTime = properties.lastModifiedDateTime
-    | extend updateRollupCount = prop.availablePatchCountByClassification.updateRollup, featurePackCount = prop.availablePatchCountByClassification.featurePack, servicePackCount = prop.availablePatchCountByClassification.servicePack, definitionCount = prop.availablePatchCountByClassification.definition, securityCount = prop.availablePatchCountByClassification.security, criticalCount = prop.availablePatchCountByClassification.critical, updatesCount = prop.availablePatchCountByClassification.updates, toolsCount = prop.availablePatchCountByClassification.tools, otherCount = prop.availablePatchCountByClassification.other, OS = prop.osType
-    | project lastTime, id, OS, updateRollupCount, featurePackCount, servicePackCount, definitionCount, securityCount, criticalCount, updatesCount, toolsCount, otherCount
+patchassessmentresources
+| where type !has "softwarepatches"
+| extend prop = parse_json(properties)
+| extend lastTime = properties.lastModifiedDateTime
+| extend updateRollupCount = prop.availablePatchCountByClassification.updateRollup, featurePackCount = prop.availablePatchCountByClassification.featurePack, servicePackCount = prop.availablePatchCountByClassification.servicePack, definitionCount = prop.availablePatchCountByClassification.definition, securityCount = prop.availablePatchCountByClassification.security, criticalCount = prop.availablePatchCountByClassification.critical, updatesCount = prop.availablePatchCountByClassification.updates, toolsCount = prop.availablePatchCountByClassification.tools, otherCount = prop.availablePatchCountByClassification.other, OS = prop.osType
+| project lastTime, id, OS, updateRollupCount, featurePackCount, servicePackCount, definitionCount, securityCount, criticalCount, updatesCount, toolsCount, otherCount
 "@
-Return $Query
+
+$Description = "Available updates by update category"
+$Category    = "Security"
+$Credit      = "Microsoft"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUyJrCqoALk2K602PFnyhkNLuk
-# AZGggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUHCCpHqxvb0u5W7q7WVFrM3zr
+# 4Gqggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -93,16 +113,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# XzBuKFNpQSy4C61OwbTUScQH9u8wDQYJKoZIhvcNAQEBBQAEggIACaObrAvFf078
-# Su1VDFc/iqTyfOSyugNW/325a/rvLwkYDL6ucMGLkz8tG7h7pt+l1Nkpy04eUllC
-# Hx1xuq6vRPTMvp2VdzsW5TvFcMYGe6WkyANzSOzfsFeusp5p9CTKql/CFdYPp+NY
-# u/UBcf9kXybhHFlk5oe64X6c7RPgvYlsEr5PGjMF1wKwDP5aLWsoVxnyHOF0HZn4
-# H+B4PiJ+pXTZZAmH/8ChD20j4naAixPVRPAndfZ3tJBrTZn2PftOmNMPNc0FbhtY
-# JCA4ue5ckTV1sfgwSd5H3G4D/bMdJ9o12Y9lZjCC5hqialtwlMxGp/vq7D2FLGYh
-# p+WTCTTYi1ytfhVy/qepkahjSqWKVW2S0jp3flN+eLCMgJ7/3FBanjCWcETAjHZN
-# +DomAl9KVta7oYRmTYKKyeTh9Tbt2PI08rf3++C3EXVbryNk/LgaFpXxUx6IP5F7
-# reTs+cS17mbR+77ehX6eDPxkEYo1lr1f9DkZCUFNXFDVTdDL+z3j2UspoCRZIekc
-# LuOsWCTpzJ4SHWbxOGUFcAiMPVwWsozgbEa3RNrPUVLvKkPGsU6A+Znmprv9X7fb
-# NPwzh2Dko3xXD8oJanrIlSz8/6dxC9V6DO/xoHEXGgQNRdRwdYqjm20tPH/XED8q
-# rmRT1kZ0PlnzKEia9b0IFMallUAnItU=
+# 9jelNSrMHkvWUPqxraZp5A+ihJ4wDQYJKoZIhvcNAQEBBQAEggIAwJXfBW0yweg4
+# BWWBYtb/7ZmAyDMHgZrvDJgL5UBB3K9WOpnJnCkhylbZJEExmvdRp+sRtIWHaSH5
+# qMWqOdBtRJYwt/uDRb4Z/moeBBa8TzFR47bYmQHOYa9H5EZMAqhvptFRv2SkMdWA
+# UNbOuFmv8lrSCxwuxPbWIep80LZ9O1hHw5eOTIKnX7glNoMJE1OznCWUVcuxbbhs
+# L1tUT8HrfzZvvvS12qGa1zSE0YCMYFtyZFw1pYg8EqT3ZctszxA0yDaFe4hhE1mJ
+# IG/YaEJcHqEt11VssIY/p06hS6hCRcB/Ep12BUyXRMAiz1iSJb9xnHroKh+o9Mbi
+# n2egWqiAxvBfJsOBvMuigBFyHg0k2yeYMTBwZvCHfsQzNhBCpxGLt/+FH4SAcfOC
+# Kwow98I4yJ5cIZQV8UOdvBC6vgSqIXB58QZfFKQXY/4f2E1ypDs8EefYj0wlH4Eq
+# Cuy7JIyrvFeyGmtFrl/i54JMKfl3s1649G4fAih8lMHXQEwG5zosZ7H3j2WJTq/B
+# g0pK3nznIsewvdS6r+StGc9ks3kK5YD/HoWG13DLFoNUOzz6x6bFso+xLW06Mg/a
+# 7gaiYFWPLTlgAgGJLJGOoVSLXmUo7S7O0K5tOlIJxnDLGRJnZ3AW0lljV4EXDFMg
+# gRE88Ii17Q7AF77mMvcMp1whnOEDAYI=
 # SIG # End signature block

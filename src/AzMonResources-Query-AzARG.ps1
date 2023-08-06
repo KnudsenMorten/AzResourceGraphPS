@@ -1,31 +1,51 @@
 Function AzMonResources-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    resources
-    | where type has 'microsoft.insights/'
-            or type has 'microsoft.alertsmanagement/ smartdetectoralertrules'
-            or type has 'microsoft.portal/dashboards'
-    | where type != 'microsoft.insights/components'
-    | extend type = case(
-                  type == 'microsoft.insights/workbooks', "Workbooks",
-                  type == 'microsoft.insights/activitylogalerts', "Activity Log Alerts",
-                  type == 'microsoft.insights/scheduledqueryrules', "Log Search Alerts",
-                  type == 'microsoft.insights/actiongroups', "Action Groups",
-                  type == 'microsoft.insights/metricalerts', "Metric Alerts",
-                  type =~ 'microsoft.alertsmanagement/smartdetectoralertrules','Smart Detection Rules',
-                  type =~ 'microsoft.insights/webtests', 'URL Web Tests',
-                  type =~ 'microsoft.portal/dashboards', 'Portal Dashboards',
-                  type =~ 'microsoft.insights/datacollectionrules', 'Data Collection Rules',
-    strcat("Not Translated: ", type))
-    | summarize count() by type
+resources
+| where type has 'microsoft.insights/'
+        or type has 'microsoft.alertsmanagement/ smartdetectoralertrules'
+        or type has 'microsoft.portal/dashboards'
+| where type != 'microsoft.insights/components'
+| extend type = case(
+                type == 'microsoft.insights/workbooks', "Workbooks",
+                type == 'microsoft.insights/activitylogalerts', "Activity Log Alerts",
+                type == 'microsoft.insights/scheduledqueryrules', "Log Search Alerts",
+                type == 'microsoft.insights/actiongroups', "Action Groups",
+                type == 'microsoft.insights/metricalerts', "Metric Alerts",
+                type =~ 'microsoft.alertsmanagement/smartdetectoralertrules','Smart Detection Rules',
+                type =~ 'microsoft.insights/webtests', 'URL Web Tests',
+                type =~ 'microsoft.portal/dashboards', 'Portal Dashboards',
+                type =~ 'microsoft.insights/datacollectionrules', 'Data Collection Rules',
+strcat("Not Translated: ", type))
+| summarize count() by type
 "@
-Return $Query
+
+$Description = "Count of Azure Monitor resources by type"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU6P4y6OMaCnFNjSCmcR4TUQi1
-# +umggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUvhpmpcrD39obbdM9xT2s2bhg
+# Waeggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -104,16 +124,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# HP3Zm8WyLgPloABUTQiTXDVd1GwwDQYJKoZIhvcNAQEBBQAEggIAyVbO4xlRwhp1
-# S1BTVKjBd0zD+MUEvzA/n7mZR1A7KCd+pgr2uC0RfdNX1N+N0beucN1MkarpsGCr
-# byHq08bcCsOTTImet+O6JYa/UWka91a9J5ML3PbcsYM3rMfbAXc7N2p2Euh43EkH
-# zzmb1qspbzoU3CatSSqfO9uoW184CGwntAEjThcGVXAOF5MWGYlPWnU59edlxZ1y
-# YADGXbc1cucsCac+7BJYPe1uVtbQ0F8XmiCvwQzB7IK9rjsJNGrpuLdVM+fpMU2J
-# k/WdI6fqLnuvXAMEUMsHnNV5pCYbldbpOqxjKT+FJLXwfVx0JaaPCklogY4LuUiG
-# 0qfac5LArbY+jrJtEnMeV4hZ36EnES8gsb/xz+BHxR+dH5pDgXhNCJlgE817pEwA
-# lXubLZ507ZCxviPJTAJUwhbE87bkyaPp/aDqS8PDdjI+9grUdhReG7qITS8rp/gI
-# C2ylXDQpLMmx7fLa4Cam7jlMPqFArAyDeN5SymFFHMSgJZdh5GQ2+iqr2lPqTvhG
-# RsdHcqeepSgNS3SW+/jBqjetft3/mRDKLYESD8f2/HTY1hQGCImE3MMUaQEUQRz2
-# 9VS4oqd9ooZ96wMxleQRBWiWRMm0WJxOLrbGthV7A6BDjqrE4wOMBLFoW6PdlokL
-# 8cvkIL7pwNEaWCE2pNq3coSIejoOBRE=
+# d2+MBCU/YkgTmCKxXRfEW0QOOoQwDQYJKoZIhvcNAQEBBQAEggIAYRUZ/MzOw2Mi
+# +/xD17+FQdItYveiDv43sXBAbV5NOvVhyV+ry6YRIm36Q3cASKRlcLGPoAI1oLhJ
+# lGkPbMlVPgBvpgeXdMtgOfHtU+SG+5dCHGyy/F54h9wndADMFNTZ2l2jsZf55+dL
+# 9AWwOzJEuk80UE+LrPAFYVw3cViOyEjOaHz5cltDchnr4aXIvsJTTj8a2p21nZ4y
+# NziQ+P3wS3k0Q8wa9D8yfUuWO3FtodjYuG4Q5oGRFuB4cL8G8zpZHqa3YWTZR/rR
+# PNMvgkg5Da4gwRJGI8kR5AB4aZGLS48jGYmLiEhzlqNdjNiFkbDULtHK+a4GHA8n
+# Cud6tp0ukZnpbnhsCDfgopCHCHDwgIw7/qMJ9HvEvcD8Sz1zEI0c8dRjyx0ihmcD
+# BUDDjbThX9dDBYYbuewbgtO4etzQ1WVIHSqLzLjnFyTwtiyGnHIkuS6WHTNAdaou
+# N9X+18E20V4YCoRBoUhKNa27wOGKE4FFtf+YmnbJeycuu2vZQ74OWxQ7n386lFoA
+# LvgZQzY8vdcsXcmMVyAOLlVhPO+l0B+ST9g3yt1DWA6PU43CxV3AF/AengsHMOCZ
+# aKYWRj/T4FFkFD4I24BeXbyhGc/pMKE9qiNfjuxtH+RdWVRCQ08z6fglT3/SpRJU
+# YjcMm4/luuDY4b6FCmwWuqGUKKZx7PQ=
 # SIG # End signature block

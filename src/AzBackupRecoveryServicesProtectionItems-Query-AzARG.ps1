@@ -1,16 +1,36 @@
 Function AzBackupRecoveryServicesProtectionItems-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    recoveryservicesresources
-    | where type == 'microsoft.recoveryservices/vaults/backupfabrics/protectioncontainers/protecteditems'
+recoveryservicesresources
+| where type == 'microsoft.recoveryservices/vaults/backupfabrics/protectioncontainers/protecteditems'
 "@
-Return $Query
+
+$Description = "Backup Recovery Protected Items"
+$Category    = "Configuration"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUG4NnOxLGJriVN0ThB7pjgAZS
-# bhuggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUGdJqnAwKsp9WcuYtmhWFL5gt
+# jpyggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -89,16 +109,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# M75EvsCDkfn+aukcRY9XGgWAlMswDQYJKoZIhvcNAQEBBQAEggIARrDn1d4fH0Y3
-# kDxiZXHgWaRK1AZTJeaUgSI5nl9g/hhq8brRYLGy5Q4c8/qalv7OXrvA+OCFKgGE
-# OE8kY+ILnA9q7EVMsMf3fc8Av/S3GKrJmiJn8pjscP+LZd/QJPjtZ/QHrfRIGkwU
-# Y2jJV9O2exuQTPgywH4UnEdi8R2hCp0fBtWXerzW63GdRD0vvDAxRhuq5gfaC+sy
-# yizxEYbBFxghoVgG3X0Y8AlObXIeqXp1ZLuN8bYrdyc7Kx1j0u0TRKLzX0Xah4OS
-# W0BY2B5W4SPZ5PJazMy4LQAlFbWfm9Sc0h1b6e+VVp68LgNEPyhHSUluKMLy/GQx
-# h64WYwg3ExE6grLCCWSfdF6sBx4OyX0tXyHs2y3kB1LKEGtBOcKhBye1OOzgYEsN
-# 9gQWVCKemfuTwlPQwUrhm/u8aPyDx1f7slrXLaIRIkXoZhG+wT/pMGwxffEQLtIP
-# m4iSYChfueiHZN/yAsJkw7UsldHToVcKorSwCODIg1kjNuNuqu1DekiBIsdMihTA
-# ukF8tR+Brj3zFUX49ljogDYMAVfHGxuH7NZBe+FrG/owMCOLdjkB2bIfOU9ovZ8H
-# uUSu+S97HJsO4ay7KvXGBtQjxwSThvMn6yvnYEIoJu3alzR+ZC4tJ2NJIL3fYx69
-# hw8Cx4OUZlspvvaUbtD38DVJ5IcEyzA=
+# QDnoepCR1hkXShqvPPARtB+0ItAwDQYJKoZIhvcNAQEBBQAEggIAPKCutxePoAzo
+# IufkNpQKo4occUS08p9J31i1jZMC2Sy5u2pdYRoagmZDkw2IW5SCNeodb8GP5OO2
+# a10NuMKDLy1Rgt9wDY6ry4oX4QCYnuroROtVmUVnhmA4JL63ugbqBYorMSzY/SRc
+# yth9OaB/sS0Shu/8V6H9TRj1VcbP+P82by67rB1d8+93prG5cIO56iQgljlFXnxP
+# tHEzggkFUXEILPhC+BOmEuTZQLGtPlecRVU/W3Iyt0/LanopQztAXXSiyB9G1Faj
+# K5u1xuIbB+rQiyQAx+wHtV0IGpoNaATj6u3YSh1tXYa9UkR46igqISW/NQjdr7ai
+# CLZcBsN7UNREp2dgY8zOtjJOMNpUc2PkAbNd3deHkdnJxSHaBkEECGlWvanXjoIJ
+# 20y6fT+CWP8AIokW/2cAWa/zPicZXfBtUb0FzAbDah5xjDlXU2lg88pLGwB3Rqa0
+# JNh66l6Hp2D5P/ZhPFGWluMW9w1/h/u3BOnNCgirGWzfn9tdYqZdHniFjj+AiN7Z
+# QSIZ0pI7wx/wYeOl0D98Lb7k2Od/EHaOhLXJ3+7NWMm93Yxxt0q/a4O0f3y09cnu
+# /l7fHHRFhAiPjvk/UqiKLvt2RY1K3zptFqQ5DtKVrk3bSo2TJw6idkhKXgaaq6HN
+# 0pzKQCD2vvDK7fi/OhjwTMBX8gOxhm0=
 # SIG # End signature block

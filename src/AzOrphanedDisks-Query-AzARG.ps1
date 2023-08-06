@@ -1,20 +1,40 @@
 Function AzOrphanedDisks-Query-AzARG
 {
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
 $Query = @"
-    Resources
-    | where type has "microsoft.compute/disks"
-    | extend diskState = tostring(properties.diskState)
-    | where managedBy == "" and diskState != 'ActiveSAS'
+Resources
+| where type has "microsoft.compute/disks"
+| extend diskState = tostring(properties.diskState)
+| where managedBy == "" and diskState != 'ActiveSAS'
     or diskState == 'Unattached' and diskState != 'ActiveSAS'
-    | project id, diskState, resourceGroup, location, subscriptionId
+| project id, diskState, resourceGroup, location, subscriptionId
 "@
-Return $Query
+
+$Description = "Orphaned Disks"
+$Category    = "Configuration"
+$Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Credit, $Category
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUESk2AianLWHKsGYRzQifE2uv
-# 2a6ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUZqt2UoXcHvwkBgvQqgBgI9Di
+# YOSggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -93,16 +113,16 @@ Return $Query
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# 1j4Ml1FBsjCLkNRMZvUUh9kHRAowDQYJKoZIhvcNAQEBBQAEggIArNJw7aX5llEB
-# +cGKcxLV/SWwPDMO0z2KFy8mL5xJCGFADklX1tvA3i177kOcEqbQ2jFJ/YZOKklX
-# gSiAqDWjwJLCVTbewhIjNEB4R666PAplm5NoeJvm+LHOet8J1OlbwK+xYTegNazJ
-# o/KMZkvHkqiZgxqhMQBEXngNc6NgH9ZTmLnYr2wMrFAxsvuegh9REOj1sT/SLrbD
-# hSrcA0GU9v1vfcDCnmymU5XDs+qAI7yS9KgsVmyYiTCeXa4kv8VNLg74wwSk5iPR
-# eKRRiFKgnOsIAm59i16ueOw/hE46yv4AfxPLJ/i/dV+epxG2Vu3SHKztolEnA8K5
-# qtoxuMmOK8qUfWI9U6dki4WAs1OCixV+UWxSXDlx1UnMPU0mdwNx9JxGg5YprrsN
-# FRoFfUvTeljOl9sJAPXKtbKv0gyjJnHKWIBP9wwWXrfxw8qUfacQH/bV2/wmw456
-# ZEO3oyu7kwddJr5wS7u+CNdcjqyD0sJbFJpNYzYLd6wVqfomNlOfO6Dyj8Jv9zp3
-# zuDCYPAQCnPh+dYj3LdU0UmmxnaQ01Q8V5i2dmWMPar685vzBPWwHRtuC1msL3ur
-# OyitcL7OZZSqe/SqqRthYQv0WHChUdG/Shsubp3zhoRAA3HmK43LJXJfsCtrnBWF
-# sR3HNx51vEzm2POPtvprDlsXr91GR5E=
+# nKURmvt1bNRqBdx8XF0Tv4MbwGQwDQYJKoZIhvcNAQEBBQAEggIAZmX4Hg7lBLQ6
+# Bd4F2RZOtvUKMt+mGWBLo0UrTk3gH1k41dkDEpFmxdeKWDuUWhFQprzi6MyIbQK4
+# tWEO4zAbwAx8mWoaU+mTfgI3kymU97q2RiLmIaWrnFhVVqqit1cJetqvkF5rpXHw
+# KE7DTISuqkLsnwmY0c2nOVgmJX4y1anLWFQ0CwN4MNuNoV60V2Onyri9RZ5Im2zS
+# wxEWS+0FX95MWDFEK+sMRJNuWIFrjl8Kp8HvSBHKO45RVe39kuziVSOcDbKdyLZ4
+# parZhq215M9QDQ2haPHKdPsjBJYvjDCpDy6Sq7r3BThWhdiacueYZ7QbfOmS//uq
+# 1VWUkCeQwDIpVaD83VzpfXbWXKwIwjy45w/onb0UT1S+13kP4MIdj5Ci3F4TIUKo
+# tlHPm6ctN34ec0u0L9nET1jpG3RtJcQo10jf6wcFSV0KOpvqZqEDXgGBOREbiz7n
+# AzTxyGddPfnmDOqsv5C3qj92BKGnOQQ6mhJDR8As5ZPCbG+GSSCkrN7rX4Q0VEqu
+# ZwcVhbHCElrwBW1kpdeDLu/2EClhfMHeQt/b+wifJc+fOBrz59dbAGhCu1SeYjvq
+# mSWAlgrS4ZfYXx8nfSteOx3HSSIaLKdPZbFqoBv7zft1AsVW3FUgD49j+UiuQ0bS
+# shJ98IACLrlrwTLaBEQZQIJqJtZcLTc=
 # SIG # End signature block
