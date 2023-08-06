@@ -226,7 +226,7 @@ Function Query-AzResourceGraph
                                 $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
 
                                 # Online version in PSGallery (online)
-                                $OnlineVersion = Find-Module -Name $Module -Repository PSGallery
+                                $Online = Find-Module -Name $Module -Repository PSGallery
 
                                 # Compare versions
                                 if ( ([version]$Online.Version) -gt ([version]$LatestVersion.Version) ) 
@@ -316,7 +316,7 @@ Function Query-AzResourceGraph
                                 $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
 
                                 # Online version in PSGallery (online)
-                                $OnlineVersion = Find-Module -Name $Module -Repository PSGallery
+                                $Online = Find-Module -Name $Module -Repository PSGallery
 
                                 # Compare versions
                                 if ( ([version]$Online.Version) -gt ([version]$LatestVersion.Version) ) 
@@ -580,8 +580,8 @@ Function Query-AzResourceGraph
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU6No8vkgD9650uyJoBoNHB8TL
-# JGyggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUyZ80j2sGWPUTtq2V2eKiX9RM
+# tJqggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -660,16 +660,16 @@ Function Query-AzResourceGraph
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# UhedFBknPu/OnxKqhf7zf5g5Lb4wDQYJKoZIhvcNAQEBBQAEggIAVGa8bX6nluXM
-# 5s6kFdYYWWxFXwnkgbj6am++D6SbvrMR2+yo58i+mCgtcq3N6eqVMZizToJ0nZ3z
-# VUlDiGiJJPNWMAPXaYqgpQK1icbMr4phgT3QAW0wiEkKWvcueNaPKTUsAdDbTbyi
-# Mh8OxYwPSYoo3HTuxg6fuapBBjeXCu5EXWowaIMIFmQlf9Rc3XZ+g+ksSkIm5CMX
-# l3dRxENuQ5YMPqqvXVa4sLSWiaqacaCi3pgkYYL+L5VKsvTL9cvm4P6lWz7f+sJ6
-# QsMi6ugPh2T6GsCNzlxIIkXJaxzzR6bWc/fHMyrlIa2mCK7ZSm9X++au/F+QrMrW
-# lKamJt/bBAHRuy7Ee9BFOgUp6uEvXJ7WGbCvFqSG1Ucja146TTpOySkhaneL935k
-# Q4oSCCJUqlSKuLwFrh0/wRNqCVIEYHd7++J+wyTaAC+7GcA8fb4FMYFV9t0y2szj
-# 0hepP1Ocm/vORdT5M221T9KArVdF+Rm0xguZLWD69ORLWlCKINts2AdX0fMaisB6
-# +CRK7Fx531/Jez47TdaaHzmWbik1VAcYa+BXkiA5sKuLfVv8c2Jh0r3YAG826C6s
-# pT8sqVnFftViScvNMRPByBvA5zjdiGdqoMtJxs1wQBBwriFXXW6kvGfKaZBjIDtw
-# xOLPhoCizD+F6fUig0UQuC5K0V4FC2U=
+# FybaCF/yqw45CNhmJxpab6I7a8AwDQYJKoZIhvcNAQEBBQAEggIAUuLpyKK+ksuG
+# E1+Anauv9lBr+uOTDRveO0Hn2dgIEivMq99V0sKWzL5O6MIG2FaxTepQBPKnuime
+# XmV0ky8Tygm8vtvKm3XAve+HVbAqv7SX6YxsitlpxXb7fBDR0PpIsj+yFxheg9JZ
+# x2CNi3dMT6dpRbBIBgyN4dD0uqmkVAQmaMq4jdfxS+5ttylH0292pUcr4ZKF+pBJ
+# CTxtdN1NX8Yc08uK9z0oICxOS2XXBAlc4yUTH3P5eBHP102bKHDBxoyWVSBjru4F
+# mTFwQpG0vy+/7qJFNK17z1LfUpew6Tncm0E/RmbgSp5NU5OKUNissPQL6PB9KKqL
+# hfQBmx4P4gGf5/rKRohSXgXGawZvR1g3c/Zp7KugTasYxa+LqJzD81cZsVDlu/m9
+# aXy6D+4bNN9UhQ8P17AMVxQE7r5wg7l1b550XR+Ze/63djUagiJlOJN2Gt8ZAJq8
+# FhjP4o4uBB6Mny0jnjqExK9sXFHNu8ak64RiiMrXxR/sQfYwhl8uKNDysvT3xMBk
+# 0mFcV4aa/y7C6fKozOSIe2CJ8rW/GOGMwUDjqEqw8AWm4/BjBEraMKCj/JrigA88
+# tgNCvitHm2Ss/TEz4k7d2sF6Jar1XG4HFZU3OIR5QIwSMN6B0t4xcZ+EMPntvfpp
+# EhBvllk6MGgHcZrm5YENILdjnX0WonU=
 # SIG # End signature block
