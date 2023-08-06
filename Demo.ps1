@@ -55,9 +55,9 @@ $test | fl
         #---------------------------------------------------------------------------------------------                          
 
             # Variables - optional, if you want unattended mode. Alternative script will prompt for login
-                $AzAppId     = "xxxx"
-                $AzAppSecret = "xxxx"
-                $TenantId    = "xxxx"
+                $AzAppId     = "7602a1ec-6234-4275-ac96-ce5fa4589d1a"
+                $AzAppSecret = "ZrG8Q~nfLRVVMdR34ws4jUV3nYkOwrgkf7iClbUO"
+                $TenantId    = "f0fa27a0-8e7c-4f63-9a77-ec94786b7c9e"
 
 
             # Disconnect existing sessions
