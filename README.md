@@ -3,7 +3,11 @@ Think of this PS-module as a helper for doing **Azure Resource Graph Queries** u
 
 
 
-[toc]
+[initial]: 	"Initial installation of AzResourceGraphPS"
+
+
+
+
 
 ## Initial installation of AzResourceGraphPS
 
