@@ -25,7 +25,7 @@ patchinstallationresources
 | join kind=inner (resourcecontainers
         | where type == "microsoft.resources/subscriptions"
         | project subscriptionId, subscriptionName=name )
-    on $left.subscriptionId == $right.subscriptionId
+    on `$left.subscriptionId == `$right.subscriptionId
 | project RunTime, RunID=name,machineName, subscriptionId, subscriptionName, rg, OS, installedPatchCount, failedPatchCount, pendingPatchCount, excludedPatchCount, notSelectedPatchCount
 "@
 
@@ -46,8 +46,8 @@ Else
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUnG/z1ys5mkiZDPcFYkipTS42
-# Wieggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU7bK5qhOUPT25eKqM3Jb7vj1R
+# z2uggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -126,16 +126,16 @@ Else
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# RR9vFhqhcBCJ+34zI7pxIjabY4UwDQYJKoZIhvcNAQEBBQAEggIARc9LLSzZgRwu
-# g+lfaCFWO7IXlgxB6xx7/4NFm3QdPlcO1vannLihCvZdAU4POQopa24DjtrNIuN1
-# 3lDhGdCj5CFMY+E49y/sS80XEIsaaEVCfjMIeBWCKjDV+bckMHrGosuTj3lt4hTo
-# MH5+6wO1xLrFc3Y3D22vsVlyK7Ah8wt5g0vKaF4m1jDcu1WVwqoZbYqN4vjKTv4o
-# nq4MEbYsTSP659Qy2nr5V1HS/zbrxxvs/pMJiHmWCtLnp2GYmN0qQ0h1ul7LSseZ
-# NDH4FKfknlNstFza78cLDCKGVSAO00QOc1e0ZomSE5nf4V5UzqYboF9Z8wi7eop7
-# hBy6+LS03iqLXfmkXz4QDw++HXDGZOGF+MZH7JpZk/G0BLKYxdkXH3KnTqG4qvHi
-# yoSHhiLgN83FfytJZgP+H6Wm7PZzUaecqqh32SIJqlXjkr/IUSLxIn0Gba6mWldT
-# NS1/p9snj1ND5EUeuxylLtuL4U3jMDdlnhvJb2rXlLSbe7jIdRtli+z67N/t/9fy
-# pYNLkJw7PTqps8lISNoXIeTtG9lRWmOtm9cMAoJJS1DZB2Ade1l5xH1fGvheAV2f
-# I7ovXjNLU4ZmoLlfCh9vmbPH6Gn/U4nvtUcaKaPbNW0MECXDkztuYDmtCQq3uOSe
-# hkPbEOt5PzU6VGi412YPz1QOKmwNCdE=
+# B0D2namY17M7uQ/DKxShsXeTszIwDQYJKoZIhvcNAQEBBQAEggIAbcMEouZy2mgi
+# 7oE65LjSLXEORlRQlsXbxTepCgqt56MpSefU6T6zge2ma8bBfiMWhmFaOxdZM7Ne
+# q4YTSG3NY73VaaE6DaKM2krqA7PJ+/XAi+gXVwQ93Rrw32R7GY+ZlXsaVudL1Osx
+# oRuWYVeEsTIiuk4qK8Hd2nHeAzbb9MxfLKg15xE0Kl0s19gpMX9w7mPcMQZgyLPM
+# DJbK5sLy6pL98wDQnayuigQY3iPl0bC7lfxVw4Hqk187XGop3FSKKahljk8UGIxx
+# YhtPmWU7SRZ448S+hDqHeVQz2lQQIBWM5QLHgwL5Y6NBk5ROxAfM2k1eU4qV3fqO
+# 45ZoiKvNVWls6BjzGXVe3VxT6AcuAran5tdQ2mbkKZoGH9YSnu/bb/YKPJoK2v1x
+# MVQR61U5w4Jo3zNqY45dmUlpy/layi/XXLKHv/rhr9N0hin90q5lCa4hHAjpjuch
+# vChGraOOmUrLp8k71WoBX8igt8cttIpSvu2wxWf+UUrFLfo0kEPlpxUKU/iNG7EB
+# lcbCihWQYuF6ieirpsAImiHKJmWiFBzl5IqJLVdcBAgR9mAV01T75vfRvJP3DH6G
+# QqwCbX8VRKfHjptJcD3g28jNGjSmGPXGVVqVr9M+UAiqtaTsum8CYnhUhalydbkv
+# 4nFUmeNlMkpg1lgWpl9K/ui2K/RIjZ8=
 # SIG # End signature block

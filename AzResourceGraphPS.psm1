@@ -1841,7 +1841,7 @@ healthresources
 | join kind=inner (resourcecontainers
         | where type == "microsoft.resources/subscriptions"
         | project subscriptionId, subscriptionName=name )
-    on $left.subscriptionId == $right.subscriptionId   
+    on `$left.subscriptionId == `$right.subscriptionId   
 | project VMName, availabilityState, previousAvailabilityState, occurredTime, subscriptionName, subscriptionId
 "@
 
@@ -1926,7 +1926,7 @@ resources
 | join kind=inner (resourcecontainers
         | where type == "microsoft.resources/subscriptions"
         | project subscriptionId, subscriptionName=name )
-    on $left.subscriptionId == $right.subscriptionId
+    on `$left.subscriptionId == `$right.subscriptionId
 | project name, OS, imageOffer, imageSku, location, subscriptionId, subscriptionName
 "@
 
@@ -1967,7 +1967,7 @@ Resources
 | join kind=inner (resourcecontainers
         | where type == "microsoft.resources/subscriptions"
         | project subscriptionId, subscriptionName=name )
-    on $left.subscriptionId == $right.subscriptionId
+    on `$left.subscriptionId == `$right.subscriptionId
 | project vmName, osType, osVersion, osName, licenseType, powerStateStatus, location, subscriptionName, subscriptionId
 "@
 
@@ -2243,7 +2243,7 @@ resources
 | join kind=inner (resourcecontainers
         | where type == "microsoft.resources/subscriptions"
         | project subscriptionId, subscriptionName=name )
-    on $left.subscriptionId == $right.subscriptionId
+    on `$left.subscriptionId == `$right.subscriptionId
 | project id,name,type,location,resourceGroup,subscriptionName, subscriptionId,tagKey, tagValue
 "@
 
@@ -3084,7 +3084,7 @@ resources
 | join kind=inner (resourcecontainers
         | where type == "microsoft.resources/subscriptions"
         | project subscriptionId, subscriptionName=name )
-    on $left.subscriptionId == $right.subscriptionId
+    on `$left.subscriptionId == `$right.subscriptionId
 | project id, resourceName=name, type, location, resourceGroup, subscriptionName, subscriptionId, tagKey, tagValue
 "@
 
@@ -3149,7 +3149,7 @@ resourcecontainers
 | join kind=inner (resourcecontainers
         | where type == "microsoft.resources/subscriptions"
         | project subscriptionId, subscriptionName=name )
-    on $left.subscriptionId == $right.subscriptionId
+    on `$left.subscriptionId == `$right.subscriptionId
 | project id, rgName=name, location, subscriptionName, subscriptionId
 "@
 
@@ -3187,7 +3187,7 @@ resourcecontainers
 | join kind=inner (resourcecontainers
         | where type == "microsoft.resources/subscriptions"
         | project subscriptionId, subscriptionName=name )
-    on $left.subscriptionId == $right.subscriptionId
+    on `$left.subscriptionId == `$right.subscriptionId
 | project id, rgName=name, location, subscriptionName, subscriptionId, tagKey, tagValue
 "@
 
@@ -3277,7 +3277,7 @@ securityresources
 | join kind=inner (resourcecontainers
         | where type == "microsoft.resources/subscriptions"
         | project subscriptionId, subscriptionName=name )
-    on $left.subscriptionId == $right.subscriptionId
+    on `$left.subscriptionId == `$right.subscriptionId
 | project SecureControl , unhealthy, currentscore, maxscore, subscriptionName,subscriptionId
 "@
 
@@ -3314,7 +3314,7 @@ securityresources
 | join kind=inner (resourcecontainers
         | where type == "microsoft.resources/subscriptions"
         | project subscriptionId, subscriptionName=name )
-    on $left.subscriptionId == $right.subscriptionId
+    on `$left.subscriptionId == `$right.subscriptionId
 | project subscriptionSecureScore, subscriptionName, subscriptionId
 | order by subscriptionSecureScore asc
 "@
@@ -3528,7 +3528,7 @@ resources
 | join kind=inner (resourcecontainers
         | where type == "microsoft.resources/subscriptions"
         | project subscriptionId, subscriptionName=name )
-    on $left.subscriptionId == $right.subscriptionId
+    on `$left.subscriptionId == `$right.subscriptionId
 | project name, kind, HTTPSOnly, BlobEncryption, FileEncryption, location, subscriptionName, subscriptionId, Prop
 "@
 
@@ -3567,7 +3567,7 @@ resources
 | join kind=inner (resourcecontainers
         | where type == "microsoft.resources/subscriptions"
         | project subscriptionId, subscriptionName=name )
-    on $left.subscriptionId == $right.subscriptionId
+    on `$left.subscriptionId == `$right.subscriptionId
 | where HTTPSOnly =~ 'false'
 | project name, kind, HTTPSOnly, BlobEncryption, FileEncryption, location, subscriptionName, subscriptionId, Prop
 "@
@@ -3929,7 +3929,7 @@ patchinstallationresources
 | join kind=inner (resourcecontainers
         | where type == "microsoft.resources/subscriptions"
         | project subscriptionId, subscriptionName=name )
-    on $left.subscriptionId == $right.subscriptionId
+    on `$left.subscriptionId == `$right.subscriptionId
 | project RunTime, RunID=name,machineName, subscriptionId, subscriptionName, rg, OS, installedPatchCount, failedPatchCount, pendingPatchCount, excludedPatchCount, notSelectedPatchCount
 "@
 
@@ -4455,25 +4455,28 @@ Function Query-AzResourceGraph
     # Connection
     #--------------------------------------------------------------------------
 
-        # Check current AzContext
-        $AzContext = Get-AzContext
+    If ($InstallAutoUpdateCleanupOldVersions -eq $false)
+        {
+            # Check current AzContext
+            $AzContext = Get-AzContext
 
-        If ([string]::IsNullOrWhitespace($AzContext))
-            {
-                If ($AzAppId)
-                    {
-                        $AzAppSecretSecure = $AzAppSecret | ConvertTo-SecureString -AsPlainText -Force
-                        $SecureCreds = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $AzAppId, $AzAppSecretSecure
-                        Connect-AzAccount -ServicePrincipal -Credential $SecureCreds -Tenant $TenantId -WarningAction SilentlyContinue
-                        $AzContext = Get-AzContext
-                    }
-                Else
-                    {
-                        Connect-AzAccount -WarningAction SilentlyContinue
-                        $AzContext = Get-AzContext
-                    }
-            }
+            If ([string]::IsNullOrWhitespace($AzContext))
+                {
+                    If ($AzAppId)
+                        {
+                            $AzAppSecretSecure = $AzAppSecret | ConvertTo-SecureString -AsPlainText -Force
+                            $SecureCreds = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $AzAppId, $AzAppSecretSecure
+                            Connect-AzAccount -ServicePrincipal -Credential $SecureCreds -Tenant $TenantId -WarningAction SilentlyContinue
+                            $AzContext = Get-AzContext
+                        }
+                    Else
+                        {
+                            Connect-AzAccount -WarningAction SilentlyContinue
+                            $AzContext = Get-AzContext
+                        }
+                }
 
+        }
 
     #--------------------------------------------------------------------------
     # Select built-in queries using GUI
@@ -4607,6 +4610,8 @@ Function Query-AzResourceGraph
                 Write-host ""
                 Write-host "Running Query against Azure Resource Graph ... Please Wait !"
 
+                $QueryStart = (Get-date)
+
                 $ReturnData   = @()
                 $pageSize     = 1000
                 $iteration    = 0
@@ -4665,6 +4670,20 @@ Function Query-AzResourceGraph
             #--------------------------------------------------------------------------
             # Return Result
             #--------------------------------------------------------------------------
+                
+                $QueryEnd = (Get-date)
+                $QueryTimeTotal = New-Timespan -Start $QueryStart -End $QueryEnd 
+
+                $RecordsReceived = ($ReturnData | Measure-Object).Count
+
+                Write-host ""
+                Write-host "Raw Records Received (excluding header record):"
+                Write-host "$($RecordsReceived)" -ForegroundColor Green
+                Write-host ""
+                Write-host "Time Used to Get Records:"
+                Write-host "$($QueryTimeTotal)" -ForegroundColor Green
+                Write-host ""
+               
                 Return $ReturnData
         }
 }
@@ -4674,8 +4693,8 @@ Function Query-AzResourceGraph
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCJtJqRAwKYkaqE
-# IrUUXYingq/uEYao1dMYOrV+z4WB9qCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBdHH7c69RZqBnj
+# Nt0MrWfNq1NfPBaaYx0ttLjEV1LFTaCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -4783,17 +4802,17 @@ Function Query-AzResourceGraph
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIBQnVCKxaemk2UzRIpppJ3RC
-# edhEJ9AXzv2aMkyUgDv+MA0GCSqGSIb3DQEBAQUABIICAKWu74GvX7V5rp6iL07v
-# mZvkIg+HeEYT6Jah4s6jg1MJOdZgobx8o4bpbx9s8EKA8cZacgPd5gS4rRknnDua
-# tofB1UIgEXU6hye5vQCr0biLcE2BRRaKYLMofxUDflKMJ48IM3Oxg6Ruei2UgQ6c
-# t2uRK4Bz+bI4oWRSRDk114BOfLmUNyu8Nw0Qj+Uhf+xjK7avwzTYtqarlNf5gF8l
-# NqrLkH3MLjDwPn5qFKSbockEm0B7deXIZnK16VVYlASuOkRgkYylKoSUr4lwSZHX
-# Bunegquhij7c7log9j0O+gLrhG3woe1VwD/2V1g4tfF0wlQF1Er6Jow064r3imib
-# oTINoF5TMx9f0tVpyEhFfVbv/9UStNdsrKlZFgisbxAFHCWKxRyH2op/ko40qc2w
-# fpz3+tUbVfSHm/lyG+icbg64ICQChn1hIXz7Y9tFceWt/CdTHFqxStw3MTu+bW/6
-# JSWpWLQs6BBAf/AG+hleGWBQDmM26pYw9AXFxyIgKG6yxok90WG7Jkeyv/RvXwff
-# NO9kk5KZi6txxP1Cwn8nShE3S52uQfL16EnqBx0BsW17DgeKD9dSZeRRYZgpF8pt
-# yHaPNXw5+j96IczTfTI2Ge3HqSjvOttiz9CAwW1AjmI0ngN9ZZng+opwwjeMLHpL
-# 7u/xt1e6iylTqB7hh4UrNY5O
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIN5Mk6UrLs72vDAbWmu8ryM4
+# jypOY+WTxQddDiJ8ZrMEMA0GCSqGSIb3DQEBAQUABIICAEHoU/6R91jY2giBeyrU
+# IEvg8szKc7LHUh2c2a9gsQ4csBMqGxCVHRXTA36/P3Dwf4lI06B7oi32djZV7+HU
+# iv+lFD7Cyds0+XFnDtrAeG7wU8Tm+5elDYtr+PoCqmFR1JRHJoEzvBTL4bn6fHnB
+# STmd1y6hkeLCDmjSx6AknH+LwYGlYzG7Q+iAEks3qjB6b6Yaz3ZrCS8caosIPiI3
+# 1M80+SjKcvPe+rxiEPBZhOTC/mc6iCqooH1M/firv0NvGdQsgy1BHgOwo3RhCBW/
+# 2XB8m1ha1ubeKnXyHEQdlG1kRA9CRBgmUCroMX9yqjScxSWpRLVHzHM1cXCUjvXZ
+# XY7yKFX1PS3BSiKGQw0/dLgcKWy+N7SnHIzzsEzTs41LkRCqRQqNkxDsMxVLPLcP
+# aodmgun+ov8igNBfeNHiNaRbji5Cn+Q4QMI+EaeQ6AW8aRXncIGbAJ18YkvSxo1a
+# 5DJBEtfxzNz6D6WuBlc7p2yn+5XQLSvUf8qZPh8AC5FBUSHuWHQblIWejaYp5iHc
+# EVHiOMzt8b2ncTUYgYFnGBBRvU8PfO7pZHX9LjWWVP3m0qW6FU7B7d/iPxgiK4OK
+# p9bW7V9OZXo3R6sPF4pNR0OqEO4jBl/ngcHJ+Xfip+ruUVTAOMAi76tRnp8YCnU0
+# ILJwLSFDhdQldgNTmBd4SkVm
 # SIG # End signature block

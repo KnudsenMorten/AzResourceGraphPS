@@ -400,25 +400,28 @@ Function Query-AzResourceGraph
     # Connection
     #--------------------------------------------------------------------------
 
-        # Check current AzContext
-        $AzContext = Get-AzContext
+    If ($InstallAutoUpdateCleanupOldVersions -eq $false)
+        {
+            # Check current AzContext
+            $AzContext = Get-AzContext
 
-        If ([string]::IsNullOrWhitespace($AzContext))
-            {
-                If ($AzAppId)
-                    {
-                        $AzAppSecretSecure = $AzAppSecret | ConvertTo-SecureString -AsPlainText -Force
-                        $SecureCreds = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $AzAppId, $AzAppSecretSecure
-                        Connect-AzAccount -ServicePrincipal -Credential $SecureCreds -Tenant $TenantId -WarningAction SilentlyContinue
-                        $AzContext = Get-AzContext
-                    }
-                Else
-                    {
-                        Connect-AzAccount -WarningAction SilentlyContinue
-                        $AzContext = Get-AzContext
-                    }
-            }
+            If ([string]::IsNullOrWhitespace($AzContext))
+                {
+                    If ($AzAppId)
+                        {
+                            $AzAppSecretSecure = $AzAppSecret | ConvertTo-SecureString -AsPlainText -Force
+                            $SecureCreds = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $AzAppId, $AzAppSecretSecure
+                            Connect-AzAccount -ServicePrincipal -Credential $SecureCreds -Tenant $TenantId -WarningAction SilentlyContinue
+                            $AzContext = Get-AzContext
+                        }
+                    Else
+                        {
+                            Connect-AzAccount -WarningAction SilentlyContinue
+                            $AzContext = Get-AzContext
+                        }
+                }
 
+        }
 
     #--------------------------------------------------------------------------
     # Select built-in queries using GUI
@@ -552,6 +555,8 @@ Function Query-AzResourceGraph
                 Write-host ""
                 Write-host "Running Query against Azure Resource Graph ... Please Wait !"
 
+                $QueryStart = (Get-date)
+
                 $ReturnData   = @()
                 $pageSize     = 1000
                 $iteration    = 0
@@ -610,6 +615,20 @@ Function Query-AzResourceGraph
             #--------------------------------------------------------------------------
             # Return Result
             #--------------------------------------------------------------------------
+                
+                $QueryEnd = (Get-date)
+                $QueryTimeTotal = New-Timespan -Start $QueryStart -End $QueryEnd 
+
+                $RecordsReceived = ($ReturnData | Measure-Object).Count
+
+                Write-host ""
+                Write-host "Raw Records Received (excluding header record):"
+                Write-host "$($RecordsReceived)" -ForegroundColor Green
+                Write-host ""
+                Write-host "Time Used to Get Records:"
+                Write-host "$($QueryTimeTotal)" -ForegroundColor Green
+                Write-host ""
+               
                 Return $ReturnData
         }
 }
@@ -617,8 +636,8 @@ Function Query-AzResourceGraph
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUn5ObTo5e4BzA80quRJ/dthE/
-# Ww2ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUi0mEvAoiSScIYfQa7NkEfb3U
+# +X6ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -697,16 +716,16 @@ Function Query-AzResourceGraph
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# WXocxB8lhp2PgSsaNCawn6c/8gYwDQYJKoZIhvcNAQEBBQAEggIAqLcqkkDE5s6f
-# 5S54NLgJzj4cp5zWz9OTbxWsTd5Sr98YXLjzAwVA3Ki4j9MfMRj9FgKRHLNwotk7
-# nXWo5K5tTHjjuwDvisYywJldVQmjSdxRe/deN0Vj0tsPHciHNyGyEzgzZAmMxqIH
-# PlmaMYj7xTQpfXn/5boC/cN4P+8w1A4uXS2tsWMIwztRYpebJJLxaMyrtxh/kDRD
-# XxQhaKpM9QkttXMkzafsPvwqkAVvBQskRnBzEWo7phmIm8wgxOf9YK6euQtZKEpd
-# GiywzZoUFAFpB89AdAAbcJ+GAwYzp2WhauPzn+LCW3eXYdaSAJ5KIYj1P9lr22+O
-# XZPijVIZhH7dgH4ZDxf9RAMFG1rFhTm+VYCmkSqLKjEThzjWojF9g0+RNmRjDz/O
-# Y77T1nnr3ynbL30gdF+wR/1EcG81WT6aLguQh0SVeAbrBr2WBnTU2sEm9fI9r6CG
-# 4PRUAEuf0HGU/EapHqjeBNyPd8KdDqEXDnvOtGSP3tWbdjKorBXJSF14syToQx95
-# 9cSyRp8BwLdtKeT4Napwt6qOYGDNo/8wNpYj6AW9/vEFnfYrY1oWJqUgFJ1JRQ2s
-# R8syf2X2gcScHPW1XUo61GfsI5cYaipQsQ5H1eIw06sDOO6UdJHBP6Mn003x5iJR
-# btsr3dUvUmcJ+KOjwWKOv9helRPy/Xo=
+# EouyFJaQa7hlAeEE5RTLCGA3ot8wDQYJKoZIhvcNAQEBBQAEggIAyH7IYeJVGBEg
+# kcY1jFg9z62l5/nuqHIZCvhFjzux/pC8ODqb+w37uL4sFSssYu64eg99V1wHfMI9
+# Ze4FfZh48flO+U7I+3U96C5tSlc3xxfu+JC2vkWR0QJYOWKIq709dFuPiYQMaxCo
+# VOaQ5hDvAYnaAjPYhlnRF/ZM+LorKGNusMK41Fc3xodzjdO+yC8w5ZOF6tu+nUxq
+# 6s9Gz0L1hQHcD6ORtSsE1AqpLIkPZED1q797b2qZbOxcmnZb2eR3hct0kfWVFeAU
+# mD2/BG6H34P/zZ50xdqWEGLI2qjRlwEQFEtOYrC0+CXlNhkJOkZqFqw/bZo5wNko
+# aFbvXjQB43rcd8ajpgFCLraVaiuLpx0B+DLptnyMwqGsenCekIbdJfvGvSb9h1Tc
+# XvpckyqEKsA780MWp16+8k/dVXxxr6fjeYUXg6nbRGTaC1MAeSjtHF1nZ1etQFf4
+# L5IXTnvHHVMLJ4E31kTtPjTHoqgR3je3iHnmMdf2qXfMB2QK5xsqnVX5ALk8OhM0
+# dNCsiETJ97tHobu/IhsOheT3IMtxEqArnu7D1uEZLx3dezeDTtcfNX9HJCyJVprH
+# Dli0NOoth3YhEBiI3AZZ4oh1WM72qI1ogJtwwoleLjmZga1DflPDmluZ9mj+5p4w
+# 0YR3mytjdMoBiLHa2+zg7fZ+FPxmAe8=
 # SIG # End signature block
