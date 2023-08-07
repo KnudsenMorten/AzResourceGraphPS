@@ -1,11 +1,10 @@
 # AzResourceGraphPS
 Think of this PS-module as a helper for doing **Azure Resource Graph Queries** using more than **+100 pre-defined queries** or you can make your own **custom queries**. You can connect using **Azure App** or through a **interactive login**. Solution supports **auto-update** so you will always have access to the latest queries, part of this solution.
 
+Quick Links
 
-
-[initial]: 	"Initial installation of AzResourceGraphPS"
-
-
+[Installation]: https://github.com/KnudsenMorten/AzResourceGraphPS#initial-installation-of-azresourcegraphps	"Installation"
+[Usage]: https://github.com/KnudsenMorten/AzResourceGraphPS#usage-of-query-azresourcegraph	"Usage"
 
 
 
@@ -14,8 +13,6 @@ Think of this PS-module as a helper for doing **Azure Resource Graph Queries** u
 ```
 install-module AzResourceGraphPS -Scope AllUsers -Force
 ```
-
-
 
 You can [find latest version of AzResourceGraphPS here (Github)](https://raw.githubusercontent.com/KnudsenMorten/AzResourceGraphPS/main/AzResourceGraphPS.psm1) - or from [Powershell Gallery using this link](https://www.powershellgallery.com/packages/AzResourceGraphPS)
 
