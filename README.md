@@ -3,8 +3,8 @@ Think of this PS-module as a helper for doing **Azure Resource Graph Queries** u
 
 Quick Links
 
-[Installation]: https://github.com/KnudsenMorten/AzResourceGraphPS#initial-installation-of-azresourcegraphps	"Installation"
-[Usage]: https://github.com/KnudsenMorten/AzResourceGraphPS#usage-of-query-azresourcegraph	"Usage"
+[Installation]: #initial-installation-of-azresourcegraphps	"Installation"
+[Usage]: #usage-of-query-azresourcegraph	"Usage"
 
 
 
