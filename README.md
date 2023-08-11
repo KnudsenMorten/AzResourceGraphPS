@@ -17,9 +17,9 @@ Think of this PS-module as a helper for doing **Azure Resource Graph Queries** u
 
 [Auto-updating AzResourceGraphPS (video, 30 sek)][Updating]
 
-[Query credit, Thank You][#credit]
+[Credit, Thank You][credit]
 
-[How can you be mentioned with your cool queries][#mention]
+[How can you be mentioned with your cool queries][mention]
 
 
 
