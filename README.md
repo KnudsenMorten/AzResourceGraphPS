@@ -5,14 +5,24 @@ Think of this PS-module as a helper for doing **Azure Resource Graph Queries** u
 
 **Quick Links**
 
-[Installation][Installation]
+[Installation & Updating][Installation]
 
-[Usage][Usage]
+[Usage of Cmdlets][Usage]
+
+[Short introduction to Azure Resource Graph &amp; PS-module AzResourceGraphPS (video, 15 min)][IntroARG_PSModule]
+
+[Demo of usage of PS-module AzResourceGraphPS (video, 12 min)][IntroPSModule]
+
+[Auto-updating AzResourceGraphPS (video, 30 sec)][Updating]
 
 
 
 [Installation]: #initial-installation-of-azresourcegraphps	"Installation"
 [Usage]: #usage-of-query-azresourcegraph	"Usage"
+
+[IntroARG_PSModule]: https://youtu.be/LnIolqDlJUc
+[IntroPSModule]: https://youtu.be/d2Y09Dmi7FQ
+[Updating]: https://youtu.be/qZLPzSn-YP4
 
 
 
@@ -26,17 +36,24 @@ You can [find latest version of AzResourceGraphPS here (Github)](https://raw.git
 
 
 
-## Module Version-check with Auto-update & Clean-up old versions
+## Optional: Automatic Auto-update & Clean-up Old Versions
 
-After the initial installation, you can check if the pre-requisites with the needed PS-modules are OK using the below cmdlet.
-
-Running the check will also auto-update **Az.ResourceGraph** and **AzResourceGraphPS** to latest version, if newer versions are detected. Lastly the cmdlet will remove any older versions of the required PS-modules, if found.
+After the initial installation, I encourage you to let AzResourceGraphPS auto-update. This can be done by running this command in a daily scheduled task:
 
 ```
 Query-AzResourceGraph -InstallAutoUpdateCleanupOldVersions -Scope AllUsers
 ```
 
+Advantage is primarily bugfixing + new feature - but more important: <u>you  will have access to the latest queries available and query-syntax fixes. A great way to stay on top of you queries.</u>
 
+
+
+The following 3 tasks will be done:
+
+* check if newer versions of **AzResourceGraphPS** is available. If Yes, it will install newest version and remove the older version(s)
+* check if newer versions of **Az.ResourceGraph** is available. If Yes, it will install newest version and remove the older version(s)
+
+ 
 
 ![](img/install.jpg)
 
@@ -51,6 +68,34 @@ Query-AzResourceGraph -InstallAutoUpdateCleanupOldVersions -Scope AllUsers
 
 
 ## Usage of Query-AzResourceGraph
+
+
+
+### Show query only (interactive mode)
+
+```
+Query-AzResourceGraph -ShowQueryOnly
+```
+
+![](img/query_only.jpg)
+
+
+
+### Select from list of pre-defined queries (interactive mode)
+
+```
+Query-AzResourceGraph
+  -or-
+Query-AzResourceGraph -SelectQuery
+```
+
+
+
+![Skip](img/select-query.jpg)
+
+Example of output, where you can see the selected query from the previous list.
+
+![Skip](img/Selected-query-output.jpg)
 
 
 
@@ -77,9 +122,9 @@ AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope MG -Target "2linkit"
 ### Run pre-defined query and return result to $Result-variable
 
 ```
-$Test = AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -QueryScope "MG" `
+$Result = AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -QueryScope "MG" `
                                                                      -Target "2linkit"
-$test | fl
+$Result | fl
 ```
 
 ![](img/Output-result.jpg)
@@ -106,33 +151,9 @@ $Result | fl
 
 
 
-### Show query only
-
-```
-AzMGsWithParentHierarchy-Query-AzARG | Query-AzResourceGraph -ShowQueryOnly
-```
-
-![](img/query_only.jpg)
-
-
-
-### Select from list of pre-defined queries
-
-```
-Query-AzResourceGraph -SelectQuery
-```
-
-![Skip](img/select-query.jpg)
-
-
-
-Example of output, where you can see the selected query from the previous list.
-
-![Skip](img/Selected-query-output.jpg)
-
-
-
 ### Run query with initial interactive login
+
+Start by running a Disconnect-AzAccount
 
 ![](img/interactive-signin.jpg)
 
@@ -227,6 +248,8 @@ You can now make the query using either Azure App service principal or using int
 
 ## Credits for queries
 
+Thank you to the below providers of cool queries. 
+
 
 
 ### Billy York
@@ -260,3 +283,17 @@ Blog: https://ludovic-alarcon.com/Resource-Graph-NodePool/
 ### Microsoft
 
 https://learn.microsoft.com/en-us/azure/governance/resource-graph/samples/samples-by-table
+
+
+
+## How can you be mentioned with your cool queries ?
+
+If you have some cool queries, that you would like to share with the community, I encourage you to send them to me through on of these channel:
+
+* email on mok@mortenknudsen.net
+* Twitter/X @knudsenmortendk
+* LinkedIn https://www.linkedin.com/in/mortenwaltorpknudsen/
+
+
+
+### 
