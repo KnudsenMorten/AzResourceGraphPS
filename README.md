@@ -3,17 +3,23 @@ Think of this PS-module as a helper for doing **Azure Resource Graph Queries** u
 
 
 
-**Quick Links**
+## Quick Links
 
 [Installation & Updating][Installation]
 
 [Usage of Cmdlets][Usage]
 
-[Short introduction to Azure Resource Graph &amp; PS-module AzResourceGraphPS (video, 15 min)][IntroARG_PSModule]
+[Troubleshooting][troubleshooting]
 
-[Demo of usage of PS-module AzResourceGraphPS (video, 12 min)][IntroPSModule]
+[Short introduction to Azure Resource Graph &amp; PS-module AzResourceGraphPS (video, 15 min) ][IntroARG_PSModule]
 
-[Auto-updating AzResourceGraphPS (video, 30 sec)][Updating]
+[Demo of usage of PS-module AzResourceGraphPS (video, 12 sek)][IntroPSModule]
+
+[Auto-updating AzResourceGraphPS (video, 30 sek)][Updating]
+
+[Query credit, Thank You][#credit]
+
+[How can you be mentioned with your cool queries][#mention]
 
 
 
@@ -23,6 +29,9 @@ Think of this PS-module as a helper for doing **Azure Resource Graph Queries** u
 [IntroARG_PSModule]: https://youtu.be/LnIolqDlJUc
 [IntroPSModule]: https://youtu.be/d2Y09Dmi7FQ
 [Updating]: https://youtu.be/qZLPzSn-YP4
+[Credit]: #credits-for-queries
+[Mention]: #how-can-you-be-mentioned-with-your-cool-queries-
+[Troubleshooting]: #troubleshooting
 
 
 
