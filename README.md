@@ -13,7 +13,7 @@ Think of this PS-module as a helper for doing **Azure Resource Graph Queries** u
 
 [Short introduction to Azure Resource Graph &amp; PS-module AzResourceGraphPS (video, 15 min) ][IntroARG_PSModule]
 
-[Demo of usage of PS-module AzResourceGraphPS (video, 12 sek)][IntroPSModule]
+[Demo of usage of PS-module AzResourceGraphPS (video, 12 min)][IntroPSModule]
 
 [Auto-updating AzResourceGraphPS (video, 30 sek)][Updating]
 
