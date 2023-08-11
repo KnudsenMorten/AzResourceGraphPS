@@ -5,14 +5,14 @@ Think of this PS-module as a helper for doing **Azure Resource Graph Queries** u
 
 ## Quick Links
 
-[Installation & Updating][Installation]
-[Usage of Cmdlets][Usage]
-[Troubleshooting][troubleshooting]
-[Short introduction to Azure Resource Graph &amp; PS-module AzResourceGraphPS (video, 15 min) ][IntroARG_PSModule]
-[Demo of usage of PS-module AzResourceGraphPS (video, 12 sek)][IntroPSModule]
-[Auto-updating AzResourceGraphPS (video, 30 sek)][Updating]
-[Credit, Thank You][credit]
-[How can you be mentioned with your cool queries][mention]
+[Installation & Updating][Installation] 
+[Usage of Cmdlets][Usage] 
+[Troubleshooting][troubleshooting] 
+[Short introduction to Azure Resource Graph &amp; PS-module AzResourceGraphPS (video, 15 min) ][IntroARG_PSModule] 
+[Demo of usage of PS-module AzResourceGraphPS (video, 12 sek)][IntroPSModule] 
+[Auto-updating AzResourceGraphPS (video, 30 sek)][Updating] 
+[Credit, Thank You][credit] 
+[How can you be mentioned with your cool queries][mention] 
 
 
 
