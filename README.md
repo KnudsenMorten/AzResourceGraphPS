@@ -268,7 +268,7 @@ Thank you to the below providers of cool queries.
 
 
 
-### Billy York
+### Billy York (@SCAutomation)
 
 Github: https://github.com/scautomation/AzureResourceGraph-Examples
 
@@ -276,13 +276,13 @@ Blog: https://www.cloudsma.com/2021/01/azure-resource-graph-examples-repo/
 
 
 
-### Wesley Hackman
+### Wesley Hackman (@Whaakman)
 
 Github: https://github.com/whaakman/azure-resource-graph-samples
 
 
 
-### Wilfried Woivre
+### Wilfried Woivre (@Wilfriedwoivre)
 
 Github: https://github.com/wilfriedwoivre/azure-resource-graph-queries
 
@@ -290,9 +290,13 @@ Blog: https://woivre.com/blog/2020/09/azure-resource-graph-community-samples
 
 
 
-### Ludovic Alarcon
+### Ludovic Alarcon (@ludovicalarcon)
 
 Blog: https://ludovic-alarcon.com/Resource-Graph-NodePool/
+
+
+
+### Mohamed_Barqawi (@Mohamed_barqawi)
 
 
 
