@@ -15,7 +15,7 @@ Think of this PS-module as a helper for doing **Azure Resource Graph Queries** u
 
 [Query from Windows using AzResourceGraphPS (video, 12 min)][IntroPSModule]
 
-[Query from Ubuntu using AzResourceGraphPS on powershell (video, 1:15 min)][#Query-from-Ubuntu]
+[Query from Ubuntu using AzResourceGraphPS on powershell (video, 1:15 min)][Query-from-Ubuntu]
 
 [Auto-updating of AzResourceGraphPS and Az.ResourceGraph (video, 30 sec)][Updating]
 
