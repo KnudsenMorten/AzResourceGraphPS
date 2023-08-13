@@ -11,11 +11,13 @@ Think of this PS-module as a helper for doing **Azure Resource Graph Queries** u
 
 [Troubleshooting][troubleshooting]
 
-[Short introduction to Azure Resource Graph &amp; PS-module AzResourceGraphPS (video, 15 min) ][IntroARG_PSModule]
+[Introduction to Azure Resource Graph &amp; PS-module AzResourceGraphPS (video, 15 min) ][IntroARG_PSModule]
 
-[Demo of usage of PS-module AzResourceGraphPS (video, 12 min)][IntroPSModule]
+[Query from Windows using AzResourceGraphPS (video, 12 min)][IntroPSModule]
 
-[Auto-updating AzResourceGraphPS (video, 30 sek)][Updating]
+[Query from Ubuntu using AzResourceGraphPS on powershell (video, 1:15 min)][#Query-from-Ubuntu]
+
+[Auto-updating of AzResourceGraphPS and Az.ResourceGraph (video, 30 sec)][Updating]
 
 [Credit, Thank You][credit]
 
@@ -28,6 +30,7 @@ Think of this PS-module as a helper for doing **Azure Resource Graph Queries** u
 
 [IntroARG_PSModule]: https://youtu.be/LnIolqDlJUc
 [IntroPSModule]: https://youtu.be/d2Y09Dmi7FQ
+[Query-from-Ubuntu]: https://youtu.be/RArx1iQ2aHo
 [Updating]: https://youtu.be/qZLPzSn-YP4
 [Credit]: #credits-for-queries
 [Mention]: #how-can-you-be-mentioned-with-your-cool-queries-
@@ -87,6 +90,10 @@ Query-AzResourceGraph -ShowQueryOnly
 ```
 
 ![](img/query_only.jpg)
+
+
+
+![](img/predefined.jpg)
 
 
 
@@ -305,4 +312,4 @@ If you have some cool queries, that you would like to share with the community, 
 
 
 
-### 
+![](img/predefined.jpg)
