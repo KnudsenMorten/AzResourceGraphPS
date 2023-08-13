@@ -128,9 +128,9 @@ resourcecontainers
         Disconnect-AzAccount
 
     # Variables - optional, if you want unattended mode. Alternative script will prompt for login
-        $AzAppId     = "xxx"
-        $AzAppSecret = "xxxx"
-        $TenantId    = "xxxx"
+        $AzAppId     = "xxxxx"
+        $AzAppSecret = "xxxxx"
+        $TenantId    = "xxxxx"
 
     AzRGs-Query-AzARG | Query-AzResourceGraph -QueryScope "Tenant" -AzAppId $AzAppId `
                                                                    -AzAppSecret $AzAppSecret `
@@ -291,3 +291,6 @@ resourcecontainers
     ($RBAC_Assignments | Measure-Object).count
 
     $RBAC_Assignments | Select-Object roleAssignmentScope,roleAssignmentPrincipalDisplayName,roleName,roleType,roleAssignmentCreatedOn | Select-Object -First 10
+
+
+    $RBAC_Assignments | Select-Object roleAssignmentScope,roleAssignmentPrincipalDisplayName,roleName,roleType,roleAssignmentCreatedOn | ft

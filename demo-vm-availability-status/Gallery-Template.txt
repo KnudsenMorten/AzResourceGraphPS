@@ -1,0 +1,58 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "healthresources\r\n| where type == \"microsoft.resourcehealth/availabilitystatuses\"\r\n| extend RessId = properties.targetResourceId\r\n| extend previousAvailabilityState = properties.previousAvailabilityState\r\n| extend occurredTime = properties.occurredTime \r\n| extend availabilityState = properties.availabilityState\r\n| extend VMName = split(RessId, \"/\")[-1]\r\n| sort by tostring(availabilityState) desc\r\n| project VMName, availabilityState, previousAvailabilityState, occurredTime\r\n\r\n\r\n",
+        "size": 0,
+        "queryType": 1,
+        "resourceType": "microsoft.resourcegraph/resources",
+        "crossComponentResources": [
+          "/subscriptions/fce4f282-fcc6-43fb-94d8-bf1701b862c3"
+        ],
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "availabilityState",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": "contains",
+                    "thresholdValue": "Available",
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "contains",
+                    "thresholdValue": "Unavailable",
+                    "representation": "redBright",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "blue",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "tileSettings": {
+          "showBorder": false
+        }
+      },
+      "name": "query - 0"
+    }
+  ],
+  "fallbackResourceIds": [
+    "Azure Monitor"
+  ],
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}
