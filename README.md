@@ -264,7 +264,7 @@ You can now make the query using either Azure App service principal or using int
 
 ## Credits for queries
 
-Thank you to the below providers of cool queries. 
+The below people have contributed with their awsome queries included in AzResourceGraphPS - from the community to the community. 
 
 
 
@@ -306,7 +306,7 @@ https://learn.microsoft.com/en-us/azure/governance/resource-graph/samples/sample
 
 
 
-## How can you be mentioned with your cool queries ?
+## How can you be mentioned with cool queries ?
 
 If you have some cool queries, that you would like to share with the community, I encourage you to send them to me through on of these channel:
 
