@@ -21,7 +21,7 @@ resources
 
 $Description = "AKS cluster details"
 $Category    = "Configuration"
-$Credit      = "Ludovic Alarcon (@ludovicalarcon)"
+$Credit      = "Ludovic Alarcon (@alarco_l)"
 
 If ($Details)
     {
@@ -2901,7 +2901,7 @@ resources
 
 $Description = "Orphaned Web API Connections"
 $Category    = "Configuration"
-$Credit      = "Mohammed Barqawi (@Mohammed_Barqawi)"
+$Credit      = "Mohammed Barqawi (@barqawi_JO)"
 
 If ($Details)
     {
@@ -4693,8 +4693,8 @@ Function Query-AzResourceGraph
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAooUn8dC69ZZKC
-# +q2nC1PetJSqbII24etPbewevqaHCKCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDfbTUY2hT7Y8Hq
+# qw6Lf0fyVTd0jWj8DnItN/FPDYIDPqCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -4802,17 +4802,17 @@ Function Query-AzResourceGraph
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIK/FXtuQzZwvQpF/i3XaR/YX
-# l6H358lw5kIdAuRnOXblMA0GCSqGSIb3DQEBAQUABIICAJ5reKmBXYe6HOzB3b66
-# NVOB4mFqOlvKTNW37I0AvYyPPOuRcHv72N4EahHdTTDZneJF8jKMJRNJ5hANDi84
-# X/wP6BnrUNnCnTwLxytR1i2L+LeMiCVXkWcnbJULtL7jaVslt3VXvZBdi+hddQJF
-# egr5FC8U5ZubxkTUq17ibhxZ7uQWdTkthwTXFQ0yiA74RPOhEytmrXi72EhT7HXt
-# bZjr7vYA2hTrwTJGJilUoc8WfSL7tBEXmo8ZgojO/lGEen/pDa2L6vjM4wAxATh+
-# xaD/eESeezi9c1HvfnjsAu+ApeXy/bcOQnUPV6AXiL5Q/5d/J0fsqUz6jYtyGwS9
-# 82P5/CR9Fmrq69RvpNel+Gt6ZnobiT2dncgdQafDbgUJR/eEE6r96euADEbVK7da
-# AOBAVn6uMEb1+Dpm8FCVsO2yAnESQKgJHWG8f3gcv6J6CFL+YfyVSYEq+g94gahu
-# 7CdIu2spjGOZB1T/+EVURHiSFzgBjhaocbnr/EzFNLiJP7hVmgzhHz8QOEPHWiu5
-# Clol2q+ojf+NcsudpoxlfulsEvLDp82YqE+SwYxkq227jVBYkNre96eSmIXygTo2
-# vxn7Jo9Q9dVIxqD4POvronwzbHervCSMvjn3m2JdsSNvV7M1PpSjcO7zTatxBdRf
-# SPGMI/Ij1GcfZYDPjrPmFY4u
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIEocLlfn+iJ4HuzUxJIzp7Je
+# sAj/mnUVN1GROuGJ93WKMA0GCSqGSIb3DQEBAQUABIICAJBDQVDveK4B70s+0VMm
+# 3ktOI4Z5XbGP8yLN2hrt3xTT3DT/7xVITbCspkSPBEBbyULVJL7YlZ/9zS5QCXzh
+# tEg46YMHxsQbEHouKmHPSYzivF84usU1yva7EkQ/FWdMz4dij7NFmFJ5on4O+R37
+# NZGWeaJ29sPUAVjZjMXpiUI8AkMIH4gwxGtUOOLXB7Ssu40Z3OHeMiQPxKf/Phby
+# 7NoIz6n7zmNuTq/2XbvzxYQCr8MkXz9NYMBl6/0LkzDUvOsEKB+vwhNyFweKJZHK
+# kMkSC37tBy3mLml70dFim5ra0semBNWprc3jnkN77qGnxs2mrMui9+t4knPoVl0W
+# AZrFOA6NgWAgQdMuJwKM2lESwq13+wRzvi2q0pUPFh1PFPzWAKlvClCuJPlN1eLB
+# P0RZtXUZao0ydvS2UqzBWTjbl63rIfsxNk+IHD3NR15Hz953UWRgGk5gUBiLxGz5
+# HBTzaYDQvKGLYFmIZylBUylybTmuAORfiCyS3C5eXidsLl9rAuRbE1nREdde1NXE
+# skyajFzsOO+jkp+oVfUmMnq8oophKriKL6duKjUuFeUKhrk4HeMDVnxJjHOsawrB
+# 16o8HnCwfcuPJMMinPBZytI2ElEvpeN0dFxugaTrA6GTwpFchdblmemw56CO1BzW
+# 8exCqZ81YBAeW2qSQaqrYR0p
 # SIG # End signature block

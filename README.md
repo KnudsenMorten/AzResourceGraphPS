@@ -290,13 +290,13 @@ Blog: https://woivre.com/blog/2020/09/azure-resource-graph-community-samples
 
 
 
-### Ludovic Alarcon (@ludovicalarcon)
+### Ludovic Alarcon (@alarco_l)
 
 Blog: https://ludovic-alarcon.com/Resource-Graph-NodePool/
 
 
 
-### Mohamed_Barqawi (@Mohamed_barqawi)
+### Mohamed Barqawi (@barqawi_JO)
 
 
 
