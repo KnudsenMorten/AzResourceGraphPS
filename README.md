@@ -1,6 +1,8 @@
 # AzResourceGraphPS
 Think of this PS-module as a helper for doing **Azure Resource Graph Queries** using more than **+100 pre-defined queries** or you can make your own **custom queries**. You can connect using **Azure App** or through a **interactive login**. Solution supports **auto-update** so you will always have access to the latest queries, part of this solution.
 
+[Teaser video (1:30 min)][Teaser]
+
 
 
 ## Quick Links
@@ -35,6 +37,8 @@ Think of this PS-module as a helper for doing **Azure Resource Graph Queries** u
 [Credit]: #credits-for-queries
 [Mention]: #how-can-you-be-mentioned-with-your-cool-queries-
 [Troubleshooting]: #troubleshooting
+
+[Teaser]: https://youtu.be/LjbcuA6vpq4
 
 
 
