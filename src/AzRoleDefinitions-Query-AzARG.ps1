@@ -1,4 +1,4 @@
-Function AzRoleAssignments-Query-AzARG
+Function AzRoleDefinitions-Query-AzARG
 {
   [CmdletBinding()]
   param(
@@ -8,35 +8,20 @@ Function AzRoleAssignments-Query-AzARG
        )
 
 $Query = @"
-authorizationResources
-| where type == 'microsoft.authorization/roleassignments'
-| extend prop = properties
-| extend roleDefinitionIdFull = tostring(properties.roleDefinitionId)
-| extend roleDefinitionIdsplit = split(roleDefinitionIdFull,'/')
-| extend roleDefinitionId = tostring(roleDefinitionIdsplit[(4)])
-| extend roleAssignmentPrincipalType = properties.principalType
-| extend roleAssignmentDescription = properties.description
-| extend roleAssignmentPrincipalId = properties.principalId
-| extend roleAssignmentCreatedOn = properties.createdOn
-| extend roleAssignmentUpdatedOn = properties.updatedOn
-| extend roleAssignmentUpdatedById = properties.updatedBy
-| extend roleAssignmentCreatedById = properties.createdBy
-| extend roleAssignmentScope = properties.scope
-| project-away managedBy,kind,sku,plan,tags,identity,zones,location,resourceGroup,subscriptionId, extendedLocation,tenantId
-| join kind=leftouter (authorizationResources
-        | where type == 'microsoft.authorization/roledefinitions'
-        | extend roleDefinitionIdFull = tostring(id)
-        | extend roleDefinitionIdsplit = split(roleDefinitionIdFull,'/')
-        | extend roleDefinitionId = tostring(roleDefinitionIdsplit[(4)])
-        | extend description = properties.description
-        | extend roleName = properties.roleName
-        | extend roleType = properties.type
-        | project-away managedBy,kind,sku,plan,tags,identity,zones,location,resourceGroup,subscriptionId, extendedLocation,tenantId)
-    on roleDefinitionId
-| project roleDefinitionId,roleName,roleType,roleAssignmentPrincipalType,roleAssignmentPrincipalId,roleAssignmentCreatedOn,roleAssignmentUpdatedOn,roleAssignmentUpdatedById,roleAssignmentCreatedById,roleAssignmentScope, prop
+authorizationresources
+| where type == "microsoft.authorization/roledefinitions"
+| mv-expand properties
+| extend description = properties.description
+| extend updatedOn = properties.updatedOn
+| extend createdOn = properties.createdOn
+| extend assignableScopes = properties.assignableScopes
+| extend isServiceRole = properties.isServiceRole
+| extend roleName = properties.roleName
+| extend type = properties.type
+| extend permissions = properties.permissions
 "@
 
-$Description = "RBAC Role Assignments"
+$Description = "RBAC Role Definitions"
 $Category    = "Governance"
 $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
@@ -53,8 +38,8 @@ Else
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUAB1eZ1PFcUejtnyhHaOZchWY
-# MSuggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUUaN76sGcqyORq2/Vqi5LA/Hf
+# U+Wggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -133,16 +118,16 @@ Else
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# IT4U51gKmbxk6gI8rlpAEvoM12QwDQYJKoZIhvcNAQEBBQAEggIAdLJzbhJRHMiq
-# kA/shZLc7UJn77qw9xd7FybspQvJnG0/8IyiSp5s16pS743o8BGK1hy1zfdFEpVO
-# cwa0FY6JHGhhMBrMBFKhLc0DIhWHW6cK93gcSoesjjW3l45gypRSvqZtLWUq5ZfJ
-# 9BuGXmQRZdPcC7OBZGLOjUWTj9ru2/uRJKh2YtP0ocWGtYbht5vUU502NxE70HWl
-# H28HQ90rbPt2gAwnWX9199FJS0fsfeCNUzv6pg0Z1Aey67qUMBubXZLztERhWjOp
-# dRKj+EMRdJV0c0+/MFyuo/knlY9P2BTOQSiivCmOY8iSCaaJB3/SyXMiWJYT/CiK
-# x3bJ1zCW9YGq3eHoz7ZeU/DYv3E450X+HMSyTe6iUF7R4HZ59WIf3yfYxxsDcWZY
-# o/VkXvE68JB/xPnHw4ifu5pZqKWydG1+S9W99HW/1l0vYuRG4Q2rBKicfJbZPP8V
-# P80wCcdbFBHfcwwwP7uqd2KWCeFdAVoNKYug90oHsDwQ9qwrhO13LSrDck+2tVyj
-# jU1Ix2HdvN7KrmlHvgmJmw4Ks4PUJuaA892qJ4KEM+7EDZGe6aTrSqv/KPBO4kVx
-# /tDB6w6bX6+vCYhmNiiAPOYW/GXQoCXVv5/rkmwrpWOI1Iy18z0EMUiS3wlyfiLi
-# kekpkFMPa1jbhjFd1PwkpwbpLFi5ug4=
+# gWvZym+hZSsBYAXGsGsY9MQn8egwDQYJKoZIhvcNAQEBBQAEggIAwuULmKwIquaj
+# /49/rIIoruqdKqsNHJXPlwgDzZ26TA7MDs0qJgDtfJnETGk/8RplMaqAZ2UbPjQe
+# mAk3YtBL0kRuctu0kjEomd1CWWkWHzM14WJPS0Z5l/kh4OLE7cE1clLTj6sOxjUf
+# FN4qChQAsOiYubwiqfvV2G0wxe9kNYn4pEKoHW5asMHqJXOiwDx8Xdw5rEkfd468
+# bLCKxAM79OaMe+y4cUSBkZiPgdPDWJqHTlSMUEq2lUYMqSPP41ai4O9yWL/zA70B
+# mR6rd9U6lUykse0pUYwB/yxljl9Q+tKNQVd+ALXOf6bgP35KSQbqBDZZF1q4JB8D
+# zuiGaNyvUo5UgOgnJRMv9dBJPrgy+TZ7e3375xsELWIy04GCXY1KteBHd5+RUvKi
+# 4TuRFFQFw5qaHfEhKPx/r1uGXYYACbazvW5Z8bIUXwQbt5NYZnELcCSU3vJRpZDD
+# 2qxqPETDaWQ+i7aVgIxsacOgPiLV72cyDsePI+yhHzmGkRHdFf15rd73i8Ck5zdO
+# fhxcHYoUQkcAiJHWKSLiPGTRuxgTOC7vohX+E9ZISnrAGFcN/EOT/+4OZNjJCsDj
+# DchbWJneRceSdH466DE/nwfU9+o/pR/WspSMSwRSkOA+T84ofYobtc3Bq5dB0GT5
+# Ji6DEkOPRdaB8iG/ZRMoHrBDYFC0vjY=
 # SIG # End signature block

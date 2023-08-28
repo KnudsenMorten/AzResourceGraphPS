@@ -3245,7 +3245,46 @@ authorizationResources
 | project roleDefinitionId,roleName,roleType,roleAssignmentPrincipalType,roleAssignmentPrincipalId,roleAssignmentCreatedOn,roleAssignmentUpdatedOn,roleAssignmentUpdatedById,roleAssignmentCreatedById,roleAssignmentScope, prop
 "@
 
-$Description = "RBAC Role Assignments on AKS cluster details"
+$Description = "RBAC Role Assignments"
+$Category    = "Governance"
+$Credit      = "Morten Knudsen (@knudsenmortendk)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Category, $Credit
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
+
+
+Function AzRoleDefinitions-Query-AzARG
+{
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+authorizationresources
+| where type == "microsoft.authorization/roledefinitions"
+| mv-expand properties
+| extend description = properties.description
+| extend updatedOn = properties.updatedOn
+| extend createdOn = properties.createdOn
+| extend assignableScopes = properties.assignableScopes
+| extend isServiceRole = properties.isServiceRole
+| extend roleName = properties.roleName
+| extend type = properties.type
+| extend permissions = properties.permissions
+"@
+
+$Description = "RBAC Role Definitions"
 $Category    = "Governance"
 $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
@@ -4693,8 +4732,8 @@ Function Query-AzResourceGraph
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDfbTUY2hT7Y8Hq
-# qw6Lf0fyVTd0jWj8DnItN/FPDYIDPqCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCABbaJyA7fvR0n9
+# ZIay91NrZJavvDXduPsX19gZy69w7KCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -4802,17 +4841,17 @@ Function Query-AzResourceGraph
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIEocLlfn+iJ4HuzUxJIzp7Je
-# sAj/mnUVN1GROuGJ93WKMA0GCSqGSIb3DQEBAQUABIICAJBDQVDveK4B70s+0VMm
-# 3ktOI4Z5XbGP8yLN2hrt3xTT3DT/7xVITbCspkSPBEBbyULVJL7YlZ/9zS5QCXzh
-# tEg46YMHxsQbEHouKmHPSYzivF84usU1yva7EkQ/FWdMz4dij7NFmFJ5on4O+R37
-# NZGWeaJ29sPUAVjZjMXpiUI8AkMIH4gwxGtUOOLXB7Ssu40Z3OHeMiQPxKf/Phby
-# 7NoIz6n7zmNuTq/2XbvzxYQCr8MkXz9NYMBl6/0LkzDUvOsEKB+vwhNyFweKJZHK
-# kMkSC37tBy3mLml70dFim5ra0semBNWprc3jnkN77qGnxs2mrMui9+t4knPoVl0W
-# AZrFOA6NgWAgQdMuJwKM2lESwq13+wRzvi2q0pUPFh1PFPzWAKlvClCuJPlN1eLB
-# P0RZtXUZao0ydvS2UqzBWTjbl63rIfsxNk+IHD3NR15Hz953UWRgGk5gUBiLxGz5
-# HBTzaYDQvKGLYFmIZylBUylybTmuAORfiCyS3C5eXidsLl9rAuRbE1nREdde1NXE
-# skyajFzsOO+jkp+oVfUmMnq8oophKriKL6duKjUuFeUKhrk4HeMDVnxJjHOsawrB
-# 16o8HnCwfcuPJMMinPBZytI2ElEvpeN0dFxugaTrA6GTwpFchdblmemw56CO1BzW
-# 8exCqZ81YBAeW2qSQaqrYR0p
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIEp0okD0uguimNt00+JoW2dl
+# ShhOAJvJBjuv603AV1AGMA0GCSqGSIb3DQEBAQUABIICAJ28asy3qjSsQMNvdQIe
+# OSzKCzNkn1J6lX2flwBLW5e+KOiEbZq63+rrzfb384Pbh8DClXXhya5IuWSVMova
+# xd3O/L9EoyexWKfghUgbWVHUl9K61R98kFNuBg/3gHHnfJubockz5g4zl2OzUdt6
+# IB73BvWAn0+HrL38gu52krul3d7gwdDpOJ3Tb5W8kNb0U4Cyr0l+clXCCeXWsR5i
+# SIZjh4XNAnUefqf0lMmCvTjrsbO6bYAjQ1UgFOaLynKaIwtDlDfN4KKa7YizgmSm
+# uTKVgkgr2Bo1YVB/S/zivBKpqK5pN2PKJLPNl8khraAt9KcDsnCZOcITshzMxTjn
+# L3PNGAGtx0dQynUAglvMbi8crqN86G2QqP1AwrFGlu8Ekv3KMRyQf23mY+BBc0BY
+# iwqGTpP+g/Sd5R70BVck4PX5Y3u/f6pUi4xWs0GsDV8GS1jPQHRfEw/AWmyjAwY3
+# LZ6IFCMMuioeQiLbTQ+ITMScN1Coh3AZg/Bwf8IJicpB+IYpvgLQcdSqTEWRkIqG
+# XLcF93fQF7ZUZ0MhsbskfvqCwyMf2AN6wWPWPKtLcYW6fezjBzx/qnRLFRpCy4bk
+# NgQPZcDgk6iSMP8wNHP8BpxRPtetbn1f9znVlNcKWVBzufaRowgjlkNZlXKKUUT/
+# W+KWglRnwcC0192lCiY+2Q14
 # SIG # End signature block
