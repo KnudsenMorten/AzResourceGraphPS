@@ -36,7 +36,7 @@ authorizationResources
 | project roleDefinitionId,roleName,roleType,roleAssignmentPrincipalType,roleAssignmentPrincipalId,roleAssignmentCreatedOn,roleAssignmentUpdatedOn,roleAssignmentUpdatedById,roleAssignmentCreatedById,roleAssignmentScope, prop
 "@
 
-$Description = "RBAC Role Assignments on AKS cluster details"
+$Description = "RBAC Role Assignments"
 $Category    = "Governance"
 $Credit      = "Morten Knudsen (@knudsenmortendk)"
 
@@ -53,8 +53,8 @@ Else
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUpPmpXU/uJ+Fc/dIdDJglCMG1
-# a3eggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUAB1eZ1PFcUejtnyhHaOZchWY
+# MSuggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -133,16 +133,16 @@ Else
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# 3Fu2BF2JcJFsTLD5OyqJnxRmquQwDQYJKoZIhvcNAQEBBQAEggIAZ6opzkBXMTAc
-# tq1PTuKjfl80KDmKHzXbR3hg8+1hAoNO/njzBIeeG/Wiw7hV2qE2vvSLH5+p4ROx
-# YYXmzJfzU/3rMRmCT0DRVo+JMSDrtI1pyCYFw+GlEjEdAwZuQEGlN0p5pg+Y8yjK
-# 3+pVRu0+PcjrXq85nFqRomAjI1FKnP78Lw0SngebN1RfCTCuO62J93m5n/nK1lap
-# o1j72pBGViZyyp7c+PHRwR73EMPjGLCe9dw7LA0hsXJi/KO+CXOsCICY/q5D8bX3
-# kib5oNNop5vERabShlrzgVrObNHdB31HqbY02bb2GxWamhZ+bIQ8pz8WeKlRBb8i
-# 9rbLYIs94lTAOsEC0BpGJOY9qfDn6M1RSffFhsMs4Cd+B0lYtcNOgqfhLjOsIyPc
-# 6FOCfxR+tEpT7tner5Oph0OPFrvnzYDMUtWCKf4YYAUHCHhRI4WahZRE3XPVUcUQ
-# PAH4LQ1ElsvPqW1IOD6LtvRK9P7TvFzw+rj1o7hSbcQxbQ/q4nICihP3lcDxmKLJ
-# 39m182tmCGNumrLA4F/LLn6KegEGqUhB7vTJPbBpxn/OfqLE1CVpYWFkRCAbemUM
-# lH4tnuj+HxX7C7xuaohDjGwR7LButfyrfsdGy+Obs1W/rVpR5l0f9lahM3yrgCRJ
-# YFSbMX13/T8/fMIgNO/l7vEE/Kdq4zw=
+# IT4U51gKmbxk6gI8rlpAEvoM12QwDQYJKoZIhvcNAQEBBQAEggIAdLJzbhJRHMiq
+# kA/shZLc7UJn77qw9xd7FybspQvJnG0/8IyiSp5s16pS743o8BGK1hy1zfdFEpVO
+# cwa0FY6JHGhhMBrMBFKhLc0DIhWHW6cK93gcSoesjjW3l45gypRSvqZtLWUq5ZfJ
+# 9BuGXmQRZdPcC7OBZGLOjUWTj9ru2/uRJKh2YtP0ocWGtYbht5vUU502NxE70HWl
+# H28HQ90rbPt2gAwnWX9199FJS0fsfeCNUzv6pg0Z1Aey67qUMBubXZLztERhWjOp
+# dRKj+EMRdJV0c0+/MFyuo/knlY9P2BTOQSiivCmOY8iSCaaJB3/SyXMiWJYT/CiK
+# x3bJ1zCW9YGq3eHoz7ZeU/DYv3E450X+HMSyTe6iUF7R4HZ59WIf3yfYxxsDcWZY
+# o/VkXvE68JB/xPnHw4ifu5pZqKWydG1+S9W99HW/1l0vYuRG4Q2rBKicfJbZPP8V
+# P80wCcdbFBHfcwwwP7uqd2KWCeFdAVoNKYug90oHsDwQ9qwrhO13LSrDck+2tVyj
+# jU1Ix2HdvN7KrmlHvgmJmw4Ks4PUJuaA892qJ4KEM+7EDZGe6aTrSqv/KPBO4kVx
+# /tDB6w6bX6+vCYhmNiiAPOYW/GXQoCXVv5/rkmwrpWOI1Iy18z0EMUiS3wlyfiLi
+# kekpkFMPa1jbhjFd1PwkpwbpLFi5ug4=
 # SIG # End signature block
