@@ -1,4 +1,4 @@
-Function AzNetworkSubnetsAddressSpace-Query-AzARG
+Function AzUpdateManagerPatchInstallationsLinuxOS
 {
   [CmdletBinding()]
   param(
@@ -8,45 +8,19 @@ Function AzNetworkSubnetsAddressSpace-Query-AzARG
        )
 
 $Query = @"
-resources
-| where type == "microsoft.network/virtualnetworks"
-| project vnetName = name, subnets = (properties.subnets)
-| mvexpand subnets
-| extend subnetName = (subnets.name)
-| extend addressRange = subnets.properties.addressPrefix
-| extend mask = split(subnets.properties.addressPrefix, '/', 1)[0]
-| extend usedIp = array_length(subnets.properties.ipConfigurations)
-| extend totalIp = case(mask == 29, 3,
-						mask == 28, 11,
-						mask == 27, 27,
-						mask == 26, 59,
-						mask == 25, 123,
-						mask == 24, 251,
-						mask == 23, 507,
-						mask == 22, 1019,
-						mask == 21, 2043,
-						mask == 20, 4091,
-						mask == 19, 8187,
-						mask == 18, 16379,
-						mask == 17, 32763,
-						mask == 16, 65531,
-						mask == 15, 131067,
-						mask == 14, 262139,
-						mask == 13, 524283,
-						mask == 12, 1048571,
-						mask == 11, 2097147,
-						mask == 10, 4194299,
-						mask == 9, 8388603,
-						mask == 8, 16777211,
-						-1)
-| extend availableIp = totalIp - usedIp
-| project vnetName, subnetName, addressRange, mask, usedIp, totalIp, availableIp, subnets
-| order by toint(mask) desc
+patchinstallationresources
+| where type has "softwarepatches" and properties has "version"
+| extend machineName = tostring(split(id, "/", 8)), resourceType = tostring(split(type, "/", 0)), tostring(rgName = split(id, "/", 4)), tostring(RunID = split(id, "/", 10))
+| extend prop = parse_json(properties)
+| extend lTime = todatetime(prop.lastModifiedDateTime), patchName = tostring(prop.patchName), version = tostring(prop.version), installationState = tostring(prop.installationState), classifications = tostring(prop.classifications)
+| where lTime > ago(7d)
+| project lTime, RunID, machineName, rgName, resourceType, patchName, version, classifications, installationState
+| sort by RunID
 "@
 
-$Description = "Subnets with address space info"
-$Category    = "Configuration"
-$Credit      = "Wilfried Woivre (@wilfriedwoivre)"
+$Description = "Azure Update Manager - Installed updates by AzUM (Linux OS)"
+$Category    = "Security"
+$Credit      = "Microsoft"
 
 If ($Details)
     {
@@ -57,12 +31,13 @@ Else
         # only return Query
         Return $Query
     }
+
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUqc++xTVhreZAY2OQ0cb6qxnf
-# i8aggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUb6uFKS9KWD5oT4oZXpmjvmVw
+# TgOggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -141,16 +116,16 @@ Else
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# v3CFUSfGFrpeV/Q1nd8nK8hmrWUwDQYJKoZIhvcNAQEBBQAEggIAjnwXRpmI15zF
-# szqV8FoLxVDFyLCEGotqRcqhk11dFDTC+y0QGQrf159trpr4zKDz3w/ZoEaTWN7Q
-# SVT1mXUrx+RjZVyT124nCSzKJuVHzfaPqWqdru0cN1Pk1H2uEI4eI3WCyMaKMiYi
-# U6IzrfXAtVps4RnykHdt2u3x9FQQus9ZHaXQWJfYSROvYCehdJixIRyld8eAr520
-# 4TlakSKECCUOs21Pkmy0Z4aIchKZKjawnhOCreSU3vcWYOBOCkZR2Y1ZnUfflgGZ
-# Gslt3u5c4gEMXaOopKPIGFp0rW2gNAR3UUxjUPtSUt0Q9i1Nvb3dO8CBf3P7cJeK
-# AJruqdEsQat3We0UHpplb+I/ietOLsEJpfvL7jgLa9Glc4pZ/8O/IecE+RxuEb4C
-# Zo8F9hf0ooq5eJC2uSOkoiWd9KlzYqCwSRN4xrrDKoy5NLfaJpqcBFDQ8JORbpJ2
-# uEh1nSl7CmfqiQpLfL9sJR/r7kPjGLP+AcvKAuBeSZMuQTk5cSA1UgKe9v16zZsH
-# rNYlmrEjpdI5PiaA7fF+xsyttoVgdawC+WjruzOP0Urt+Y8HPEdqiKotGcFRF8le
-# sGf6K9J+7uxp0AV0rGBGng0+b+lJuB8ki3go6iP91vMmLSSCyZ8IKdR8w0cGsmTj
-# 4CbdH53sAUMi43kStjISPy9kbEBMzVU=
+# w+4QaaSynd9yaD1db5pqFfDTD9owDQYJKoZIhvcNAQEBBQAEggIAlZaO9lQYpPN5
+# +BTvO7FIb/dtAp3FEb1If2k2+OM6I8SnqMTfjveJX+RblObqh0K/AIeuCwEwTMlf
+# HaSizE9xuN/sEHNro2a4PfxivaN8cohdZIQAWoUKB9yHAEggHi7YERN3nmObQauA
+# TDm136Psy2dOgjmTSdoDbtsLG2bNhyCzxBjQfG8MliXazogP8LbxFk621yDTcyt9
+# 8A5obk5ZY0WFjC1g++/SkkEG5sY/KcfteeQmcPn0XdedL6KnyLoixas79gQKnt2C
+# F9n8xYv+9Hm+DIFOqqW//ImMXoZ61zelAbJt3lmt+JIkDA3SdYzutrPAInE/xGxO
+# JIXY2MZfoGuTEBO1IXo6uqbiZrml/cVMaiMguyntgmIkueFdJPlGkPwI2rDPwybn
+# 98MFvw/8PGBNQmmIfUvW0fm8lqbmeO9AUGpwIk2uZZ03jpHtF0L2kze/+gViOtUm
+# BYkSdgW6CYbjzWx049roPDWeA8GAXUG636o9zL56bGLMkZTT4ovg8Sq1hEicFVvf
+# yv154LSohIEiX3mug6Nq36KiVAlrw3xozdRwKGzYgOyOs86MNY/VKK2a5a40jkxZ
+# aV+mAPQgxR5u0/4xcnM2Ar6YTh0T1wQTukzE0bT2a/0uT5tm9IFI7X3OZS02Yfjl
+# oAzI/VrCFh9qdPM+3Lxgkzr+kwNVcy8=
 # SIG # End signature block

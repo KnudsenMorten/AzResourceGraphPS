@@ -1,4 +1,4 @@
-Function AzNetworkSubnetsAddressSpace-Query-AzARG
+Function AzBackupUnprotectedAzBlobStorage-Query-AzARG
 {
   [CmdletBinding()]
   param(
@@ -8,45 +8,25 @@ Function AzNetworkSubnetsAddressSpace-Query-AzARG
        )
 
 $Query = @"
-resources
-| where type == "microsoft.network/virtualnetworks"
-| project vnetName = name, subnets = (properties.subnets)
-| mvexpand subnets
-| extend subnetName = (subnets.name)
-| extend addressRange = subnets.properties.addressPrefix
-| extend mask = split(subnets.properties.addressPrefix, '/', 1)[0]
-| extend usedIp = array_length(subnets.properties.ipConfigurations)
-| extend totalIp = case(mask == 29, 3,
-						mask == 28, 11,
-						mask == 27, 27,
-						mask == 26, 59,
-						mask == 25, 123,
-						mask == 24, 251,
-						mask == 23, 507,
-						mask == 22, 1019,
-						mask == 21, 2043,
-						mask == 20, 4091,
-						mask == 19, 8187,
-						mask == 18, 16379,
-						mask == 17, 32763,
-						mask == 16, 65531,
-						mask == 15, 131067,
-						mask == 14, 262139,
-						mask == 13, 524283,
-						mask == 12, 1048571,
-						mask == 11, 2097147,
-						mask == 10, 4194299,
-						mask == 9, 8388603,
-						mask == 8, 16777211,
-						-1)
-| extend availableIp = totalIp - usedIp
-| project vnetName, subnetName, addressRange, mask, usedIp, totalIp, availableIp, subnets
-| order by toint(mask) desc
+Resources 
+| where type in~ ('microsoft.storage/storageAccounts') 
+| extend armResourceId = id  
+| where properties.isHnsEnabled != true 
+| where properties.isNfsV3Enabled != true 
+| where kind =~ 'StorageV2' and isnotnull(sku) and sku.tier =~ 'Standard'
+| extend resourceId=tolower(armResourceId) 
+| extend extendedLocationName=extendedLocation.name 
+| join kind = leftouter ( RecoveryServicesResources
+    | where type in~ ("microsoft.dataprotection/backupvaults/backupinstances", "microsoft.dataprotection/backupvaults/deletedbackupinstances")
+    | where properties.dataSourceInfo.datasourceType == "Microsoft.Storage/storageAccounts/blobServices"
+    | project resourceId = tolower(tostring(properties.dataSourceInfo.resourceID)), backupItemid = id, isBackedUp = isnotempty(id) ) on resourceId
+    | extend isProtected = isnotempty(backupItemid) 
+    | where (isProtected == (0))
 "@
 
-$Description = "Subnets with address space info"
-$Category    = "Configuration"
-$Credit      = "Wilfried Woivre (@wilfriedwoivre)"
+$Description = "Azure Backup - Azure Blob Storage not configured for backup"
+$Category    = "Backup"
+$Credit      = "Microsoft"
 
 If ($Details)
     {
@@ -61,8 +41,8 @@ Else
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUqc++xTVhreZAY2OQ0cb6qxnf
-# i8aggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUK1W8sD9+w8/sDaAi0c5myGxK
+# 4tGggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -141,16 +121,16 @@ Else
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# v3CFUSfGFrpeV/Q1nd8nK8hmrWUwDQYJKoZIhvcNAQEBBQAEggIAjnwXRpmI15zF
-# szqV8FoLxVDFyLCEGotqRcqhk11dFDTC+y0QGQrf159trpr4zKDz3w/ZoEaTWN7Q
-# SVT1mXUrx+RjZVyT124nCSzKJuVHzfaPqWqdru0cN1Pk1H2uEI4eI3WCyMaKMiYi
-# U6IzrfXAtVps4RnykHdt2u3x9FQQus9ZHaXQWJfYSROvYCehdJixIRyld8eAr520
-# 4TlakSKECCUOs21Pkmy0Z4aIchKZKjawnhOCreSU3vcWYOBOCkZR2Y1ZnUfflgGZ
-# Gslt3u5c4gEMXaOopKPIGFp0rW2gNAR3UUxjUPtSUt0Q9i1Nvb3dO8CBf3P7cJeK
-# AJruqdEsQat3We0UHpplb+I/ietOLsEJpfvL7jgLa9Glc4pZ/8O/IecE+RxuEb4C
-# Zo8F9hf0ooq5eJC2uSOkoiWd9KlzYqCwSRN4xrrDKoy5NLfaJpqcBFDQ8JORbpJ2
-# uEh1nSl7CmfqiQpLfL9sJR/r7kPjGLP+AcvKAuBeSZMuQTk5cSA1UgKe9v16zZsH
-# rNYlmrEjpdI5PiaA7fF+xsyttoVgdawC+WjruzOP0Urt+Y8HPEdqiKotGcFRF8le
-# sGf6K9J+7uxp0AV0rGBGng0+b+lJuB8ki3go6iP91vMmLSSCyZ8IKdR8w0cGsmTj
-# 4CbdH53sAUMi43kStjISPy9kbEBMzVU=
+# UmfrFNBQKcwUFPnKgql5u83tqCIwDQYJKoZIhvcNAQEBBQAEggIAvcWp+r6KmLIz
+# 8VeiK1RBGkSlEuBrQjH0MJ34v1GOqvptp+Ec7p1+kcw3p0mzfJKUJ4Cdw+wGB3P1
+# qsr1xs3SM8BN2f+OyZkMcf73S1jzyUe0Oct2/tvu27dSjX9kb4QmG3qiTKmZIGaG
+# cqGfxIahN5IZH0++8bOiUP1LrB0D7YjY5bp4K7no9+Vcj9rleCHyPdPKhXsMadpJ
+# KuZagQ0Q/SYP7OA7SElb+MMOWHBYN4m8oOsLCL45ZjeIj54M2dj8JvqYMNBtGR5F
+# KQ9Im6MSTxrMa5uuoKclVLJFyHZTY7af2eFgfjPTb/sgdEpoSHLSsOacCkFnhT5L
+# bjf6eXUAojYVezGvWJVm8g31IJhVA0gu8dskRiobClE/7cexuLLO510Yp8+JcTIj
+# VlCa47arC43kxOu/2VZ9oTfg9o5X7Vaa87LB+JE7QlDGqp/BbvZqXfLBLeS0va3U
+# dB24Pe+a3z+Gxvz48CgI2zQMyIz7uVeo+BmVx/3jmlzeGPD22nv2a7QXFO+YBlm8
+# oZAxntnN+dCNZiyCwZEI11jAgtygC/pKCjeA5xwaGQ6Vg4cGdnu+Ih++1/6+sfEn
+# tpq+E+8VdDLLGpniscTszz0A2RnlXpgUjLyw33NC0we5gRu+LuKE6ZmgR1KTa1h1
+# 8sCTS/AqsOh4Gl3o8Dn9Nq0nMI8o7HA=
 # SIG # End signature block

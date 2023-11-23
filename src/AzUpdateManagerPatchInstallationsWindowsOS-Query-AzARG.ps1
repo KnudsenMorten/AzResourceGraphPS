@@ -1,4 +1,4 @@
-Function AzUmcInstallationsCount-Query-AzARG
+Function AzUpdateManagerPatchInstallationsWindowsOS-Query-AzARG
 {
   [CmdletBinding()]
   param(
@@ -9,29 +9,18 @@ Function AzUmcInstallationsCount-Query-AzARG
 
 $Query = @"
 patchinstallationresources
-| where type !has "softwarepatches"
-| extend subscriptionId = tostring(split(id, "/", 2)[0])
-| extend rg = tostring(split(id, "/", 4)[0])
-| extend machineName = tostring(split(id, "/", 8)[0])
+| where type has "softwarepatches" and properties !has "version"
+| extend machineName = tostring(split(id, "/", 8)), resourceType = tostring(split(type, "/", 0)), tostring(rgName = split(id, "/", 4)), tostring(RunID = split(id, "/", 10))
 | extend prop = parse_json(properties)
-| extend RunTime = todatetime(prop.lastModifiedDateTime)
-| extend OS = tostring(prop.osType)
-| extend installedPatchCount = tostring(prop.installedPatchCount)
-| extend failedPatchCount = tostring(prop.failedPatchCount)
-| extend pendingPatchCount = tostring(prop.pendingPatchCount)
-| extend excludedPatchCount = tostring(prop.excludedPatchCount)
-| extend notSelectedPatchCount = tostring(prop.notSelectedPatchCount)
-| where RunTime > ago(7d)
-| join kind=inner (resourcecontainers
-        | where type == "microsoft.resources/subscriptions"
-        | project subscriptionId, subscriptionName=name )
-    on `$left.subscriptionId == `$right.subscriptionId
-| project RunTime, RunID=name,machineName, subscriptionId, subscriptionName, rg, OS, installedPatchCount, failedPatchCount, pendingPatchCount, excludedPatchCount, notSelectedPatchCount
+| extend lTime = todatetime(prop.lastModifiedDateTime), patchName = tostring(prop.patchName), kbId = tostring(prop.kbId), installationState = tostring(prop.installationState), classifications = tostring(prop.classifications)
+| where lTime > ago(7d)
+| project lTime, RunID, machineName, rgName, resourceType, patchName, kbId, classifications, installationState
+| sort by RunID
 "@
 
-$Description = "Update assessment status (last 7 days)"
+$Description = "Azure Update Manager - Installed updates by AzUM (Windows OS)"
 $Category    = "Security"
-$Credit      = "Microsoft / Morten Knudsen (@knudsenmortendk)"
+$Credit      = "Microsoft"
 
 If ($Details)
     {
@@ -46,8 +35,8 @@ Else
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU7bK5qhOUPT25eKqM3Jb7vj1R
-# z2uggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUklC3YsWMrBNCpk/HCb8WYLpw
+# Yfyggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -126,16 +115,16 @@ Else
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# B0D2namY17M7uQ/DKxShsXeTszIwDQYJKoZIhvcNAQEBBQAEggIAbcMEouZy2mgi
-# 7oE65LjSLXEORlRQlsXbxTepCgqt56MpSefU6T6zge2ma8bBfiMWhmFaOxdZM7Ne
-# q4YTSG3NY73VaaE6DaKM2krqA7PJ+/XAi+gXVwQ93Rrw32R7GY+ZlXsaVudL1Osx
-# oRuWYVeEsTIiuk4qK8Hd2nHeAzbb9MxfLKg15xE0Kl0s19gpMX9w7mPcMQZgyLPM
-# DJbK5sLy6pL98wDQnayuigQY3iPl0bC7lfxVw4Hqk187XGop3FSKKahljk8UGIxx
-# YhtPmWU7SRZ448S+hDqHeVQz2lQQIBWM5QLHgwL5Y6NBk5ROxAfM2k1eU4qV3fqO
-# 45ZoiKvNVWls6BjzGXVe3VxT6AcuAran5tdQ2mbkKZoGH9YSnu/bb/YKPJoK2v1x
-# MVQR61U5w4Jo3zNqY45dmUlpy/layi/XXLKHv/rhr9N0hin90q5lCa4hHAjpjuch
-# vChGraOOmUrLp8k71WoBX8igt8cttIpSvu2wxWf+UUrFLfo0kEPlpxUKU/iNG7EB
-# lcbCihWQYuF6ieirpsAImiHKJmWiFBzl5IqJLVdcBAgR9mAV01T75vfRvJP3DH6G
-# QqwCbX8VRKfHjptJcD3g28jNGjSmGPXGVVqVr9M+UAiqtaTsum8CYnhUhalydbkv
-# 4nFUmeNlMkpg1lgWpl9K/ui2K/RIjZ8=
+# DRgEQakNbIAZg7gTbn68E2egrh0wDQYJKoZIhvcNAQEBBQAEggIAaoY0Ok2So22d
+# dxxp8jpWLi8Miigc64Mi65+XdPg4YBeMFKaIMPhOWJlc76S5EXbh84V3yfjZE9Pl
+# z0iGJfZCO6+sdAJ+dey3w0H3pbKd92FpZGxn1L7WLrc19ZkfNQOW6qjlEeQhtoYK
+# fyLufZ+DKALUzWAcpBrE3/9bhUg+jqdTaLnslrdZ3vK0w1PVXF5RK4kwkfkW2Izr
+# SiOePA+603keWUuA73sTMQ77tw/KMNklW4XCpWSeRo5ChdtnwguZkhysz/S8sIXg
+# 3elIJVLh8nJj9+PPp8zVL4z5MP+7mDuOywC9NflHHuU+hHI3wb5W/wT5fMGwZF5a
+# OabHLiduDBpjlvDR6V+ErYfMnZv1XRgfV1nGh14B6gy5ZiTdbOrgoaYqoyXU7QZL
+# tD94LDWuFroYjsp/d0duG0D0Bfj+DhegUZJJgrN4NiKQYkIJSCYnkGgg6v8o9kcB
+# r7F1KMipWkDGCJvFhF/BlBywLxq1L8/WLCUCTIEBV3mw4IcdN4eNz6AP+9p8c4qg
+# M6N66YWQWZuSkRrrQhdAa/Rit29tbN5irx4m+g7wkiigmY25XkGdMR0xRckl3mzH
+# jO2EwjFLtruHx/1I7E7kxaW45k4h3EN43oliOEbCH1IhNlwfqGXT/u5OtchhLmXC
+# CzHa/GOXkrkdxAF66wezAnL+paOZGJM=
 # SIG # End signature block

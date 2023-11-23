@@ -1,4 +1,4 @@
-Function AzUmcPatchInstallationsWindowsOS-Query-AzARG
+Function AzBackupUnprotectedAzFilesShare-Query-AzARG
 {
   [CmdletBinding()]
   param(
@@ -8,18 +8,28 @@ Function AzUmcPatchInstallationsWindowsOS-Query-AzARG
        )
 
 $Query = @"
-patchinstallationresources
-| where type has "softwarepatches" and properties !has "version"
-| extend machineName = tostring(split(id, "/", 8)), resourceType = tostring(split(type, "/", 0)), tostring(rgName = split(id, "/", 4)), tostring(RunID = split(id, "/", 10))
-| extend prop = parse_json(properties)
-| extend lTime = todatetime(prop.lastModifiedDateTime), patchName = tostring(prop.patchName), kbId = tostring(prop.kbId), installationState = tostring(prop.installationState), classifications = tostring(prop.classifications)
-| where lTime > ago(7d)
-| project lTime, RunID, machineName, rgName, resourceType, patchName, kbId, classifications, installationState
-| sort by RunID
+Resources 
+| where type in~ ('microsoft.storage/storageAccounts','microsoft.ClassicStorage/storageAccounts') | extend armResourceId = id  
+| where kind !in~ ('blobstorage', 'blockblobstorage') 
+| extend isValid =  case(
+                    type =~ 'microsoft.ClassicStorage/storageAccounts',
+                        true,
+                    type =~ 'microsoft.storage/storageAccounts',
+                        ( sku.tier == 'Standard' or kind == 'FileStorage'),
+                    true) 
+| where isValid == true
+| extend resourceId=tolower(armResourceId) 
+| join kind = leftouter ( RecoveryServicesResources
+    | where type == "microsoft.recoveryservices/vaults/backupfabrics/protectioncontainers/protecteditems"
+    | where properties.backupManagementType == "AzureStorage"
+    | where properties.workloadType in~ ("AzureFileShare")
+    | project resourceId = tolower(tostring(properties.sourceResourceId)), backupItemid = id, isBackedUp = isnotempty(id) ) on resourceId
+| summarize backupInstancesCountByServer = count(isBackedUp) by resourceId, id, name, resourceGroup, location, tostring(tags)  
+| where backupInstancesCountByServer == 0 
 "@
 
-$Description = "Installed updates by AzUMC (Windows OS)"
-$Category    = "Security"
+$Description = "Azure Backup - Storage accounts with no Azure Fileshares configured for backup"
+$Category    = "Backup"
 $Credit      = "Microsoft"
 
 If ($Details)
@@ -35,8 +45,8 @@ Else
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUpxDSVFCYI/uAtt2T9XZnM47X
-# Aqiggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUwOlQuv6dfhUdVLLER73TRCXp
+# IkCggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -115,16 +125,16 @@ Else
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# u9zkud7vnDQsUmgH9zASifagO/gwDQYJKoZIhvcNAQEBBQAEggIApam0MASOpSfd
-# ScV5LW4Nr+Zfb75MJo9QA9hi5p/4JxorZIGltzftpfDu0ERTloQigTRNsnNVKZ7w
-# 7YF/4Q86Kd9JHvewO7IcqFWVqx2ww1jl1SB7L/R6NZIp1ZOh/isalPaVYn2XK+QG
-# VsdTaga4YyyxVJhxEPkm5TcRuOwiMgIC9+7cTkZN23G4vdLou3dUQuUGmntyD6Tm
-# gxi4bgDQHmXB33rKcPLmu4CyGi4sQ7ef8WQF1lZceuCCj912eOTjKoDGVnYn7thE
-# a1DNw6qNdlKRZZ7wxXhufHyyVZtDz/GqZ+a4uXfJXsRjcRPbmaNHdO1we8ugvB5P
-# b9SPF0Qb90fnWUT5EPgevh1NSkwfYSFbvX/9WXfKqrXADYPMhD9cZ0G2dFn4zRY8
-# vAJGlJnmJPZ4LMfVbIDeb/JBBBuD05URII/7n9CiJq70fH+AL2JJAxuVab+jzWrG
-# Sf2ib8hnaWB04N6bE1pgkHHVub+lncOrXccCx9teMQYGuYb4bUpdCnCCYryT+Cdz
-# VdrPtC9yS8NACSHqCzCkN9tnC2uEe+xW2qVyaxJPXIzfX0AS26MdhQY6b8knRReK
-# aWMSW//sxtxMMY+GE05pF6hpawMCZZq1FBXjEhIReaJj4Dp5FXRBAozW47ponw4y
-# P9Qx3iBdqNDanmo0rersfJvwHEGQlEc=
+# i70+vPMv8qnvrnRrOLRhv4FQXVAwDQYJKoZIhvcNAQEBBQAEggIAJkkGkNITws2M
+# I6zALiT1uiqjnb/MZoNpYd5mqZpIzb/139Ovf/ob+1M0cH//yTEkQk+DqI+cTp+/
+# E0OUGvd1inV8fOVDVmJIqZjUTPlyY3H3YcJZWEY1aIIHiEwsKYoY3LiBtXsez88k
+# 4xXcNpF2El6Gk8lyaeaD8uOmVGLXa7D8eTv8kdPayMGvwYGSop5zx2ST+jRTPUdb
+# tE3VodM4HKSeyws7jlAzRf6U0e0LwpbSkpJ1ePKKpGNJoUuNy6JWy9JXb06P674x
+# XKoGR805WUGp3Rgm+0b5f/8cyDXKQvE/aULKUXGy/idJu+k1h/ZVqnLkcNYLNo8K
+# y6PO1a/hFiyiJ9hQo8VQn49yxR0CGzP3hUwJSPVuFXF07bAQ6tO5lW9GDWFEr5lk
+# 9KjiGCKaBY7/7ZFUXG1DZ2ZxAIt16NXPoYi5lVs7a1I06354eZ4RNm3+BoRb2P1A
+# UU+7P/vbtLNwqRKmbGMftXYSOvK0/W+BsyR+x0OfKgov0XUZdtS8dSprx4IHWbr9
+# Gaa6/Eq1MeAmGztKO3clzGRnehnN7viisPWOD7i7PZQ6vxgQx/MlTGqMopxcqmBK
+# ZOphnlxRQV1er/0EBS+VTolhqNn1ldnbvfrfEzv/X3XwG6yj2kp0HPkFV+IiZeLc
+# igvGaayQpGhOLhPr2mNzhM2zfiJgcRE=
 # SIG # End signature block

@@ -1,4 +1,4 @@
-Function AzUmcAvailableUpdatesByUpdateCategory-Query-AzARG
+Function AzUpdateManagerInstallationsCount-Query-AzARG
 {
   [CmdletBinding()]
   param(
@@ -8,17 +8,30 @@ Function AzUmcAvailableUpdatesByUpdateCategory-Query-AzARG
        )
 
 $Query = @"
-patchassessmentresources
+patchinstallationresources
 | where type !has "softwarepatches"
+| extend subscriptionId = tostring(split(id, "/", 2)[0])
+| extend rg = tostring(split(id, "/", 4)[0])
+| extend machineName = tostring(split(id, "/", 8)[0])
 | extend prop = parse_json(properties)
-| extend lastTime = properties.lastModifiedDateTime
-| extend updateRollupCount = prop.availablePatchCountByClassification.updateRollup, featurePackCount = prop.availablePatchCountByClassification.featurePack, servicePackCount = prop.availablePatchCountByClassification.servicePack, definitionCount = prop.availablePatchCountByClassification.definition, securityCount = prop.availablePatchCountByClassification.security, criticalCount = prop.availablePatchCountByClassification.critical, updatesCount = prop.availablePatchCountByClassification.updates, toolsCount = prop.availablePatchCountByClassification.tools, otherCount = prop.availablePatchCountByClassification.other, OS = prop.osType
-| project lastTime, id, OS, updateRollupCount, featurePackCount, servicePackCount, definitionCount, securityCount, criticalCount, updatesCount, toolsCount, otherCount
+| extend RunTime = todatetime(prop.lastModifiedDateTime)
+| extend OS = tostring(prop.osType)
+| extend installedPatchCount = tostring(prop.installedPatchCount)
+| extend failedPatchCount = tostring(prop.failedPatchCount)
+| extend pendingPatchCount = tostring(prop.pendingPatchCount)
+| extend excludedPatchCount = tostring(prop.excludedPatchCount)
+| extend notSelectedPatchCount = tostring(prop.notSelectedPatchCount)
+| where RunTime > ago(7d)
+| join kind=inner (resourcecontainers
+        | where type == "microsoft.resources/subscriptions"
+        | project subscriptionId, subscriptionName=name )
+    on `$left.subscriptionId == `$right.subscriptionId
+| project RunTime, RunID=name,machineName, subscriptionId, subscriptionName, rg, OS, installedPatchCount, failedPatchCount, pendingPatchCount, excludedPatchCount, notSelectedPatchCount
 "@
 
-$Description = "Available updates by update category"
+$Description = "Azure Update Manager - Update assessment status (last 7 days)"
 $Category    = "Security"
-$Credit      = "Microsoft"
+$Credit      = "Microsoft / Morten Knudsen (@knudsenmortendk)"
 
 If ($Details)
     {
@@ -33,8 +46,8 @@ Else
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUxtQ6sEAPxQH/PRzWoRr2/kJw
-# TgGggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUnfQLqLM8lh9nmDpCuQNfM9/Q
+# ph6ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -113,16 +126,16 @@ Else
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# U55nt1QdSm6VZEJAjgglMWPuYvgwDQYJKoZIhvcNAQEBBQAEggIAmhR5s5nKfqeV
-# fub/biNvqFxMrpP6vBWWjX+lj9r0UmwV0ZD+2+jqwhw2tgbm4aDpRpggghjk0P+x
-# 3GqS+vzH6qiH+5UGlwB6FwUNR0CYf4xsi28RwmheWMaj/SZYERzFtbe3xSIKdTk3
-# qWbgXmyukUXegddmLZ73V2iU8sR2b3xrHoYsTPEDZsFB18i8JqDEh1IXCmWKbsVK
-# SaF5XP+wf/aurJ7HIbnxKsYjvjlyX6YCLlSmZiLzOw247y3qSTwteKF+HAnVD5UT
-# rDXnNoSq6L6E5T0a+Zo2/ERaNTQuEEZNc6pErXhCex6YHgiHVX74Q2QYPdtsvqVf
-# Cnz6Tu6ucUumqxhwp5ul1ZKV0MJzhjLVXhfXB4s+alWJeTCKkUgiRco9o11sQZmi
-# 0Aiag2sJJEbxMirq67HRJMm77Dl0ICO/fVTmbF7ztE8of+9Uaufv3I+bsP8aHTTt
-# fIHeZlWPlCFz04Op2VEi0uQN/mw25noEtTDAW3yqL7DnUCiJcI29pL17fSsY/Xdb
-# /ITkIhkfZnpgpwXMgBEHCXsVsjGCi2trEpIW8k2ZPCR/cJAoF6ZGJiZHc85rvJmj
-# tzeIFInoSdehRr1F4vHgbmWjJDaptlACLf337T1cJpL2qEmS3KLSN2oq/jefwQny
-# ifFGUEjlmKX/k3Dvf5jP92uOFWMYcks=
+# h4RiV1VwbWKw5w9xQyYhAVUY1WkwDQYJKoZIhvcNAQEBBQAEggIAC3X4Iw95t8nl
+# hYMbDJ5ti9ow2NbbgIs5qA7vz+LihGLJD1BwRw/548qnzTxFLnxIlYlyC9CigkXx
+# ZyxIa7akjkkV/jijmX2WqDxkmuZ7eGJshRd0RVc+EhjFvgjdRvXFTWc6dlk6doEj
+# cN8HbyNelcnDYBB7wpupKGUMfHuRKuaNSsNWPZ87d+l+swqmR5dyYp7iOAJTPjc0
+# ulLbWRlFipqZ3IX7XROozg29S7GN86yO7wv2X5J1zRMajvS9Drj5VlVZaz0dRXkk
+# iMNkf3+fYDdWQnoJNDB80rqIKYtPksq8Ht5DNgpF+IAu3lesRGDkG5WnaWZ/na97
+# aX72OYPdiq5Faelonkym/meC8Aq/W72M04uu9NLxnPAZ67DJl87Kdey2DWhpdXSg
+# X5UU2Z7vTW2d0b2aw6BsHvjIG+KoJRhUPPreG6FgOtCrJLZKJAJYs5FuIeC/o1bH
+# d8gh/X4x3Gh0FdXU3mihy9R1ptVoLOUUzcHfjqq0gt131wbyvFnxeoCeanI/W2PL
+# TXtGsBVIBfFu3hdW9Dt41x1ZxPT96nLibSSF/1xfE/VYNwUe5h0Nk3ss+Bzvf/z3
+# q3L+8XhNEatuOKmEMvHrcYrWZVHDdaY9DCyVcu306duVmCRllscq/pJH7zAVzLci
+# QzLFIW1HbFoYukCahhZLIF9KI+2WcR0=
 # SIG # End signature block

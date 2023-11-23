@@ -1,4 +1,4 @@
-Function AzNetworkSubnetsAddressSpace-Query-AzARG
+Function AzBackupUnprotectedSAPHanainAzNativeVMs-Query-AzARG
 {
   [CmdletBinding()]
   param(
@@ -8,45 +8,22 @@ Function AzNetworkSubnetsAddressSpace-Query-AzARG
        )
 
 $Query = @"
-resources
-| where type == "microsoft.network/virtualnetworks"
-| project vnetName = name, subnets = (properties.subnets)
-| mvexpand subnets
-| extend subnetName = (subnets.name)
-| extend addressRange = subnets.properties.addressPrefix
-| extend mask = split(subnets.properties.addressPrefix, '/', 1)[0]
-| extend usedIp = array_length(subnets.properties.ipConfigurations)
-| extend totalIp = case(mask == 29, 3,
-						mask == 28, 11,
-						mask == 27, 27,
-						mask == 26, 59,
-						mask == 25, 123,
-						mask == 24, 251,
-						mask == 23, 507,
-						mask == 22, 1019,
-						mask == 21, 2043,
-						mask == 20, 4091,
-						mask == 19, 8187,
-						mask == 18, 16379,
-						mask == 17, 32763,
-						mask == 16, 65531,
-						mask == 15, 131067,
-						mask == 14, 262139,
-						mask == 13, 524283,
-						mask == 12, 1048571,
-						mask == 11, 2097147,
-						mask == 10, 4194299,
-						mask == 9, 8388603,
-						mask == 8, 16777211,
-						-1)
-| extend availableIp = totalIp - usedIp
-| project vnetName, subnetName, addressRange, mask, usedIp, totalIp, availableIp, subnets
-| order by toint(mask) desc
+Resources 
+| where type in~ ('microsoft.compute/virtualmachines','microsoft.classiccompute/virtualmachines') 
+| extend armResourceId = id  
+| where properties.storageProfile.imageReference.offer contains("sap") or properties.storageProfile.imageReference.offer contains("hana") or properties.storageProfile.imageReference.publisher contains("sap") or properties.storageProfile.imageReference.publisher contains("hana")
+| extend resourceId=tolower(armResourceId) 
+| join kind = leftouter ( RecoveryServicesResources
+    | where type == "microsoft.recoveryservices/vaults/backupfabrics/protectioncontainers/protecteditems"
+    | where properties.backupManagementType == "AzureWorkload"
+    | where properties.workloadType in~ ("SAPHanaDatabase","SAPHanaDBInstance")
+    | project resourceId = tolower(tostring(properties.sourceResourceId)), backupItemid = id, isBackedUp = isnotempty(id) ) on resourceId
+    | extend isProtected = isnotempty(backupItemid) | where (isProtected == (0))
 "@
 
-$Description = "Subnets with address space info"
-$Category    = "Configuration"
-$Credit      = "Wilfried Woivre (@wilfriedwoivre)"
+$Description = "Azure Backup - Azure VMs with no HANA databases or DBInstances configured for backup"
+$Category    = "Backup"
+$Credit      = "Microsoft"
 
 If ($Details)
     {
@@ -61,8 +38,8 @@ Else
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUqc++xTVhreZAY2OQ0cb6qxnf
-# i8aggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUFqrvwyCiQn+TyGX0zKepm7Go
+# xjeggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -141,16 +118,16 @@ Else
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# v3CFUSfGFrpeV/Q1nd8nK8hmrWUwDQYJKoZIhvcNAQEBBQAEggIAjnwXRpmI15zF
-# szqV8FoLxVDFyLCEGotqRcqhk11dFDTC+y0QGQrf159trpr4zKDz3w/ZoEaTWN7Q
-# SVT1mXUrx+RjZVyT124nCSzKJuVHzfaPqWqdru0cN1Pk1H2uEI4eI3WCyMaKMiYi
-# U6IzrfXAtVps4RnykHdt2u3x9FQQus9ZHaXQWJfYSROvYCehdJixIRyld8eAr520
-# 4TlakSKECCUOs21Pkmy0Z4aIchKZKjawnhOCreSU3vcWYOBOCkZR2Y1ZnUfflgGZ
-# Gslt3u5c4gEMXaOopKPIGFp0rW2gNAR3UUxjUPtSUt0Q9i1Nvb3dO8CBf3P7cJeK
-# AJruqdEsQat3We0UHpplb+I/ietOLsEJpfvL7jgLa9Glc4pZ/8O/IecE+RxuEb4C
-# Zo8F9hf0ooq5eJC2uSOkoiWd9KlzYqCwSRN4xrrDKoy5NLfaJpqcBFDQ8JORbpJ2
-# uEh1nSl7CmfqiQpLfL9sJR/r7kPjGLP+AcvKAuBeSZMuQTk5cSA1UgKe9v16zZsH
-# rNYlmrEjpdI5PiaA7fF+xsyttoVgdawC+WjruzOP0Urt+Y8HPEdqiKotGcFRF8le
-# sGf6K9J+7uxp0AV0rGBGng0+b+lJuB8ki3go6iP91vMmLSSCyZ8IKdR8w0cGsmTj
-# 4CbdH53sAUMi43kStjISPy9kbEBMzVU=
+# 9cGQJk9SJyWpSjrBAJLEXDLX26owDQYJKoZIhvcNAQEBBQAEggIATjP9zC8XQnHj
+# 7nX2WZlJvCYxiP8gAFH9DXHu01nzqbsGDpIPgHLPrnCOMY+XShg+192i6QhFYUUO
+# y9PuAzZq9uFWnjj1q+v8EjjRIPAf39jSZQf648u3taTUcLgJUCdM6xFS6KS1L92T
+# b+FfbRwMI70wVn17ZdWIGwUXaLvQGW9T891MqbML3QFLdtboG2X1XYE4ShW7uAa6
+# rTwuvQtSfU5cPNSARvVY5phAEbJrATXha1eCI6kDTo40gUNLBok1nx/fHdMQHZSx
+# jIjp8HZ84nLC3h3+NvHgbeenXvpzI7e3iP2CP0txHr7Cx7SBqiu/4DeheUHhN0kA
+# bbZYjfcBWpeAVFDvTGB92p7mtRQYPUgNdfuY9x8skjoMtYdv4W+1gWc46DiBDqCp
+# 3OiE63PW8YeDHEDokWDHeYCBAYr3Lb06NJcj+2HWa9Qyvauf4ez/WOYelrNYABi6
+# emhBrDPD/gKhp0vZil3h5bSG0Gs20cjzyB/fcsDFUY+AGJEFKD+aqjwpXIhlhZUN
+# XLJRTMnbb/Yw4XZEqLZ2Zs/10LI/3QpqQXvJ3RKrkcObIkNBmqxscBYVxe65odqY
+# E0WJGpulzjqs6WnvjRTGtSfhPGaG1Dzm7d1evYcJFHcdIUVJ8DlbCgE1SYLal768
+# khaH1IO/mVd2PEmJRwBxclL4s/aeETk=
 # SIG # End signature block

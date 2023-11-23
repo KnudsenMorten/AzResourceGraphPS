@@ -1,4 +1,4 @@
-Function AzNetworkSubnetsAddressSpace-Query-AzARG
+Function AzMonAlertsActiveLastDay-Query-AzARG
 {
   [CmdletBinding()]
   param(
@@ -8,45 +8,14 @@ Function AzNetworkSubnetsAddressSpace-Query-AzARG
        )
 
 $Query = @"
-resources
-| where type == "microsoft.network/virtualnetworks"
-| project vnetName = name, subnets = (properties.subnets)
-| mvexpand subnets
-| extend subnetName = (subnets.name)
-| extend addressRange = subnets.properties.addressPrefix
-| extend mask = split(subnets.properties.addressPrefix, '/', 1)[0]
-| extend usedIp = array_length(subnets.properties.ipConfigurations)
-| extend totalIp = case(mask == 29, 3,
-						mask == 28, 11,
-						mask == 27, 27,
-						mask == 26, 59,
-						mask == 25, 123,
-						mask == 24, 251,
-						mask == 23, 507,
-						mask == 22, 1019,
-						mask == 21, 2043,
-						mask == 20, 4091,
-						mask == 19, 8187,
-						mask == 18, 16379,
-						mask == 17, 32763,
-						mask == 16, 65531,
-						mask == 15, 131067,
-						mask == 14, 262139,
-						mask == 13, 524283,
-						mask == 12, 1048571,
-						mask == 11, 2097147,
-						mask == 10, 4194299,
-						mask == 9, 8388603,
-						mask == 8, 16777211,
-						-1)
-| extend availableIp = totalIp - usedIp
-| project vnetName, subnetName, addressRange, mask, usedIp, totalIp, availableIp, subnets
-| order by toint(mask) desc
+alertsmanagementresources 
+| where properties.essentials.lastModifiedDateTime > ago(1d) 
+| project alertInstanceId = id, parentRuleId = tolower(tostring(properties['essentials']['alertRule'])), sourceId = properties['essentials']['sourceCreatedId'], alertName = name, severity = properties.essentials.severity, status = properties.essentials.monitorCondition, state = properties.essentials.alertState, affectedResource = properties.essentials.targetResourceName, monitorService = properties.essentials.monitorService, signalType = properties.essentials.signalType, firedTime = properties['essentials']['startDateTime'], lastModifiedDate = properties.essentials.lastModifiedDateTime, lastModifiedBy = properties.essentials.lastModifiedUserName
 "@
 
-$Description = "Subnets with address space info"
-$Category    = "Configuration"
-$Credit      = "Wilfried Woivre (@wilfriedwoivre)"
+$Description = "Active alerts last day in Azure Monitor"
+$Category    = "Monitoring"
+$Credit      = "Microsoft"
 
 If ($Details)
     {
@@ -61,8 +30,8 @@ Else
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUqc++xTVhreZAY2OQ0cb6qxnf
-# i8aggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUqBDbOX7ho9xU9ScoO0rGCgYm
+# 3Nmggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -141,16 +110,16 @@ Else
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# v3CFUSfGFrpeV/Q1nd8nK8hmrWUwDQYJKoZIhvcNAQEBBQAEggIAjnwXRpmI15zF
-# szqV8FoLxVDFyLCEGotqRcqhk11dFDTC+y0QGQrf159trpr4zKDz3w/ZoEaTWN7Q
-# SVT1mXUrx+RjZVyT124nCSzKJuVHzfaPqWqdru0cN1Pk1H2uEI4eI3WCyMaKMiYi
-# U6IzrfXAtVps4RnykHdt2u3x9FQQus9ZHaXQWJfYSROvYCehdJixIRyld8eAr520
-# 4TlakSKECCUOs21Pkmy0Z4aIchKZKjawnhOCreSU3vcWYOBOCkZR2Y1ZnUfflgGZ
-# Gslt3u5c4gEMXaOopKPIGFp0rW2gNAR3UUxjUPtSUt0Q9i1Nvb3dO8CBf3P7cJeK
-# AJruqdEsQat3We0UHpplb+I/ietOLsEJpfvL7jgLa9Glc4pZ/8O/IecE+RxuEb4C
-# Zo8F9hf0ooq5eJC2uSOkoiWd9KlzYqCwSRN4xrrDKoy5NLfaJpqcBFDQ8JORbpJ2
-# uEh1nSl7CmfqiQpLfL9sJR/r7kPjGLP+AcvKAuBeSZMuQTk5cSA1UgKe9v16zZsH
-# rNYlmrEjpdI5PiaA7fF+xsyttoVgdawC+WjruzOP0Urt+Y8HPEdqiKotGcFRF8le
-# sGf6K9J+7uxp0AV0rGBGng0+b+lJuB8ki3go6iP91vMmLSSCyZ8IKdR8w0cGsmTj
-# 4CbdH53sAUMi43kStjISPy9kbEBMzVU=
+# fo6cZd2B9qZiXWdcMb9L7afUPAIwDQYJKoZIhvcNAQEBBQAEggIAW8MO/08Km+FR
+# wB5iBESCBav2z+8bxO4bOqj24xmxpp9F2DVYAnSGXSs9iOtbeubMI8QVKCN2QRXM
+# Ns1kfWWuxel9CMPcyKbW+v0zj7eWy+mDcmyIRq8gCSaxxOCJsd7sE3ef8xYM59F8
+# gu/OnSwV0HsmYzljBB4rJyEEbEdZFYDMgbIoKk/ammUARvmydkNeXwxE6FbZN2eE
+# PVtg7R0KajD8xsCpayQJdO9G/Ggg37AJwX+Bk1XH9u2aFNpl5bdjzlYW52DP25YQ
+# y3aOz+cgJZ/MSv38FzxQw2qDJUa90BUqKuYL8/ChopVhPZ0mVvBsNiyOHifqRXFj
+# zR0wmiQ9qcWC/9NHJU1PwHQAM9oTZBcwdqcFWKUxbJUBuch+NAuWp3nK2jdr/fbo
+# IrUwf/woPpCTNeeGQMJezA/obCGJc2/pd7VfAI8lHxT9iryDwt7V9MEmOvScU8aq
+# slWLp4kvBrzLvbXZlGb+w8sgiRj1+jZXXFYYy+DSD1D2DwbjDXxG+qNniFlV8Xwa
+# fwx7dsmfUfzLc8gwNNJ33IDtlbsLRRM+pYxdxkzZ0xJCdAVSyyHm4yIsKlvC9d/n
+# J5jFupjJIB0dNM/MlukJNsm4C97gDLnxi6xCOtZeQi5K6tVjUPWeBckO8XWRa+cj
+# GzqjOsbB/Kuds5fzfrXDh0nKVWCPzLo=
 # SIG # End signature block
