@@ -13,6 +13,7 @@ resources
 | project vnetName = name, subnets = (properties.subnets)
 | mvexpand subnets
 | extend subnetName = (subnets.name)
+| extend addressRange = subnets.properties.addressPrefix
 | extend mask = split(subnets.properties.addressPrefix, '/', 1)[0]
 | extend usedIp = array_length(subnets.properties.ipConfigurations)
 | extend totalIp = case(mask == 29, 3,
@@ -39,7 +40,7 @@ resources
 						mask == 8, 16777211,
 						-1)
 | extend availableIp = totalIp - usedIp
-| project vnetName, subnetName, mask, usedIp, totalIp, availableIp, subnets
+| project vnetName, subnetName, addressRange, mask, usedIp, totalIp, availableIp, subnets
 | order by toint(mask) desc
 "@
 
@@ -60,8 +61,8 @@ Else
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUd+2uOSeDeWsVEUVRiU+6lQpq
-# /Euggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUqc++xTVhreZAY2OQ0cb6qxnf
+# i8aggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -140,16 +141,16 @@ Else
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# pEUWDQVRJSHD2Bwwn4mEcKpmc2gwDQYJKoZIhvcNAQEBBQAEggIAR9Y7bMCizEaK
-# rjiSkmlWLcQyvjpYA8vjzYSSA5+N9lU6JjM1hcf7MciXfy2xuJ5TmWp/SNtOlgBc
-# NH2+JL4hU+qt4ZhNNrq3B3ViG+VSPPikRy75zDD4wdZpM9HrI3zAQBw5I45V4128
-# komM+RxaVpoNLfZKnr06SDa5sG79v+Qt1G8SytqUDbeZ2m0zZPYPEceGb5oKp03H
-# PDJcqXCq7EEP0UvvRLfx3Fg7/+XjI3CyoPLuiO5CjNv+fGidRLRdZbfaOSuwjZTh
-# OLjtfUQa/SFdRFO5YO0ojC4BrUzv/LXAPETKr4+QP77U6NnbOEnfe1m9ZOBb9Y3U
-# /22UtMlAhEIPGW4dtF2ZKTRdnKAPY7A+wuqxkiXpPwlrxOkio3Sg/iuRL2j8LoAx
-# K4cGweX2RfF2/AvNeYNl+ESK/EjSWeKU7SwJqitm5hwltO9tTfOOkIqSi4oJf2ox
-# XCgT2D/3E74X6ED0877Bwp4k3DZ6NHlVw5ISlw1L/VSBX2HQEqR/RE1/ckWx3cYf
-# sunXCN2AXZF2rs5DzTHhKe5T+Y4OY58dgzbLmL8L3Qsax+65bdE9I4KFXcnNjpHr
-# kV7zU3Kd/bKjz7291IvVL9l68O/GcEsdw9o280+puXWDGaBscED3QlaVxUwYuy7S
-# eI8f4h5QvwzvJ4i6UHo1+OLokPFkRmc=
+# v3CFUSfGFrpeV/Q1nd8nK8hmrWUwDQYJKoZIhvcNAQEBBQAEggIAjnwXRpmI15zF
+# szqV8FoLxVDFyLCEGotqRcqhk11dFDTC+y0QGQrf159trpr4zKDz3w/ZoEaTWN7Q
+# SVT1mXUrx+RjZVyT124nCSzKJuVHzfaPqWqdru0cN1Pk1H2uEI4eI3WCyMaKMiYi
+# U6IzrfXAtVps4RnykHdt2u3x9FQQus9ZHaXQWJfYSROvYCehdJixIRyld8eAr520
+# 4TlakSKECCUOs21Pkmy0Z4aIchKZKjawnhOCreSU3vcWYOBOCkZR2Y1ZnUfflgGZ
+# Gslt3u5c4gEMXaOopKPIGFp0rW2gNAR3UUxjUPtSUt0Q9i1Nvb3dO8CBf3P7cJeK
+# AJruqdEsQat3We0UHpplb+I/ietOLsEJpfvL7jgLa9Glc4pZ/8O/IecE+RxuEb4C
+# Zo8F9hf0ooq5eJC2uSOkoiWd9KlzYqCwSRN4xrrDKoy5NLfaJpqcBFDQ8JORbpJ2
+# uEh1nSl7CmfqiQpLfL9sJR/r7kPjGLP+AcvKAuBeSZMuQTk5cSA1UgKe9v16zZsH
+# rNYlmrEjpdI5PiaA7fF+xsyttoVgdawC+WjruzOP0Urt+Y8HPEdqiKotGcFRF8le
+# sGf6K9J+7uxp0AV0rGBGng0+b+lJuB8ki3go6iP91vMmLSSCyZ8IKdR8w0cGsmTj
+# 4CbdH53sAUMi43kStjISPy9kbEBMzVU=
 # SIG # End signature block

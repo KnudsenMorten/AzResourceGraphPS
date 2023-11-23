@@ -556,6 +556,329 @@ Else
 }
 
 
+Function AzBackupUnprotectedAzBlobStorage-Query-AzARG
+{
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+Resources 
+| where type in~ ('microsoft.storage/storageAccounts') 
+| extend armResourceId = id  
+| where properties.isHnsEnabled != true 
+| where properties.isNfsV3Enabled != true 
+| where kind =~ 'StorageV2' and isnotnull(sku) and sku.tier =~ 'Standard'
+| extend resourceId=tolower(armResourceId) 
+| extend extendedLocationName=extendedLocation.name 
+| join kind = leftouter ( RecoveryServicesResources
+    | where type in~ ("microsoft.dataprotection/backupvaults/backupinstances", "microsoft.dataprotection/backupvaults/deletedbackupinstances")
+    | where properties.dataSourceInfo.datasourceType == "Microsoft.Storage/storageAccounts/blobServices"
+    | project resourceId = tolower(tostring(properties.dataSourceInfo.resourceID)), backupItemid = id, isBackedUp = isnotempty(id) ) on resourceId
+    | extend isProtected = isnotempty(backupItemid) 
+    | where (isProtected == (0))
+"@
+
+$Description = "Azure Backup - Azure Blob Storage not configured for backup"
+$Category    = "Backup"
+$Credit      = "Microsoft"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Category, $Credit
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
+
+
+Function AzBackupUnprotectedAzDisks-Query-AzARG
+{
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+Resources 
+| where type in~ ('microsoft.compute/disks') 
+| extend armResourceId = id   
+| extend resourceId=tolower(armResourceId) 
+| extend extendedLocationName=extendedLocation.name 
+| join kind = leftouter ( RecoveryServicesResources
+    | where type in~ ("microsoft.dataprotection/backupvaults/backupinstances", "microsoft.dataprotection/backupvaults/deletedbackupinstances")
+    | where properties.dataSourceInfo.datasourceType == "Microsoft.Compute/disks"
+    | project resourceId = tolower(tostring(properties.dataSourceInfo.resourceID)), backupItemid = id, isBackedUp = isnotempty(id) ) on resourceId
+    | extend isProtected = isnotempty(backupItemid) | where (isProtected == (0))
+"@
+
+$Description = "Azure Backup - Azure Disks not configured for backup"
+$Category    = "Backup"
+$Credit      = "Microsoft"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Category, $Credit
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
+
+
+Function AzBackupUnprotectedAzFilesShare-Query-AzARG
+{
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+Resources 
+| where type in~ ('microsoft.storage/storageAccounts','microsoft.ClassicStorage/storageAccounts') | extend armResourceId = id  
+| where kind !in~ ('blobstorage', 'blockblobstorage') 
+| extend isValid =  case(
+                    type =~ 'microsoft.ClassicStorage/storageAccounts',
+                        true,
+                    type =~ 'microsoft.storage/storageAccounts',
+                        ( sku.tier == 'Standard' or kind == 'FileStorage'),
+                    true) 
+| where isValid == true
+| extend resourceId=tolower(armResourceId) 
+| join kind = leftouter ( RecoveryServicesResources
+    | where type == "microsoft.recoveryservices/vaults/backupfabrics/protectioncontainers/protecteditems"
+    | where properties.backupManagementType == "AzureStorage"
+    | where properties.workloadType in~ ("AzureFileShare")
+    | project resourceId = tolower(tostring(properties.sourceResourceId)), backupItemid = id, isBackedUp = isnotempty(id) ) on resourceId
+| summarize backupInstancesCountByServer = count(isBackedUp) by resourceId, id, name, resourceGroup, location, tostring(tags)  
+| where backupInstancesCountByServer == 0 
+"@
+
+$Description = "Azure Backup - Storage accounts with no Azure Fileshares configured for backup"
+$Category    = "Backup"
+$Credit      = "Microsoft"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Category, $Credit
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
+
+
+Function AzBackupUnprotectedAzNativeVMs-Query-AzARG
+{
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+Resources 
+| where type in~ ('microsoft.compute/virtualmachines','microsoft.classiccompute/virtualmachines') 
+| extend armResourceId = id  
+| extend resourceId=tolower(armResourceId) 
+| join kind = leftouter ( RecoveryServicesResources
+    | where type == "microsoft.recoveryservices/vaults/backupfabrics/protectioncontainers/protecteditems"
+    | where properties.backupManagementType == "AzureIaasVM"
+    | where properties.workloadType in~ ("VM")
+    | project resourceId = tolower(tostring(properties.sourceResourceId)), backupItemid = id, isBackedUp = isnotempty(id) ) on resourceId
+    | extend isProtected = isnotempty(backupItemid) | where (isProtected == (0))
+"@
+
+$Description = "Azure Backup - Unprotected Azure Native VMs"
+$Category    = "Backup"
+$Credit      = "Microsoft"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Category, $Credit
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
+
+
+Function AzBackupUnprotectedKubernetesClusters-Query-AzARG
+{
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+Resources 
+| where type in~ ('Microsoft.ContainerService/managedClusters') 
+| extend armResourceId = id   
+| extend resourceId=tolower(armResourceId) 
+| extend extendedLocationName=extendedLocation.name 
+| join kind = leftouter ( RecoveryServicesResources
+    | where type in~ ("microsoft.dataprotection/backupvaults/backupinstances", "microsoft.dataprotection/backupvaults/deletedbackupinstances")
+    | where properties.dataSourceInfo.datasourceType == "Microsoft.ContainerService/managedClusters"
+    | project resourceId = tolower(tostring(properties.dataSourceSetInfo.resourceID)), backupItemid = id, isBackedUp = isnotempty(id) ) on resourceId
+| summarize backupInstancesCountByServer = count(isBackedUp) by resourceId, id, name, resourceGroup, location, tostring(tags)  
+| where backupInstancesCountByServer == 0 
+"@
+
+$Description = "Azure Backup - Managed Kubernetes Clusters with no resources configured for backup"
+$Category    = "Backup"
+$Credit      = "Microsoft"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Category, $Credit
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
+
+
+Function AzBackupUnprotectedPostgreSQLDB-Query-AzARG
+{
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+Resources 
+| where type in~ ('microsoft.dbforpostgresql/servers') 
+| extend armResourceId = id  
+| extend resourceId=tolower(armResourceId) 
+| extend extendedLocationName=extendedLocation.name 
+| join kind = leftouter ( RecoveryServicesResources
+    | where type in~ ("microsoft.dataprotection/backupvaults/backupinstances", "microsoft.dataprotection/backupvaults/deletedbackupinstances")
+    | where properties.dataSourceInfo.datasourceType == "Microsoft.DBforPostgreSQL/servers/databases"
+    | project resourceId = tolower(tostring(properties.dataSourceSetInfo.resourceID)), backupItemid = id, isBackedUp = isnotempty(id) ) on resourceId
+| summarize backupInstancesCountByServer = count(isBackedUp) by resourceId, id, name, resourceGroup, location, tostring(tags)  
+| where backupInstancesCountByServer == 0 
+"@
+
+$Description = "Azure Backup - Azure Database for PostgreSQL servers with no databases configured for backup"
+$Category    = "Backup"
+$Credit      = "Microsoft"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Category, $Credit
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
+
+
+Function AzBackupUnprotectedSAPHanainAzNativeVMs-Query-AzARG
+{
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+Resources 
+| where type in~ ('microsoft.compute/virtualmachines','microsoft.classiccompute/virtualmachines') 
+| extend armResourceId = id  
+| where properties.storageProfile.imageReference.offer contains("sap") or properties.storageProfile.imageReference.offer contains("hana") or properties.storageProfile.imageReference.publisher contains("sap") or properties.storageProfile.imageReference.publisher contains("hana")
+| extend resourceId=tolower(armResourceId) 
+| join kind = leftouter ( RecoveryServicesResources
+    | where type == "microsoft.recoveryservices/vaults/backupfabrics/protectioncontainers/protecteditems"
+    | where properties.backupManagementType == "AzureWorkload"
+    | where properties.workloadType in~ ("SAPHanaDatabase","SAPHanaDBInstance")
+    | project resourceId = tolower(tostring(properties.sourceResourceId)), backupItemid = id, isBackedUp = isnotempty(id) ) on resourceId
+    | extend isProtected = isnotempty(backupItemid) | where (isProtected == (0))
+"@
+
+$Description = "Azure Backup - Azure VMs with no HANA databases or DBInstances configured for backup"
+$Category    = "Backup"
+$Credit      = "Microsoft"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Category, $Credit
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
+
+
+Function AzBackupUnprotectedSQLinAzNativeVMs-Query-AzARG
+{
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+Resources 
+| where type in~ ('microsoft.compute/virtualmachines','microsoft.classiccompute/virtualmachines','microsoft.compute/virtualmachines/extensions') 
+| extend armResourceId = id  
+| where name =~ 'SqlIaasExtension' 
+| where properties.type == 'SqlIaaSAgent' 
+| extend armResourceId = split(armResourceId,'/extensions/')[0] 
+| extend name = split(armResourceId, '/virtualMachines/')[1]
+| extend resourceId=tolower(armResourceId) 
+| join kind = leftouter ( RecoveryServicesResources
+    | where type == "microsoft.recoveryservices/vaults/backupfabrics/protectioncontainers/protecteditems"
+    | where properties.backupManagementType == "AzureWorkload"
+    | where properties.workloadType in~ ("SQLDataBase")
+    | project resourceId = tolower(tostring(properties.sourceResourceId)), backupItemid = id, isBackedUp = isnotempty(id) ) on resourceId
+    | extend isProtected = isnotempty(backupItemid) | where (isProtected == (0))
+"@
+
+$Description = "Azure Backup - Unprotected SQL Servers in Azure Native VMs"
+$Category    = "Backup"
+$Credit      = "Microsoft"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Category, $Credit
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
+
+
 Function AzCosmosDB-Query-AzARG
 {
   [CmdletBinding()]
@@ -1371,6 +1694,85 @@ Else
 }
 
 
+Function AzMonAlertsActiveLastDay-Query-AzARG
+{
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+alertsmanagementresources 
+| where properties.essentials.lastModifiedDateTime > ago(1d) 
+| project alertInstanceId = id, parentRuleId = tolower(tostring(properties['essentials']['alertRule'])), sourceId = properties['essentials']['sourceCreatedId'], alertName = name, severity = properties.essentials.severity, status = properties.essentials.monitorCondition, state = properties.essentials.alertState, affectedResource = properties.essentials.targetResourceName, monitorService = properties.essentials.monitorService, signalType = properties.essentials.signalType, firedTime = properties['essentials']['startDateTime'], lastModifiedDate = properties.essentials.lastModifiedDateTime, lastModifiedBy = properties.essentials.lastModifiedUserName
+"@
+
+$Description = "Active alerts last day in Azure Monitor"
+$Category    = "Monitoring"
+$Credit      = "Microsoft"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Category, $Credit
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
+
+
+Function AzMonAlertsWithResourceTags-Query-AzARG
+{
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+alertsmanagementresources
+| where tostring(properties.essentials.monitorService) <> "ActivityLog Administrative"
+| project // converting extracted fields to string / datetime to allow grouping
+  alertId = id,
+  name,
+  monitorCondition = tostring(properties.essentials.monitorCondition),
+  severity = tostring(properties.essentials.severity),
+  monitorService = tostring(properties.essentials.monitorService),
+  alertState = tostring(properties.essentials.alertState),
+  targetResourceType = tostring(properties.essentials.targetResourceType),
+  targetResource = tostring(properties.essentials.targetResource),
+  subscriptionId,
+  startDateTime = todatetime(properties.essentials.startDateTime),
+  lastModifiedDateTime = todatetime(properties.essentials.lastModifiedDateTime),
+  dimensions = properties.context.context.condition.allOf[0].dimensions, // usefor metric alerts and log search alerts
+  properties
+| extend targetResource = tolower(targetResource)
+| join kind=leftouter
+  ( resources | project targetResource = tolower(id), targetResourceTags = tags) on targetResource
+| project-away targetResource1
+"@
+
+$Description = "Azure Monitor alerts enriched with resource tags"
+$Category    = "Monitoring"
+$Credit      = "Microsoft"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Category, $Credit
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
+
+
 Function AzMonAppInsightsDetailed-Query-AzARG
 {
   [CmdletBinding()]
@@ -1521,6 +1923,47 @@ resources
 $Description = "Azure LogAnalytics workspaces"
 $Category    = "Configuration"
 $Credit      = "Billy York (@SCAutomation)"
+
+If ($Details)
+    {
+        Return $Query, $Description, $Category, $Credit
+    }
+Else
+    {
+        # only return Query
+        Return $Query
+    }
+}
+
+
+Function AzMonNoAzMonExtensionOnKubernetesClusters-Query-AzARG
+{
+  [CmdletBinding()]
+  param(
+
+          [Parameter()]
+            [switch]$Details = $false
+       )
+
+$Query = @"
+Resources
+| where type =~ 'Microsoft.Kubernetes/connectedClusters' 
+| extend connectedClusterId = tolower(id) 
+| project connectedClusterId
+| join kind = leftouter
+	(KubernetesConfigurationResources
+	| where type == 'microsoft.kubernetesconfiguration/extensions'
+	| where properties.ExtensionType  == 'microsoft.azuremonitor.containers'
+	| parse tolower(id) with connectedClusterId '/providers/microsoft.kubernetesconfiguration/extensions' *
+	| project connectedClusterId
+)  on connectedClusterId
+| where connectedClusterId1 == ''
+| project connectedClusterId
+"@
+
+$Description = "Azure Arc-enabled Kubernetes clusters without the Azure Monitor extension"
+$Category    = "Monitoring"
+$Credit      = "Microsoft"
 
 If ($Details)
     {
@@ -2513,6 +2956,7 @@ resources
 | project vnetName = name, subnets = (properties.subnets)
 | mvexpand subnets
 | extend subnetName = (subnets.name)
+| extend addressRange = subnets.properties.addressPrefix
 | extend mask = split(subnets.properties.addressPrefix, '/', 1)[0]
 | extend usedIp = array_length(subnets.properties.ipConfigurations)
 | extend totalIp = case(mask == 29, 3,
@@ -2539,7 +2983,7 @@ resources
 						mask == 8, 16777211,
 						-1)
 | extend availableIp = totalIp - usedIp
-| project vnetName, subnetName, mask, usedIp, totalIp, availableIp, subnets
+| project vnetName, subnetName, addressRange, mask, usedIp, totalIp, availableIp, subnets
 | order by toint(mask) desc
 "@
 
@@ -3907,7 +4351,7 @@ Else
 }
 
 
-Function AzUmcAvailableUpdatesByUpdateCategory-Query-AzARG
+Function AzUpdateManagerAvailableUpdatesByUpdateCategory-Query-AzARG
 {
   [CmdletBinding()]
   param(
@@ -3925,7 +4369,7 @@ patchassessmentresources
 | project lastTime, id, OS, updateRollupCount, featurePackCount, servicePackCount, definitionCount, securityCount, criticalCount, updatesCount, toolsCount, otherCount
 "@
 
-$Description = "Available updates by update category"
+$Description = "Azure Update Manager - Available updates by update category"
 $Category    = "Security"
 $Credit      = "Microsoft"
 
@@ -3941,7 +4385,7 @@ Else
 }
 
 
-Function AzUmcInstallationsCount-Query-AzARG
+Function AzUpdateManagerInstallationsCount-Query-AzARG
 {
   [CmdletBinding()]
   param(
@@ -3972,7 +4416,7 @@ patchinstallationresources
 | project RunTime, RunID=name,machineName, subscriptionId, subscriptionName, rg, OS, installedPatchCount, failedPatchCount, pendingPatchCount, excludedPatchCount, notSelectedPatchCount
 "@
 
-$Description = "Update assessment status (last 7 days)"
+$Description = "Azure Update Manager - Update assessment status (last 7 days)"
 $Category    = "Security"
 $Credit      = "Microsoft / Morten Knudsen (@knudsenmortendk)"
 
@@ -3988,7 +4432,7 @@ Else
 }
 
 
-Function AzUmcMaintenanceRunVM-Query-AzARG
+Function AzUpdateManagerMaintenanceRunVM-Query-AzARG
 {
   [CmdletBinding()]
   param(
@@ -4003,7 +4447,7 @@ maintenanceresources
 | where properties.maintenanceScope == "InGuestPatch"
 "@
 
-$Description = "Maintenance configurations (AzUMC)"
+$Description = "Azure Update Manager - Maintenance configurations"
 $Category    = "Security"
 $Credit      = "Microsoft"
 
@@ -4019,7 +4463,7 @@ Else
 }
 
 
-Function AzUmcPatchInstallationsLinuxOS
+Function AzUpdateManagerPatchInstallationsLinuxOS
 {
   [CmdletBinding()]
   param(
@@ -4039,7 +4483,7 @@ patchinstallationresources
 | sort by RunID
 "@
 
-$Description = "Installed updates by AzUMC (Linux OS)"
+$Description = "Azure Update Manager - Installed updates by AzUM (Linux OS)"
 $Category    = "Security"
 $Credit      = "Microsoft"
 
@@ -4056,7 +4500,7 @@ Else
 }
 
 
-Function AzUmcPatchInstallationsWindowsOS-Query-AzARG
+Function AzUpdateManagerPatchInstallationsWindowsOS-Query-AzARG
 {
   [CmdletBinding()]
   param(
@@ -4076,7 +4520,7 @@ patchinstallationresources
 | sort by RunID
 "@
 
-$Description = "Installed updates by AzUMC (Windows OS)"
+$Description = "Azure Update Manager - Installed updates by AzUM (Windows OS)"
 $Category    = "Security"
 $Credit      = "Microsoft"
 
@@ -4732,8 +5176,8 @@ Function Query-AzResourceGraph
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCABbaJyA7fvR0n9
-# ZIay91NrZJavvDXduPsX19gZy69w7KCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBlbg1c5vAIboeY
+# v3ix9xpyKLCuUu5I0BzM/sfjZhOneaCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -4841,17 +5285,17 @@ Function Query-AzResourceGraph
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIEp0okD0uguimNt00+JoW2dl
-# ShhOAJvJBjuv603AV1AGMA0GCSqGSIb3DQEBAQUABIICAJ28asy3qjSsQMNvdQIe
-# OSzKCzNkn1J6lX2flwBLW5e+KOiEbZq63+rrzfb384Pbh8DClXXhya5IuWSVMova
-# xd3O/L9EoyexWKfghUgbWVHUl9K61R98kFNuBg/3gHHnfJubockz5g4zl2OzUdt6
-# IB73BvWAn0+HrL38gu52krul3d7gwdDpOJ3Tb5W8kNb0U4Cyr0l+clXCCeXWsR5i
-# SIZjh4XNAnUefqf0lMmCvTjrsbO6bYAjQ1UgFOaLynKaIwtDlDfN4KKa7YizgmSm
-# uTKVgkgr2Bo1YVB/S/zivBKpqK5pN2PKJLPNl8khraAt9KcDsnCZOcITshzMxTjn
-# L3PNGAGtx0dQynUAglvMbi8crqN86G2QqP1AwrFGlu8Ekv3KMRyQf23mY+BBc0BY
-# iwqGTpP+g/Sd5R70BVck4PX5Y3u/f6pUi4xWs0GsDV8GS1jPQHRfEw/AWmyjAwY3
-# LZ6IFCMMuioeQiLbTQ+ITMScN1Coh3AZg/Bwf8IJicpB+IYpvgLQcdSqTEWRkIqG
-# XLcF93fQF7ZUZ0MhsbskfvqCwyMf2AN6wWPWPKtLcYW6fezjBzx/qnRLFRpCy4bk
-# NgQPZcDgk6iSMP8wNHP8BpxRPtetbn1f9znVlNcKWVBzufaRowgjlkNZlXKKUUT/
-# W+KWglRnwcC0192lCiY+2Q14
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIPuWa9H6TRxKelEsdgWP3Yhf
+# +lFh8lkVn9EaexHlLRUIMA0GCSqGSIb3DQEBAQUABIICADXwRNgJaVjLukbfzRjJ
+# yf1YoMizr1Qs2jewfRDrxX7R9Y5Onu2fWLoY1Z+CRczE3XyPoB9OA8oDSSfRWHze
+# +xcDakLP8RFlDHeVF5PNIWnOXgSlwFjwQocmUWoQo2z+dHdMtPdo3iheZ1LN75ON
+# gBaKrFGMxOoccCHBv92fGsi39OOP/zoByTYXGtGn46ZOiUNhZpnjeiKH/9gkjtsH
+# wWCx8vI3OZ0MVlgdMJjk1esWl5X9WLVNfZf+Czcyy0+DYtpVqR1xx2wIO10aJowq
+# AupyV3qGL6kMBJXwwSQfFd2Yre0Robt7C3tNG+lAT4JXnRhxJklvomsA4emksAnm
+# iMaEx0ZW/KvJtGYpt0FgLtH5vtsTO77IJ7qPL6r2Y0nFqkIJyxQdGzmwoJkzSjlR
+# vhHqzYaDc5ja44DSh5VhbPnd8gIXygS6TVmPzWZPPBUyy17Je19aquw/oPftTjrS
+# /yFReJnWKErCie/XbnztSO+OpH3oTgupFLTvk8oE5+RoTuO2qsSB7zKF150pNONH
+# amlCOZE6DCSzTpOGSyG3XCXzs0DWlpIy5a7d0dXnWBp9i9Jb3sS+tXUe4zjqPDD9
+# a93b62ldLCNjzHGsFmSXSokwvjA+EL+Bw8/VJ4+MHun5apcyMCOqwzf+m0sxPpY3
+# 8s6tq9RUYKnUE0cAq2yKd9iy
 # SIG # End signature block

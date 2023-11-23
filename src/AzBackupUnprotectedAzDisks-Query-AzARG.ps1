@@ -1,4 +1,4 @@
-Function AzUmcMaintenanceRunVM-Query-AzARG
+Function AzBackupUnprotectedAzDisks-Query-AzARG
 {
   [CmdletBinding()]
   param(
@@ -8,13 +8,20 @@ Function AzUmcMaintenanceRunVM-Query-AzARG
        )
 
 $Query = @"
-maintenanceresources 
-| where ['type'] == "microsoft.maintenance/applyupdates" 
-| where properties.maintenanceScope == "InGuestPatch"
+Resources 
+| where type in~ ('microsoft.compute/disks') 
+| extend armResourceId = id   
+| extend resourceId=tolower(armResourceId) 
+| extend extendedLocationName=extendedLocation.name 
+| join kind = leftouter ( RecoveryServicesResources
+    | where type in~ ("microsoft.dataprotection/backupvaults/backupinstances", "microsoft.dataprotection/backupvaults/deletedbackupinstances")
+    | where properties.dataSourceInfo.datasourceType == "Microsoft.Compute/disks"
+    | project resourceId = tolower(tostring(properties.dataSourceInfo.resourceID)), backupItemid = id, isBackedUp = isnotempty(id) ) on resourceId
+    | extend isProtected = isnotempty(backupItemid) | where (isProtected == (0))
 "@
 
-$Description = "Maintenance configurations (AzUMC)"
-$Category    = "Security"
+$Description = "Azure Backup - Azure Disks not configured for backup"
+$Category    = "Backup"
 $Credit      = "Microsoft"
 
 If ($Details)
@@ -30,8 +37,8 @@ Else
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUrucZu/SelslRQB0IFOiZVLKC
-# TlWggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUv+uVnzsg3lf+4xPb93xrLj2t
+# Bviggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -110,16 +117,16 @@ Else
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# ddN2w+HKk5rihfBYPfveBlvch+QwDQYJKoZIhvcNAQEBBQAEggIALfZejmjPDM+9
-# qrQz40ziEf2xHtVcrTHcKIz/T7mN7Kq12kfdfHehvaXN/hRSMXCdoKzMGGxo+JxR
-# hxBbZT3EnMcJs0JHbshVtbEAvWaTpLhBGvVbFUVm23ZlQ64u+EgR5oHZIonZNv0c
-# 9YeZ7VuVk/0fry/nr+KSQ17hdPATHU7dduq6f19BUhsDlvW+snrrnDuvN9n35DMy
-# yxVGxa928pzkddhiL7qYbmFYCtF4cnWu7/1eUnrnvBUWgU3h/131ydDl/E8TDHrZ
-# jGRZ9yNX0qNppby5nn3HLPr+ywi6IwE1Q277kPle5QouJXhhXFB/rRs/nBpMwfoH
-# 7zn3oQzimy6V2J7/tD7nRF2RxyvnsdE0VMGIOKMCiySJBJbmQHoWmqDlLA2cxGM9
-# rheDHr7hjkQofUkwcfW/MlU8944s7bGYUBK2LRVPELFHh1bdj2iG0TnYlPCEe7ij
-# KMGnMQ+6zMuEx034+uatdgAaYfYxhVqMXVbHrs2oFLd8+uRxF0AenQrdrZoM7V6y
-# u4ZUYggrCvcQdJGsXELM+OIPxR7I44ZiK3p1s8jj0Hki1Z4+ELbwk1gATvSWavgQ
-# pphQ6utlJgCCt1d1gAbYY6ybG2W62a8erAvTrggL1oqzAAADZ8UTBFb8UfpxzLSd
-# SRI7fgcU52G+jg1EkkvCftEezc8iQao=
+# QSMv1zJ8fFUEdm3EvRoyxuJIUSMwDQYJKoZIhvcNAQEBBQAEggIAN8FGDunIwKMW
+# UCL+BlBF+wysGch6EN0Iexpbbt4IBb1E8D060X2pEDliutjsJVI4iBtg3uNGDTVm
+# vdvIYutHnL36ZftRk8zJ83EMVKD0WFtlcpq72XzPMlQFSRyHa5QXoQFt7BI8YiXj
+# 50uAQ2vZojkCsYJO26GNdwPd/wRG+O/+vpwxo92BOJqqgCE01O+Wr9Z9jQ1azKVA
+# LReQjTz8XZFFgp30b9TspCCsQMmcl/HsngkGkSfrOIfT45aOOyyLVw6dHI8xmOhz
+# LNej/lZeJrNm5IUhpzQ6jYK2QQEizAPpd1s3f0JbUzuhBAzm+X5sHl8UVuC3tIMn
+# 60e6rdiY7pt42o08M0EFGbTwnSX56eE7P3kyCQQrv+O+8WXDiZZ096TLZbbDTEjr
+# zQdmV+Cbp9FatTbFXiZCykgt5046zcCW1bl2WvguFmRv9/fj1UZZY9K++e2oYQw9
+# gGueVQwpZpwfycMBdZSCQid9TrrAqHz76+xukD0TUrDKONoWJHscd+oMQRuMaX3/
+# R5gTL/56fgaoDuefUj4+XL8+tV5tRhUH1ljwY0FVOuk5Y6+05KvaaH+OBcZgN1yT
+# 3H8w8QpOxhONaRS/9DP8YErv0UX5/FACpzV4Og38FC1Fl5XfgXeKBSkaIq3n0Bno
+# EasfdFU/xgIMCTktoxYUm41Y+Mkaq4w=
 # SIG # End signature block

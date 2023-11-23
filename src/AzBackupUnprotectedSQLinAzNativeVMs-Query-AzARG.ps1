@@ -1,4 +1,4 @@
-Function AzUmcPatchInstallationsLinuxOS
+Function AzBackupUnprotectedSQLinAzNativeVMs-Query-AzARG
 {
   [CmdletBinding()]
   param(
@@ -8,18 +8,24 @@ Function AzUmcPatchInstallationsLinuxOS
        )
 
 $Query = @"
-patchinstallationresources
-| where type has "softwarepatches" and properties has "version"
-| extend machineName = tostring(split(id, "/", 8)), resourceType = tostring(split(type, "/", 0)), tostring(rgName = split(id, "/", 4)), tostring(RunID = split(id, "/", 10))
-| extend prop = parse_json(properties)
-| extend lTime = todatetime(prop.lastModifiedDateTime), patchName = tostring(prop.patchName), version = tostring(prop.version), installationState = tostring(prop.installationState), classifications = tostring(prop.classifications)
-| where lTime > ago(7d)
-| project lTime, RunID, machineName, rgName, resourceType, patchName, version, classifications, installationState
-| sort by RunID
+Resources 
+| where type in~ ('microsoft.compute/virtualmachines','microsoft.classiccompute/virtualmachines','microsoft.compute/virtualmachines/extensions') 
+| extend armResourceId = id  
+| where name =~ 'SqlIaasExtension' 
+| where properties.type == 'SqlIaaSAgent' 
+| extend armResourceId = split(armResourceId,'/extensions/')[0] 
+| extend name = split(armResourceId, '/virtualMachines/')[1]
+| extend resourceId=tolower(armResourceId) 
+| join kind = leftouter ( RecoveryServicesResources
+    | where type == "microsoft.recoveryservices/vaults/backupfabrics/protectioncontainers/protecteditems"
+    | where properties.backupManagementType == "AzureWorkload"
+    | where properties.workloadType in~ ("SQLDataBase")
+    | project resourceId = tolower(tostring(properties.sourceResourceId)), backupItemid = id, isBackedUp = isnotempty(id) ) on resourceId
+    | extend isProtected = isnotempty(backupItemid) | where (isProtected == (0))
 "@
 
-$Description = "Installed updates by AzUMC (Linux OS)"
-$Category    = "Security"
+$Description = "Azure Backup - Unprotected SQL Servers in Azure Native VMs"
+$Category    = "Backup"
 $Credit      = "Microsoft"
 
 If ($Details)
@@ -31,13 +37,12 @@ Else
         # only return Query
         Return $Query
     }
-
 }
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUMIlnt1g0njODxEH4pyMt6dGS
-# F96ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUQqCrNiSBOrXeEjVXhc8xg8G+
+# +Iiggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -116,16 +121,16 @@ Else
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# JBAsjwnpUIO3Iz6s/Y8o1z5FIHIwDQYJKoZIhvcNAQEBBQAEggIAcZwtwIC8cccJ
-# vE/bHIcAFQbUL1BUONxJw99IbE7RlPpb8POjkOR+otm7uqMW3hDQONw/HqEpmHYJ
-# axE/okOOfibuZc/HYGd0iACcFC5RpnlJSuLOJKwVUxG9bhQdG0Y22+b66Oe5DRoU
-# cfwkd29g0/eKClBcsd64GDvvKDEtQOb+hVYwG27n3CFFIR227thg5n7OdnyxYv1T
-# TKs5I3B+1LYZlmu1d4aHv36W3DEg0D+KSp3ffd5NBRwoBTPzSaCQnbxbkZVFDGvL
-# uQxHdWSa2igZ9MVkjI8mehtgsbltorRXWf6QAruCKFG4iN6AMaLkripXBz2lZt8y
-# 4cEASXjJSuhEiLqnQCMc3myddNZtUoIBRjOPoSufkcAtWY6fDkGrjwCvrpJpx9F/
-# +DL4a4Tv8PsmAS173yHPn8uDBD3xNVRzbIomBKVOsFr+Q3x6ujnDRhnadqZsrMcL
-# wmKkJ/oGVmcTDbk/Ayx+PftbsYre2CtDJe7oZLVeTrvlSrN6QAwXNGAW0aMliHT/
-# hkQ5ZiLUMWD7rcgjFUeFvlpXs50KDwhz8O7p/LOQLf+IAU9Rt/jtioY5eX1sB+KB
-# xb3sZVFhvqR2YMY3mJYoKe5O0Eierz9GtViRuWq12KDdAHrfBdkHur2N86k6k+1M
-# sO8Q1vwiMlJz9pDUHUFo2efnPzlzkh8=
+# GTHwr2RILxl2itRLXs3sXLvOEZQwDQYJKoZIhvcNAQEBBQAEggIAV/IaNl3gfKHr
+# Ny2WGplIK40y8Jeuczev3OhuYpe2AHd9RqNlFhyyb4ZhONvEdv29ZlwJZ7ud4CyK
+# aXzHh+tPmXEdtosdvKs6A0QLTU2Qj9fQupxRQosMJXTjX3DHG2WlQDmQOtaikaJs
+# 6jmE89DhGkQOYONeH9nqw/RrpZqloJ3dtpmQpsQopf1k1FzDvjJfiQBiYkByHJ/y
+# kq1GfCLu234ZVvGgyZ1XoPEOIkkVxreVi7scEMmhLqXtkMdWc9t7+xYnx0ylQ0n0
+# mLm270w9inpjd3P1dFNbesaHjQzChbpfi8EKNFQLSgz2Jq2CCgNPgIsTa8aW2j+A
+# FFpI28r9+dJ/ARbFqRHlVh3AoW/M0UqDyWw+ay9cYJLCedG3KRIBtcdcpvKrUoOH
+# cJddxD2qed4shJMxii4i5s9xXciTkn97AXpHzV+LXq99tWH56f5OaGgX7XKfTk6P
+# KQSk6DX8dBTDXlFNuQIfbJmh5n+r0mWt0mzMe0t+TZM0o9PptBK60HiRuJSdyer1
+# cq4LZ8/LRLn1PfH6upIXugUzFFWb6b4agUGsk6bdqriW0HIDNtjoWkBzO0O/3nHW
+# XsaOSVKfshOmlSmDS3GOwCYQ2nBpxSj0Sg0amVxAeUhHy4ql5gW1t/SUDG5W4dbd
+# iDRV2UFZ7XIXWHA3fgA/jiCpqR5nTeg=
 # SIG # End signature block
